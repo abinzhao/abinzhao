@@ -14,4 +14,4 @@
 
 <img width="340px" src="https://github-readme-stats.vercel.app/api?username=abinzhao&theme=vue-dark&count_private=true&show_icons=true">
 <img width="340px" src="https://github-readme-stats.vercel.app/api/top-langs/?username=abinzhao&theme=vue-dark&layout=compact">
-<img width="340px" src="https://github-readme-stats.vercel.app/api/pin/?username=abinzhao&repo=halo-theme-joe2.0&theme=dark">
+<img width="340px" src="https://github-readme-stats.vercel.app/api/pin/?username=abinzhao&repo=iCSS&theme=dark">
