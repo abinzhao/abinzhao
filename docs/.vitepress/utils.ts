@@ -1,60 +1,147 @@
 /**
- * @param {string} pathname pathname 值
  * @returns {SidebarItem[]} 侧边栏数组
  */
-export const getSideBarList = (pathname: string) => {
-    if (['/basic', '/core', '/api'].includes(pathname)) {
-        return [
-            {
-                text: '基础篇',
-                items: [
-                    { text: '基础篇', link: '/basic/index' },
-                    { text: '基础篇1', link: '/basic/basic1' },
-                    { text: '基础篇2', link: '/basic/basic2' }
-                ]
-            },
-            {
-                text: 'API 篇',
-                items: [
-                    { text: 'API篇', link: '/api/index' },
-                    { text: 'API篇1', link: '/api/api1' },
-                    { text: 'API篇2', link: '/api/api2' }
-                ]
-            },
-            {
-                text: '核心篇',
-                items: [
-                    { text: '核心篇', link: '/core/index' },
-                    { text: '核心篇1', link: '/core/core1' },
-                    { text: '核心篇2', link: '/core/core2' }
-                ]
-            }
-        ]
-    }
-    return [
+export const SideBarList = {
+    '/web/': [
         {
-            text: '教学篇',
+            text: '快速开始',
+            link: '/web/index',
+        },
+        {
+            text: '前端三剑客',
             items: [
-                { text: '教学篇', link: '/teach/index' },
-                { text: '教学篇1', link: '/teach/teach1' },
-                { text: '教学篇2', link: '/teach/teach2' }
+                { text: '基础篇', link: '/web/html-css-js/index' }
             ]
         },
         {
-            text: '总结篇',
+            text: 'Vue框架',
             items: [
-                { text: '总结篇', link: '/summarize/index' },
-                { text: '总结篇1', link: '/summarize/summarize1' },
-                { text: '总结篇2', link: '/summarize/summarize2' }
+                { text: '基础篇', link: '/web/vue/index' }
             ]
         },
         {
-            text: '团队篇',
+            text: 'React框架',
             items: [
-                { text: '团队篇', link: '/team/index' },
-                { text: '团队篇1', link: '/team/team1' },
-                { text: '团队篇2', link: '/team/team2' }
+                { text: '基础篇', link: '/web/html-css-js/index' }
             ]
-        }
-    ]
+        },
+        {
+            text: '打包构建',
+            items: [
+                { text: '基础篇', link: '/web/build/index' }
+            ]
+        },
+        {
+            text: '性能优化',
+            items: [
+                { text: '基础篇', link: '/web/performance/index' }
+            ]
+        },
+        {
+            text: '实战案例',
+            items: [
+                { text: '基础篇', link: '/web/case/index' }
+            ]
+        },
+        {
+            text: '实用工具',
+            items: [
+                { text: '基础篇', link: '/web/tools/index' }
+            ]
+        },
+    ],
+    '/harmony-next/': [
+        {
+            text: '快速开始',
+            link: '/harmony-next/index'
+        },
+        {
+            text: 'ArkTS',
+            items: [
+                { text: '基础篇', link: '/harmony-next/arkts/index' }
+            ]
+        },
+        {
+            text: 'ArkUI',
+            items: [
+                { text: '基础篇', link: '/harmony-next/arkui/index' }
+            ]
+        },
+        {
+            text: '跨端开发',
+            items: [
+                { text: '基础篇', link: '/harmony-next/cross-end/index' }
+            ]
+        },
+        {
+            text: '性能优化',
+            items: [
+                { text: '基础篇', link: '/harmony-next/performance/index' }
+            ]
+        },
+        {
+            text: '实战案例',
+            items: [
+                { text: '基础篇', link: '/harmony-next/case/index' }
+            ]
+        },
+    ],
+    '/flutter/': [
+        {
+            text: '快速开始',
+            items: [
+                { text: '基础篇', link: '/flutter/index' }
+            ]
+        },
+        {
+            text: 'Dart/Flutter基础',
+            items: [
+                { text: '基础篇', link: '/flutter/dart-flutter/index' }
+            ]
+        },
+        {
+            text: '框架特性',
+            items: [
+                { text: '基础篇', link: '/flutter/features/index' }
+            ]
+        },
+        {
+            text: '性能优化',
+            items: [
+                { text: '基础篇', link: '/flutter/performance/index' }
+            ]
+        },
+    ],
+    '/interview/': [
+        {
+            text: '面试题',
+            items: [
+                { text: '面试题', link: '/interview/index' }
+            ]
+        },
+    ],
+    '/ai/': [
+        {
+            text: 'AI篇',
+            items: [
+                { text: '工具篇', link: '/ai/index' }
+            ]
+        },
+    ],
+    '/mini-rogram/': [
+        {
+            text: '小程序',
+            items: [
+                { text: '基础篇', link: '/mini-rogram/index' }
+            ]
+        },
+    ],
+    '/tools/': [
+        {
+            text: '工具篇',
+            items: [
+                { text: '工具篇', link: '/tools/index' }
+            ]
+        },
+    ],
 }

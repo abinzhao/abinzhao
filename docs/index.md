@@ -7,7 +7,7 @@ hero:
   tagline: 指尖轻触，解锁前端知识的无限可能
 
   image:
-    src: /logo.png
+    src: /public/logo.png
     alt: 纯爱掌门人
 
   actions:
@@ -15,7 +15,7 @@ hero:
     - theme: brand
       # 按钮文字
       text: 快速开始
-      link: /markdown-examples
+      link: /web/index
     - theme: alt
       text: 掘金主页
       link: https://juejin.cn/user/2849548342403454

@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitepress'
-import { getSideBarList } from './utils'
+import { SideBarList } from './utils'
 
 export default defineConfig({
   title: "AbinZhao Blog",
@@ -11,38 +11,16 @@ export default defineConfig({
     },
     nav: [
       { text: '首页', link: '/' },
-      { text: '前端', link: '/web/jsjd' },
-      { text: '鸿蒙', link: '/markdown-examples' },
-      { text: 'Flutter', link: '/markdown-examples' },
-      { text: 'AI', link: '/markdown-examples' },
-      { text: '性能优化', link: '/markdown-examples' },
-      { text: '小程序', link: '/markdown-examples' },
-      { text: '工具', link: '/markdown-examples' },
-      { text: '面试题', link: '/markdown-examples' },
+      { text: '前端', link: '/web/' },
+      { text: '鸿蒙', link: '/harmony-next/' },
+      { text: 'Flutter', link: '/flutter/' },
+      { text: '面试题', link: '/interview/' },
+      { text: 'AI', link: '/ai/' },
+      { text: '小程序', link: '/mini-rogram/' },
+      { text: '工具', link: '/tools/' },
     ],
 
-    sidebar: [
-      // '/basic/': getSideBarList('/basic'),
-      {
-        text: '学习笔记',
-        // 开启折叠按钮
-        collapsible: true,
-        collapsed: true,
-        items: [
-          { text: 'Vue学习笔记', link: '/study/vue.md' },
-          { text: 'Node学习笔记', link: '/study/node.md' },
-          { text: 'React学习笔记', link: '/study/react.md' }
-        ]
-      },
-      {
-        text: 'Examples',
-        items: [
-          { text: 'Markdown Examples', link: '/markdown-examples' },
-          { text: 'Runtime API Examples', link: '/api-examples' }
-        ]
-      }
-    ],
-
+    sidebar: SideBarList,
     socialLinks: [
       { icon: 'github', link: 'https://github.com/abinzhao' },
       {
@@ -52,6 +30,7 @@ export default defineConfig({
         link: 'https://juejin.cn/user/2849548342403454'
       }
     ],
+    // @ts-ignore
     markdown: {
       // 代码块风格
       theme: 'material-theme-palenight',
