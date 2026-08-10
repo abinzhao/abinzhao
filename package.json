@@ -1,18 +1,38 @@
 {
-  "name": "abinzhao.github.io",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "personal-website",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "serve out -l 3000 --no-clipboard",
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "dependencies": {
+    "gray-matter": "^4.0.3",
+    "next": "16.3.0",
+    "next-mdx-remote": "^6.0.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "zod": "^4.4.3"
+  },
   "devDependencies": {
-    "vitepress": "^1.6.3"
+    "@playwright/test": "^1.62.1",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.0.5",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.0",
+    "jsdom": "^29.1.1",
+    "serve": "^14.2.6",
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   }
 }
