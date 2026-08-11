@@ -5,6 +5,7 @@ import { defineConfig } from "astro/config";
 
 export default defineConfig({
   site: "https://abinzhao.github.io",
+  base: "/abinzhao",
   output: "static",
   trailingSlash: "always",
   integrations: [mdx(), sitemap()],

@@ -64,7 +64,7 @@ describe("structured data", () => {
       "@context": "https://schema.org",
       "@type": "BlogPosting",
       headline: "从公开仓库整理 HarmonyOS Next 学习路径",
-      url: "https://abinzhao.github.io/blog/harmonyos-next-learning-path/",
+      url: "https://abinzhao.github.io/abinzhao/blog/harmonyos-next-learning-path/",
     });
   });
 
@@ -82,7 +82,7 @@ describe("structured data", () => {
       "@context": "https://schema.org",
       "@type": "SoftwareSourceCode",
       name: "HarmonyOS Next 开发知识库",
-      url: "https://abinzhao.github.io/projects/harmony-next-blog/",
+      url: "https://abinzhao.github.io/abinzhao/projects/harmony-next-blog/",
     });
   });
 });
@@ -90,7 +90,7 @@ describe("structured data", () => {
 describe("redirect canonical", () => {
   it("将联系页指向 About 联系区", () => {
     expect(buildRedirectCanonical("/contact")).toBe(
-      "https://abinzhao.github.io/about/#contact",
+      "https://abinzhao.github.io/abinzhao/about/#contact",
     );
   });
 });

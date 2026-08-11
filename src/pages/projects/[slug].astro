@@ -3,6 +3,7 @@ import { getCollection, render, type CollectionEntry } from "astro:content";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { projectCategoryLabels } from "@/lib/content";
 import { buildProjectJsonLd } from "@/lib/seo";
+import { withBase } from "@/lib/site";
 import "@/styles/projects.css";
 
 export async function getStaticPaths() {
@@ -59,7 +60,7 @@ const jsonLd = buildProjectJsonLd({
 >
   <article class="project-detail">
     <header class="project-detail__header">
-      <a class="project-detail__back" href="/projects/">← 返回项目列表</a>
+      <a class="project-detail__back" href={withBase("/projects/")}>← 返回项目列表</a>
       <p class="project-detail__category">
         {projectCategoryLabels[category]} · {statusLabels[status]}
       </p>

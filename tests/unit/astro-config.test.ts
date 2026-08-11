@@ -6,6 +6,7 @@ describe("Astro 工程配置", () => {
     const config = readFileSync("astro.config.mjs", "utf8");
     expect(config).toContain('output: "static"');
     expect(config).toContain('site: "https://abinzhao.github.io"');
+    expect(config).toContain('base: "/abinzhao"');
     expect(config).toContain("mdx()");
     expect(config).toContain("sitemap()");
     expect(config).toContain("tailwindcss()");

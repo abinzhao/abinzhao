@@ -26,7 +26,7 @@ function collectRuntimeDiagnostics(page: Page) {
 test("桌面首页优先展示真实静态内容并按顺序组织叙事", async ({ page }) => {
   const diagnostics = collectRuntimeDiagnostics(page);
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/");
+  await page.goto("/abinzhao/");
 
   await expect(
     page.getByRole("heading", { name: "把复杂，做得有意思。" }),
@@ -66,7 +66,7 @@ test("桌面首页优先展示真实静态内容并按顺序组织叙事", async
 test("reduced-motion 保留 fallback 且不启动 Canvas 场景", async ({ page }) => {
   const diagnostics = collectRuntimeDiagnostics(page);
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/abinzhao/");
 
   await expect(page.locator(".hero__fallback")).toBeVisible();
   await expect(page.locator("[data-hero-scene]")).toHaveCount(0);
@@ -118,7 +118,7 @@ test("GSAP 动态导入失败时不产生未处理 rejection", async ({ page }) 
   );
 
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/");
+  await page.goto("/abinzhao/");
   await failedImport;
   await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 0)));
 
@@ -131,7 +131,7 @@ test("GSAP 动态导入失败时不产生未处理 rejection", async ({ page }) 
 test("无 JavaScript 时 Hero 文案与主要链接完整可用", async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
-  await page.goto("/");
+  await page.goto("/abinzhao/");
 
   await expect(
     page.getByRole("heading", { name: "把复杂，做得有意思。" }),
@@ -139,10 +139,10 @@ test("无 JavaScript 时 Hero 文案与主要链接完整可用", async ({ brows
   await expect(page.getByText("赵建斌 / 开发者与实验者")).toBeVisible();
   await expect(
     page.getByRole("link", { name: "查看项目", exact: true }),
-  ).toHaveAttribute("href", "/projects/");
+  ).toHaveAttribute("href", "/abinzhao/projects/");
   await expect(
     page.getByRole("link", { name: "进入实验室", exact: true }),
-  ).toHaveAttribute("href", "/playground/");
+  ).toHaveAttribute("href", "/abinzhao/playground/");
   await expect(page.locator(".hero__fallback")).toBeVisible();
 
   await context.close();

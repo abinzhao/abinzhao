@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from "astro:content";
+import { withBase } from "@/lib/site";
 
 interface Props {
   experiment: CollectionEntry<"playground">;
@@ -16,7 +17,7 @@ const { title, slug, description, tech } = experiment.data;
       "experiment-card__visual",
       `experiment-visual--${slug}`,
     ]}
-    href={`/playground/${slug}/`}
+    href={withBase(`/playground/${slug}/`)}
     aria-label={`打开实验：${title}`}
   >
     <span aria-hidden="true"></span>
@@ -27,7 +28,7 @@ const { title, slug, description, tech } = experiment.data;
       {String(index + 1).padStart(2, "0")} / OPEN LAB
     </p>
     <h2>
-      <a href={`/playground/${slug}/`}>{title}</a>
+      <a href={withBase(`/playground/${slug}/`)}>{title}</a>
     </h2>
     <p>{description}</p>
     <ul aria-label={`${title}技术标签`}>

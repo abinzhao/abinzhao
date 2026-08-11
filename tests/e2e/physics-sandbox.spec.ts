@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test("物理沙盒正常运行并支持重力切换和通用重置", async ({ page }) => {
-  await page.goto("/playground/physics-sandbox/");
+  await page.goto("/abinzhao/playground/physics-sandbox/");
 
   await expect(page.getByText("实验运行中", { exact: true })).toBeVisible();
 
@@ -22,7 +22,7 @@ test.describe("减少动态效果", () => {
   test("物理沙盒提供可用的单步运行", async ({ browser }) => {
     const context = await browser.newContext({ reducedMotion: "reduce" });
     const page = await context.newPage();
-    await page.goto("/playground/physics-sandbox/");
+    await page.goto("/abinzhao/playground/physics-sandbox/");
 
     await expect(page.getByText("实验已暂停", { exact: true })).toBeVisible();
     const step = page.getByRole("button", { name: "运行一次" });

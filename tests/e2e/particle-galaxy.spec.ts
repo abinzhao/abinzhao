@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test("粒子银河支持暂停和重置", async ({ page }) => {
-  await page.goto("/playground/particle-galaxy/");
+  await page.goto("/abinzhao/playground/particle-galaxy/");
 
   await expect(page.getByText("实验运行中", { exact: true })).toBeVisible();
 

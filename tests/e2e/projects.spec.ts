@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test("项目可筛选、深链且空分类有明确状态", async ({ page }) => {
-  await page.goto("/projects/");
+  await page.goto("/abinzhao/projects/");
 
   const harmonyFilter = page.getByRole("button", { name: "鸿蒙" });
   await expect
@@ -14,11 +14,11 @@ test("项目可筛选、深链且空分类有明确状态", async ({ page }) => 
   await expect(page.getByText("HarmonyOS Next 开发知识库")).toBeVisible();
   await expect(page.getByText("CPS 图片压缩工具")).toBeHidden();
 
-  await page.goto("/projects/?category=backend");
+  await page.goto("/abinzhao/projects/?category=backend");
   await expect(page.getByText("CPS 图片压缩工具")).toBeVisible();
   await expect(page.getByText("HarmonyOS Next 开发知识库")).toBeHidden();
 
-  await page.goto("/projects/?category=experiment");
+  await page.goto("/abinzhao/projects/?category=experiment");
   await expect(page.getByText("该分类暂无公开项目")).toBeVisible();
 });
 
@@ -28,11 +28,11 @@ test("无 JavaScript 时所有公开项目与详情链接仍可用", async ({
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
 
-  await page.goto("/projects/?category=harmonyos");
+  await page.goto("/abinzhao/projects/?category=harmonyos");
   await expect(page.locator("[data-project-category]")).toHaveCount(5);
   await expect(
     page.getByRole("link", { name: /查看项目：HarmonyOS Next 开发知识库/ }),
-  ).toHaveAttribute("href", "/projects/harmony-next-blog/");
+  ).toHaveAttribute("href", "/abinzhao/projects/harmony-next-blog/");
 
   await context.close();
 });
@@ -40,7 +40,7 @@ test("无 JavaScript 时所有公开项目与详情链接仍可用", async ({
 test("项目详情只展示真实字段并输出 SoftwareSourceCode JSON-LD", async ({
   page,
 }) => {
-  await page.goto("/projects/harmony-next-blog/");
+  await page.goto("/abinzhao/projects/harmony-next-blog/");
 
   await expect(
     page.getByRole("heading", { name: "HarmonyOS Next 开发知识库" }),
@@ -63,18 +63,18 @@ test("项目详情只展示真实字段并输出 SoftwareSourceCode JSON-LD", as
 });
 
 test("旧项目链接提供 canonical、可见说明和手动跳转", async ({ request }) => {
-  const response = await request.get("/work/harmony-next-blog/");
+  const response = await request.get("/abinzhao/work/harmony-next-blog/");
   const html = await response.text();
 
   expect(response.ok()).toBe(true);
   expect(html).toContain(
-    '<link rel="canonical" href="https://abinzhao.github.io/projects/harmony-next-blog/">',
+    '<link rel="canonical" href="https://abinzhao.github.io/abinzhao/projects/harmony-next-blog/">',
   );
   expect(html).toContain(
-    '<meta http-equiv="refresh" content="0;url=/projects/harmony-next-blog/">',
+    '<meta http-equiv="refresh" content="0;url=/abinzhao/projects/harmony-next-blog/">',
   );
   expect(html).toContain("<h1>页面已迁移</h1>");
   expect(html).toContain(
-    '<a href="/projects/harmony-next-blog/">立即跳转</a>',
+    '<a href="/abinzhao/projects/harmony-next-blog/">立即跳转</a>',
   );
 });

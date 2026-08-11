@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from "astro:content";
+import { withBase } from "@/lib/site";
 
 interface Props {
   previous?: CollectionEntry<"blog">;
@@ -13,7 +14,7 @@ const { previous, next } = Astro.props;
   (previous || next) && (
     <nav class="article-pager" aria-label="文章翻页">
       {previous ? (
-        <a href={`/blog/${previous.data.slug}/`}>
+        <a href={withBase(`/blog/${previous.data.slug}/`)}>
           <span>上一篇</span>
           <strong>{previous.data.title}</strong>
         </a>
@@ -21,7 +22,7 @@ const { previous, next } = Astro.props;
         <span />
       )}
       {next && (
-        <a href={`/blog/${next.data.slug}/`}>
+        <a href={withBase(`/blog/${next.data.slug}/`)}>
           <span>下一篇</span>
           <strong>{next.data.title}</strong>
         </a>

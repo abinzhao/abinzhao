@@ -1,6 +1,7 @@
 ---
 import type { CollectionEntry } from "astro:content";
 import { projectCategoryLabels } from "@/lib/content";
+import { withBase } from "@/lib/site";
 
 interface Props {
   projects: CollectionEntry<"projects">[];
@@ -33,7 +34,7 @@ const { projects } = Astro.props;
               {projectCategoryLabels[project.data.category]}
             </p>
             <h3>
-              <a href={`/projects/${project.data.slug}/`}>
+              <a href={withBase(`/projects/${project.data.slug}/`)}>
                 {project.data.title}
               </a>
             </h3>
@@ -44,7 +45,7 @@ const { projects } = Astro.props;
           </ul>
           <a
             class="home-project__arrow"
-            href={`/projects/${project.data.slug}/`}
+            href={withBase(`/projects/${project.data.slug}/`)}
             aria-label={`查看项目：${project.data.title}`}
           >
             ↗
@@ -54,5 +55,5 @@ const { projects } = Astro.props;
     }
   </div>
 
-  <a class="home-text-link" href="/projects/">查看全部项目 <span>→</span></a>
+  <a class="home-text-link" href={withBase("/projects/")}>查看全部项目 <span>→</span></a>
 </section>

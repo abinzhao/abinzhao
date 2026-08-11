@@ -1,11 +1,12 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import { withBase } from "@/lib/site";
 
 const recoveryLinks = [
-  { href: "/", label: "首页" },
-  { href: "/projects/", label: "项目" },
-  { href: "/blog/", label: "博客" },
-  { href: "/playground/", label: "实验室" },
+  { href: withBase("/"), label: "首页" },
+  { href: withBase("/projects/"), label: "项目" },
+  { href: withBase("/blog/"), label: "博客" },
+  { href: withBase("/playground/"), label: "实验室" },
 ] as const;
 ---
 

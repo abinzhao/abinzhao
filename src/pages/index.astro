@@ -7,6 +7,7 @@ import PlaygroundPreview from "@/components/home/PlaygroundPreview.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { sortProjects } from "@/lib/content";
 import { buildPersonJsonLd } from "@/lib/seo";
+import { withBase } from "@/lib/site";
 import "@/styles/home.css";
 
 const projects = sortProjects(
@@ -47,6 +48,6 @@ const personJsonLd = buildPersonJsonLd();
     <p>
       这里收集的是公开项目、技术文章和持续进行的实验。关于我如何思考、构建和保持好奇，可以从下一页继续。
     </p>
-    <a href="/about/">认识赵建斌 <span aria-hidden="true">→</span></a>
+    <a href={withBase("/about/")}>认识赵建斌 <span aria-hidden="true">→</span></a>
   </section>
 </BaseLayout>

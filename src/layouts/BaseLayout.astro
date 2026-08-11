@@ -3,7 +3,7 @@ import BackToTop from "@/components/global/BackToTop.astro";
 import Footer from "@/components/global/Footer.astro";
 import SiteHeader from "@/components/global/SiteHeader.astro";
 import { buildCanonical } from "@/lib/seo";
-import { site } from "@/lib/site";
+import { site, withoutBase, withBase } from "@/lib/site";
 import "@/styles/base.css";
 import "@/styles/components.css";
 import "@/styles/tokens.css";
@@ -19,8 +19,8 @@ interface Props {
 const {
   title = site.title,
   description = site.description,
-  canonicalPath = Astro.url.pathname,
-  image = "/og-default.svg",
+  canonicalPath = withoutBase(Astro.url.pathname),
+  image = withBase("/og-default.svg"),
   jsonLd,
 } = Astro.props;
 const canonical = buildCanonical(site.url, canonicalPath);
@@ -35,7 +35,7 @@ const socialImage = new URL(image, site.url).toString();
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" href={withBase("/favicon.ico")} sizes="any" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={site.name} />
     <meta property="og:title" content={title} />

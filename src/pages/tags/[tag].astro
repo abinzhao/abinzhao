@@ -2,6 +2,7 @@
 import { getCollection, type CollectionEntry } from "astro:content";
 import BlogCard from "@/components/blog/BlogCard.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import { withBase } from "@/lib/site";
 import "@/styles/blog.css";
 
 export async function getStaticPaths() {
@@ -35,7 +36,7 @@ const { tag, entries }: Props = Astro.props;
   <header class="blog-page-header">
     <p class="blog-eyebrow">TAG ARCHIVE</p>
     <h1>标签：{tag}</h1>
-    <a href="/tags/">← 全部标签</a>
+    <a href={withBase("/tags/")}>← 全部标签</a>
   </header>
 
   <section class="blog-list tag-articles" aria-label={`${tag} 标签文章`}>

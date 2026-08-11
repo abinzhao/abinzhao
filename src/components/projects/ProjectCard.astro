@@ -1,6 +1,7 @@
 ---
 import type { CollectionEntry } from "astro:content";
 import { projectCategoryLabels } from "@/lib/content";
+import { withBase } from "@/lib/site";
 
 interface Props {
   project: CollectionEntry<"projects">;
@@ -27,7 +28,7 @@ const { title, slug, summary, category, tags, repositoryUrl } = project.data;
   <div class="project-card__actions">
     <a
       class="project-card__primary-link"
-      href={`/projects/${slug}/`}
+      href={withBase(`/projects/${slug}/`)}
       aria-label={`查看项目：${title}`}
     >
       查看项目

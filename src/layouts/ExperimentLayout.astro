@@ -2,6 +2,7 @@
 import type { CollectionEntry } from "astro:content";
 import ExperimentShell from "@/components/playground/ExperimentShell.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import { withBase } from "@/lib/site";
 import "@/styles/playground.css";
 
 interface Props {
@@ -19,7 +20,7 @@ const { title, slug, description, tech, githubUrl } = experiment.data;
 >
   <article class="experiment-detail">
     <header class="experiment-detail__header">
-      <a class="experiment-detail__back" href="/playground/">
+      <a class="experiment-detail__back" href={withBase("/playground/")}>
         ← 返回实验列表
       </a>
       <p class="experiment-detail__eyebrow">PLAYGROUND / {slug}</p>

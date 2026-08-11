@@ -1,6 +1,6 @@
 const robots = `User-agent: *
 Allow: /
-Sitemap: https://abinzhao.github.io/sitemap-index.xml
+Sitemap: https://abinzhao.github.io/abinzhao/sitemap-index.xml
 `;
 
 export function GET() {

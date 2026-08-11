@@ -1,3 +1,7 @@
+---
+import { withBase } from "@/lib/site";
+---
+
 <section
   class="hero"
   id="hero"
@@ -15,8 +19,8 @@
       构建前端、鸿蒙与跨端体验，也把技术实验、生活观察和没做完的好奇心留在这里。
     </p>
     <div class="hero__actions">
-      <a class="hero__primary-action" href="/projects/">查看项目</a>
-      <a class="hero__secondary-action" href="/playground/">进入实验室</a>
+      <a class="hero__primary-action" href={withBase("/projects/")}>查看项目</a>
+      <a class="hero__secondary-action" href={withBase("/playground/")}>进入实验室</a>
     </div>
   </div>
 
@@ -32,10 +36,10 @@
 
   <span class="hero__sticker">BUILD · BREAK · LEARN</span>
   <nav class="hero__quick-links" aria-label="首页快速入口">
-    <a href="/about/">01 关于</a>
-    <a href="/projects/">02 项目</a>
-    <a href="/blog/">03 博客</a>
-    <a href="/playground/">04 实验室</a>
+    <a href={withBase("/about/")}>01 关于</a>
+    <a href={withBase("/projects/")}>02 项目</a>
+    <a href={withBase("/blog/")}>03 博客</a>
+    <a href={withBase("/playground/")}>04 实验室</a>
   </nav>
 </section>
 

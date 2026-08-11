@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from "astro:content";
+import { withBase } from "@/lib/site";
 
 interface Props {
   experiments: CollectionEntry<"playground">[];
@@ -32,7 +33,7 @@ const { experiments } = Astro.props;
           <div class="home-experiment__body">
             <p>{String(index + 1).padStart(2, "0")} / EXPERIMENT</p>
             <h3>
-              <a href={`/playground/${experiment.data.slug}/`}>
+              <a href={withBase(`/playground/${experiment.data.slug}/`)}>
                 {experiment.data.title}
               </a>
             </h3>
@@ -46,5 +47,5 @@ const { experiments } = Astro.props;
     }
   </div>
 
-  <a class="home-text-link" href="/playground/">进入实验室 <span>→</span></a>
+  <a class="home-text-link" href={withBase("/playground/")}>进入实验室 <span>→</span></a>
 </section>

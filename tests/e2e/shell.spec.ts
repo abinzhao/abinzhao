@@ -1,12 +1,12 @@
 import { expect, test } from "@playwright/test";
 
 test("全局壳输出品牌、SEO 和可访问导航", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/abinzhao/");
 
   await expect(page).toHaveTitle("ZJB.DEV｜赵建斌的数字实验室");
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
     "href",
-    "https://abinzhao.github.io/",
+    "https://abinzhao.github.io/abinzhao/",
   );
   await expect(page.getByRole("link", { name: "跳到主要内容" })).toHaveAttribute(
     "href",
@@ -18,7 +18,7 @@ test("全局壳输出品牌、SEO 和可访问导航", async ({ page }) => {
 });
 
 test("主题选择持久化且存储失败时仍可切换", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/abinzhao/");
 
   const toggle = page.getByRole("button", { name: /切换到.+模式/ });
   await toggle.click();
@@ -45,7 +45,7 @@ test("主题选择持久化且存储失败时仍可切换", async ({ page }) => 
 
 test("移动菜单支持按钮、链接和 Escape 关闭", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
+  await page.goto("/abinzhao/");
 
   const menu = page.locator("[data-menu-toggle]");
   await expect(menu).toHaveAttribute("aria-label", "打开菜单");
@@ -79,7 +79,7 @@ test("移动菜单支持按钮、链接和 Escape 关闭", async ({ page }) => {
 
 test("菜单关闭时 Escape 不改变当前焦点", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
+  await page.goto("/abinzhao/");
 
   const brand = page.getByRole("link", { name: "ZJB.DEV 首页" });
   await brand.focus();
@@ -89,7 +89,7 @@ test("菜单关闭时 Escape 不改变当前焦点", async ({ page }) => {
 });
 
 test("Header 滚动态和返回顶部可用", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/abinzhao/");
   await page.evaluate(() => {
     document.body.style.minHeight = "250vh";
     window.scrollTo(0, window.innerHeight + 100);

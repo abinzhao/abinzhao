@@ -10,7 +10,7 @@ async function expectNoHorizontalOverflow(page: Page) {
 
 test("首页展示品牌、Slogan 与四个主入口", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/");
+  await page.goto("/abinzhao/");
 
   await expect(page).toHaveTitle("ZJB.DEV｜赵建斌的数字实验室");
   await expect(page.getByRole("link", { name: "ZJB.DEV 首页" })).toBeVisible();
@@ -33,7 +33,7 @@ test("博客详情不加载首页与实验场景资源", async ({ page }) => {
     }
   });
 
-  await page.goto("/blog/harmonyos-next-learning-path/");
+  await page.goto("/abinzhao/blog/harmonyos-next-learning-path/");
   await page.waitForLoadState("networkidle");
 
   expect(scriptRequests.join("\n")).not.toMatch(
@@ -42,7 +42,7 @@ test("博客详情不加载首页与实验场景资源", async ({ page }) => {
 });
 
 test("favicon 资源可正常访问", async ({ request }) => {
-  const response = await request.get("/favicon.ico");
+  const response = await request.get("/abinzhao/favicon.ico");
 
   expect(
     response.ok(),
@@ -54,7 +54,7 @@ test("favicon 资源可正常访问", async ({ request }) => {
 });
 
 test("全站核心页面在三档视口下无横向溢出", async ({ page }) => {
-  const routes = ["/", "/projects/", "/blog/", "/playground/", "/about/"];
+  const routes = ["/abinzhao/", "/abinzhao/projects/", "/abinzhao/blog/", "/abinzhao/playground/", "/abinzhao/about/"];
   const viewports = [
     { width: 1440, height: 900 },
     { width: 900, height: 900 },
@@ -72,7 +72,7 @@ test("全站核心页面在三档视口下无横向溢出", async ({ page }) => 
 
 test("390px 菜单可打开且核心触控目标不小于 44px", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
+  await page.goto("/abinzhao/");
 
   const menu = page.locator("[data-menu-toggle]");
   const mobileNavigation = page.getByLabel("移动端主导航");
@@ -91,7 +91,7 @@ test("reduced-motion 首页保留静态 fallback 且不创建 Three.js Canvas", 
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/abinzhao/");
 
   await expect(page.locator(".hero__fallback")).toBeVisible();
   await expect(page.locator("[data-hero-scene]")).toHaveCount(0);
@@ -104,19 +104,19 @@ test("reduced-motion 首页保留静态 fallback 且不创建 Three.js Canvas", 
 test("联系兼容路由跳转到 About 联系区或提供可用迁移入口", async ({
   page,
 }) => {
-  await page.goto("/contact/");
+  await page.goto("/abinzhao/contact/");
 
   await page
     .waitForURL(/\/about\/#contact$/, { timeout: 2_000 })
     .catch(() => undefined);
-  if (new URL(page.url()).pathname === "/contact/") {
+  if (new URL(page.url()).pathname === "/abinzhao/contact/") {
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
-      "https://abinzhao.github.io/about/",
+      "https://abinzhao.github.io/abinzhao/about/",
     );
     await expect(page.getByRole("link", { name: "立即跳转" })).toHaveAttribute(
       "href",
-      "/about/#contact",
+      "/abinzhao/about/#contact",
     );
     return;
   }

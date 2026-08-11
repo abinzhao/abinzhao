@@ -16,7 +16,7 @@
 
 ## 公开站点
 
-[https://abinzhao.github.io](https://abinzhao.github.io)
+[https://abinzhao.github.io/abinzhao/](https://abinzhao.github.io/abinzhao/)
 
 ## 验证
 

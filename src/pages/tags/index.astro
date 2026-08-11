@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import { withBase } from "@/lib/site";
 import "@/styles/blog.css";
 
 const entries = await getCollection("blog", ({ data }) => !data.draft);
@@ -23,14 +24,14 @@ const tags = [...counts.entries()].sort(([a], [b]) =>
   <header class="blog-page-header">
     <p class="blog-eyebrow">TAGS</p>
     <h1>文章标签</h1>
-    <a href="/blog/">← 返回博客</a>
+    <a href={withBase("/blog/")}>← 返回博客</a>
   </header>
 
   <ul class="tag-index" aria-label="全部文章标签">
     {
       tags.map(([tag, count]) => (
         <li>
-          <a href={`/tags/${encodeURIComponent(tag)}/`}>
+          <a href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>
             <strong>{tag}</strong>
             <span>{count} 篇</span>
           </a>

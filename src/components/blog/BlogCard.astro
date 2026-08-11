@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from "astro:content";
+import { withBase } from "@/lib/site";
 
 interface Props {
   entry: CollectionEntry<"blog">;
@@ -32,14 +33,14 @@ const formattedDate = new Intl.DateTimeFormat("zh-CN", {
     {
       tags.map((tag) => (
         <li>
-          <a href={`/tags/${encodeURIComponent(tag)}/`}>{tag}</a>
+          <a href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>{tag}</a>
         </li>
       ))
     }
   </ul>
   <a
     class="blog-card__link"
-    href={`/blog/${slug}/`}
+    href={withBase(`/blog/${slug}/`)}
     aria-label={`阅读文章：${title}`}
   >
     阅读文章

@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from "astro:content";
+import { withBase } from "@/lib/site";
 
 interface Props {
   entries: CollectionEntry<"blog">[];
@@ -39,12 +40,14 @@ const dateFormatter = new Intl.DateTimeFormat("zh-CN", {
             </time>
           </div>
           <h3>
-            <a href={`/blog/${entry.data.slug}/`}>{entry.data.title}</a>
+            <a href={withBase(`/blog/${entry.data.slug}/`)}>
+              {entry.data.title}
+            </a>
           </h3>
           <p>{entry.data.summary}</p>
           <a
             class="home-post__link"
-            href={`/blog/${entry.data.slug}/`}
+            href={withBase(`/blog/${entry.data.slug}/`)}
             aria-label={`阅读文章：${entry.data.title}`}
           >
             阅读文章 <span>→</span>
@@ -54,5 +57,5 @@ const dateFormatter = new Intl.DateTimeFormat("zh-CN", {
     }
   </div>
 
-  <a class="home-text-link" href="/blog/">浏览全部文章 <span>→</span></a>
+  <a class="home-text-link" href={withBase("/blog/")}>浏览全部文章 <span>→</span></a>
 </section>

@@ -4,6 +4,7 @@ import BlogCard from "@/components/blog/BlogCard.astro";
 import BlogFilters from "@/components/blog/BlogFilters.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getBlogFacets } from "@/lib/content";
+import { withBase } from "@/lib/site";
 import "@/styles/blog.css";
 
 const entries = (await getCollection("blog", ({ data }) => !data.draft)).sort(
@@ -22,9 +23,9 @@ const facets = getBlogFacets(entries);
     <h1>博客</h1>
     <p>记录技术实践、日常思考和动手折腾的过程。</p>
     <nav aria-label="博客辅助导航">
-      <a href="/blog/archive/">文章归档</a>
-      <a href="/tags/">全部标签</a>
-      <a href="/rss.xml">RSS</a>
+      <a href={withBase("/blog/archive/")}>文章归档</a>
+      <a href={withBase("/tags/")}>全部标签</a>
+      <a href={withBase("/rss.xml")}>RSS</a>
     </nav>
   </header>
 

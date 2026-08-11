@@ -9,6 +9,7 @@ import ArticleToc from "@/components/blog/ArticleToc.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getAdjacentEntries, getReadingMinutes } from "@/lib/content";
 import { buildBlogPostingJsonLd } from "@/lib/seo";
+import { withBase } from "@/lib/site";
 import "@/styles/blog.css";
 
 export async function getStaticPaths() {
@@ -61,7 +62,7 @@ const jsonLd = buildBlogPostingJsonLd({
 >
   <article class="article-detail">
     <header class="article-header">
-      <a class="article-header__back" href="/blog/">← 返回博客</a>
+      <a class="article-header__back" href={withBase("/blog/")}>← 返回博客</a>
       <p class="blog-eyebrow">
         {category}{subcategory ? ` / ${subcategory}` : ""}
       </p>
@@ -84,7 +85,9 @@ const jsonLd = buildBlogPostingJsonLd({
         {
           tags.map((tag) => (
             <li>
-              <a href={`/tags/${encodeURIComponent(tag)}/`}>{tag}</a>
+              <a href={withBase(`/tags/${encodeURIComponent(tag)}/`)}>
+                {tag}
+              </a>
             </li>
           ))
         }
