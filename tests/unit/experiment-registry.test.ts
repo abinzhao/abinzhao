@@ -63,6 +63,7 @@ function createController(): ExperimentController {
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
   IntersectionObserverStub.instances = [];
   document.body.innerHTML = "";
 });
@@ -90,6 +91,34 @@ describe("实验注册表", () => {
 });
 
 describe("实验运行时", () => {
+  it("减少动态效果时首次挂载即进入暂停状态", async () => {
+    vi.stubGlobal("IntersectionObserver", IntersectionObserverStub);
+    vi.stubGlobal(
+      "matchMedia",
+      vi.fn(
+        () =>
+          ({
+            matches: true,
+            addEventListener: vi.fn(),
+            removeEventListener: vi.fn(),
+          }) as unknown as MediaQueryList,
+      ),
+    );
+    const controller = createController();
+    const module: ExperimentModule = { mount: vi.fn(() => controller) };
+    const shell = createShell();
+    const runtime = createExperimentRuntime(shell, async () => module);
+
+    await runtime.start();
+
+    expect(controller.pause).toHaveBeenCalledTimes(1);
+    expect(controller.resume).not.toHaveBeenCalled();
+    expect(shell.dataset.state).toBe("paused");
+    expect(
+      shell.querySelector("[data-experiment-status]")?.textContent,
+    ).toBe("实验已暂停");
+  });
+
   it("根据视口、页面可见性和尺寸变化管理控制器", async () => {
     vi.stubGlobal("IntersectionObserver", IntersectionObserverStub);
     const controller = createController();

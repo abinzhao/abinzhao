@@ -39,4 +39,16 @@ describe("Verlet 物理逻辑", () => {
     expect(second).toEqual({ x: 15, y: 0 });
     expect(Math.hypot(second.x - first.x, second.y - first.y)).toBe(10);
   });
+
+  it("将完全重合的两个点沿确定轴对称分离", () => {
+    const [first, second] = constrainDistance(
+      { x: 3, y: 4 },
+      { x: 3, y: 4 },
+      10,
+    );
+
+    expect(Math.hypot(second.x - first.x, second.y - first.y)).toBe(10);
+    expect((first.x + second.x) / 2).toBe(3);
+    expect((first.y + second.y) / 2).toBe(4);
+  });
 });

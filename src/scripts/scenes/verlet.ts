@@ -41,7 +41,13 @@ export function constrainDistance(
   const deltaY = second.y - first.y;
   const distance = Math.hypot(deltaX, deltaY);
 
-  if (distance === 0) return [{ ...first }, { ...second }];
+  if (distance === 0) {
+    const halfDistance = targetDistance / 2;
+    return [
+      { x: first.x - halfDistance, y: first.y },
+      { x: second.x + halfDistance, y: second.y },
+    ];
+  }
 
   const correction = ((distance - targetDistance) / distance) * 0.5;
   const offsetX = deltaX * correction;

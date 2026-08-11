@@ -67,6 +67,7 @@ export function mount(
   const bodyCount = window.innerWidth < 768 ? 12 : 18;
   const targetFps = window.innerWidth < 768 ? 30 : profile.fps;
   const frameInterval = 1000 / targetFps;
+  const bodyShadowBlur = targetFps === 30 ? 0 : 14;
   const originalTouchAction = canvas.style.touchAction;
 
   const controlRoot = document.createElement("div");
@@ -190,7 +191,7 @@ export function mount(
       context.arc(body.x, body.y, body.radius, 0, Math.PI * 2);
       context.fillStyle = body.color;
       context.shadowColor = body.color;
-      context.shadowBlur = 14;
+      context.shadowBlur = bodyShadowBlur;
       context.fill();
     }
     context.shadowBlur = 0;

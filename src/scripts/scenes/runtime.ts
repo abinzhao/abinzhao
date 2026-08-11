@@ -51,6 +51,8 @@ export function createExperimentRuntime(
   }
 
   const retryControl = retryButton;
+  const reducedMotion =
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
   let controller: ExperimentController | null = null;
   let disposed = false;
   let inViewport = true;
@@ -75,6 +77,7 @@ export function createExperimentRuntime(
     if (!controller) return;
 
     const shouldPause =
+      reducedMotion ||
       manuallyPaused ||
       !inViewport ||
       document.visibilityState === "hidden";
@@ -107,6 +110,7 @@ export function createExperimentRuntime(
       controller = mountedController;
       setState("ready");
       if (
+        reducedMotion ||
         manuallyPaused ||
         !inViewport ||
         document.visibilityState === "hidden"

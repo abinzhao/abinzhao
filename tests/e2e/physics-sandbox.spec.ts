@@ -24,7 +24,7 @@ test.describe("减少动态效果", () => {
     const page = await context.newPage();
     await page.goto("/playground/physics-sandbox/");
 
-    await expect(page.getByText("实验运行中", { exact: true })).toBeVisible();
+    await expect(page.getByText("实验已暂停", { exact: true })).toBeVisible();
     const step = page.getByRole("button", { name: "运行一次" });
     await expect(step).toBeEnabled();
     await step.click();
