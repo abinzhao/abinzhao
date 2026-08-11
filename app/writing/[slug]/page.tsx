@@ -3,6 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import path from "node:path";
 import { MDXRemote } from "next-mdx-remote/rsc";
+import rehypeSlug from "rehype-slug";
+import { ArticleToc } from "@/components/ArticleToc";
+import { CodeBlock } from "@/components/CodeBlock";
+import { extractArticleHeadings } from "@/lib/article-presentation";
 import { parseArticleSource, readContentDirectory } from "@/lib/content";
 
 function getArticles() {
@@ -44,8 +48,14 @@ export default async function ArticleDetailPage({
     notFound();
   }
 
+  const headings = extractArticleHeadings(article.content);
+  const detailClassName =
+    headings.length >= 2
+      ? "detail-shell detail-shell--with-toc"
+      : "detail-shell";
+
   return (
-    <main className="detail-shell">
+    <main className={detailClassName}>
       <article>
         <Link className="text-link" href="/writing">
           返回文章
@@ -56,9 +66,14 @@ export default async function ArticleDetailPage({
         </p>
         <p>{article.meta.summary}</p>
         <div className="prose">
-          <MDXRemote source={article.content} />
+          <MDXRemote
+            source={article.content}
+            components={{ pre: CodeBlock }}
+            options={{ mdxOptions: { rehypePlugins: [rehypeSlug] } }}
+          />
         </div>
       </article>
+      <ArticleToc headings={headings} />
     </main>
   );
 }

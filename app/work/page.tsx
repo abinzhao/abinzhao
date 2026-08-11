@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import path from "node:path";
 import { ContentEmptyState } from "@/components/ContentEmptyState";
+import { GlassCard } from "@/components/GlassCard";
 import { parseProjectSource, readContentDirectory } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -25,13 +26,31 @@ export default function WorkPage() {
         </p>
       </header>
       {projects.length > 0 ? (
-        <div className="page-content content-list">
+        <div className="page-content project-grid">
           {projects.map(({ meta }) => (
-            <Link key={meta.slug} href={`/work/${meta.slug}`}>
-              <span>{meta.domains.join(" / ")}</span>
-              <h2>{meta.title}</h2>
-              <p>{meta.summary}</p>
-            </Link>
+            <GlassCard key={meta.slug} className="project-card">
+              <Link href={`/work/${meta.slug}`}>
+                <span className="project-card__domains">
+                  {meta.domains.join(" / ")}
+                </span>
+                <h2>{meta.title}</h2>
+                <p>{meta.summary}</p>
+                <dl className="project-card__meta">
+                  <div>
+                    <dt>职责</dt>
+                    <dd>{meta.role}</dd>
+                  </div>
+                  <div>
+                    <dt>状态</dt>
+                    <dd>{meta.status}</dd>
+                  </div>
+                  <div>
+                    <dt>时间</dt>
+                    <dd>{meta.period ?? "未公开"}</dd>
+                  </div>
+                </dl>
+              </Link>
+            </GlassCard>
           ))}
         </div>
       ) : (

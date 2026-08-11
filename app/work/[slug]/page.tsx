@@ -52,10 +52,11 @@ export default async function ProjectDetailPage({
         </Link>
         <h1>{project.meta.title}</h1>
         <p className="meta-line">
-          {project.meta.role} / {project.meta.status} /{" "}
+          职责：{project.meta.role} / 状态：{project.meta.status} / 时间：
+          {project.meta.period ?? "未公开"} / 方向：
           {project.meta.domains.join(" · ")}
         </p>
-        <p>{project.meta.summary}</p>
+        <p className="detail-summary">{project.meta.summary}</p>
         <div className="prose">
           <MDXRemote source={project.content} />
         </div>

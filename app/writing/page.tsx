@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import path from "node:path";
 import { ContentEmptyState } from "@/components/ContentEmptyState";
+import { WritingCollection } from "@/components/WritingCollection";
 import { parseArticleSource, readContentDirectory } from "@/lib/content";
 
 export const metadata: Metadata = {
@@ -28,15 +28,7 @@ export default function WritingPage() {
         </a>
       </header>
       {articles.length > 0 ? (
-        <div className="page-content editorial-list">
-          {articles.map(({ meta }) => (
-            <Link key={meta.slug} href={`/writing/${meta.slug}`}>
-              <time dateTime={meta.publishedAt}>{meta.publishedAt}</time>
-              <h2>{meta.title}</h2>
-              <p>{meta.summary}</p>
-            </Link>
-          ))}
-        </div>
+        <WritingCollection articles={articles.map(({ meta }) => meta)} />
       ) : (
         <ContentEmptyState
           title="文章正在整理"

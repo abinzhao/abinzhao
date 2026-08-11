@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GlassCard } from "@/components/GlassCard";
 import { profile } from "@/lib/profile";
 
 export const metadata: Metadata = {
@@ -28,40 +29,45 @@ export default function ContactPage() {
               <span>{link.description}</span>
             </a>
           ))}
-          <a href="/rss.xml">
+          <a aria-label="RSS" href="/rss.xml">
             <strong>RSS</strong>
             <span>订阅站内公开文章</span>
           </a>
         </div>
       </header>
 
-      <section className="page-content" aria-labelledby="contact-form-title">
-        <h2 id="contact-form-title">联系表单</h2>
-        <p>联系表单将在服务确认后开放。</p>
-        <form className="contact-form-preview">
-          <label>
-            称呼
-            <input disabled name="name" />
-          </label>
-          <label>
-            邮箱
-            <input disabled name="email" type="email" />
-          </label>
-          <label>
-            联系主题
-            <select disabled name="subject">
-              <option>请选择</option>
-            </select>
-          </label>
-          <label>
-            正文
-            <textarea disabled name="message" />
-          </label>
-          <button disabled type="submit">
-            暂未开放提交
-          </button>
-        </form>
-      </section>
+      <GlassCard className="page-content contact-panel">
+        <section aria-labelledby="contact-form-title">
+          <h2 id="contact-form-title">联系表单</h2>
+          <p id="contact-form-status">联系表单将在服务确认后开放。</p>
+          <form
+            aria-describedby="contact-form-status"
+            className="contact-form-preview"
+          >
+            <label>
+              称呼
+              <input disabled name="name" />
+            </label>
+            <label>
+              邮箱
+              <input disabled name="email" type="email" />
+            </label>
+            <label>
+              联系主题
+              <select disabled name="subject">
+                <option>请选择</option>
+              </select>
+            </label>
+            <label>
+              正文
+              <textarea disabled name="message" />
+            </label>
+            <button disabled type="submit">
+              暂未开放提交
+            </button>
+          </form>
+        </section>
+      </GlassCard>
     </main>
   );
 }
