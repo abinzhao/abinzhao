@@ -6,7 +6,7 @@ function pendingExperiment(slug: string): ExperimentLoader {
 }
 
 export const experimentLoaders = {
-  "particle-galaxy": pendingExperiment("particle-galaxy"),
+  "particle-galaxy": () => import("./particle-galaxy"),
   "shader-art": pendingExperiment("shader-art"),
   "physics-sandbox": pendingExperiment("physics-sandbox"),
 } as const satisfies Record<string, ExperimentLoader>;
