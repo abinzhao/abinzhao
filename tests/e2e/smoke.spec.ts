@@ -41,6 +41,18 @@ test("博客详情不加载首页与实验场景资源", async ({ page }) => {
   );
 });
 
+test("favicon 资源可正常访问", async ({ request }) => {
+  const response = await request.get("/favicon.ico");
+
+  expect(
+    response.ok(),
+    `GET /favicon.ico returned ${response.status()}`,
+  ).toBe(true);
+  expect(response.headers()["content-type"]).toMatch(
+    /^image\/(?:x-icon|vnd\.microsoft\.icon)(?:;|$)/,
+  );
+});
+
 test("全站核心页面在三档视口下无横向溢出", async ({ page }) => {
   const routes = ["/", "/projects/", "/blog/", "/playground/", "/about/"];
   const viewports = [
