@@ -22,11 +22,12 @@ describe("Astro 工程配置", () => {
     expect(tokens).toContain("@theme");
   });
 
-  it("迁移期间不收集根目录旧 Next.js 测试", () => {
+  it("单元测试不收集 E2E、依赖和构建产物", () => {
     const config = readFileSync("vitest.config.ts", "utf8");
 
-    expect(config).toContain('"tests/*.test.ts"');
-    expect(config).toContain('"tests/*.test.tsx"');
+    expect(config).toContain('"tests/e2e/**"');
+    expect(config).toContain('"node_modules/**"');
+    expect(config).toContain('"dist/**"');
   });
 
   it("类型检查排除 Astro 构建产物", () => {

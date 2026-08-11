@@ -33,7 +33,7 @@
 .hero::before {
   position: absolute;
   z-index: -2;
-  inset: 6% -8% 10% 47%;
+  inset: 6% max(-8%, calc((100vw - 100%) / -2)) 10% 47%;
   border-radius: 52% 48% 43% 57%;
   background:
     radial-gradient(circle at 53% 46%, color-mix(in srgb, var(--home-warm) 22%, transparent), transparent 31%),

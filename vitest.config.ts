@@ -11,8 +11,6 @@ export default defineConfig({
     environment: "node",
     exclude: [
       "tests/e2e/**",
-      "tests/*.test.ts",
-      "tests/*.test.tsx",
       "node_modules/**",
       "dist/**",
     ],

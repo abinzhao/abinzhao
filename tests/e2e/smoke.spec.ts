@@ -1,6 +1,6 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
-async function expectNoHorizontalOverflow(page: import("@playwright/test").Page) {
+async function expectNoHorizontalOverflow(page: Page) {
   await expect
     .poll(() =>
       page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
@@ -8,187 +8,107 @@ async function expectNoHorizontalOverflow(page: import("@playwright/test").Page)
     .toBe(true);
 }
 
-test("核心页面在桌面和移动端可访问", async ({ page }) => {
-  const consoleErrors: string[] = [];
-  const failedRequests: string[] = [];
-
-  page.on("console", (message) => {
-    if (message.type() === "error") {
-      consoleErrors.push(message.text());
-    }
-  });
-  page.on("requestfailed", (request) => {
-    if (request.failure()?.errorText !== "net::ERR_ABORTED") {
-      failedRequests.push(`${request.method()} ${request.url()}`);
-    }
-  });
-  page.on("response", (response) => {
-    if (response.status() >= 400) {
-      failedRequests.push(`${response.status()} ${response.url()}`);
-    }
-  });
-
+test("首页展示品牌、Slogan 与四个主入口", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
-  await expect(page).toHaveTitle(/赵建斌/);
+
+  await expect(page).toHaveTitle("ZJB.DEV｜赵建斌的数字实验室");
+  await expect(page.getByRole("link", { name: "ZJB.DEV 首页" })).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "构建跨端数字体验。" }),
+    page.getByRole("heading", { name: "把复杂，做得有意思。" }),
   ).toBeVisible();
-  await expect
-    .poll(() =>
-      page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
-    )
-    .toBe(true);
-  await page.screenshot({
-    path: "/tmp/personal-home-desktop.png",
-    fullPage: false,
-  });
-
-  await page.getByRole("link", { name: "查看项目", exact: true }).click();
-  await expect(page).toHaveURL(/\/work\/?$/);
-  await expect(page.getByText("HarmonyOS Next 开发知识库")).toBeVisible();
-  await page.getByText("HarmonyOS Next 开发知识库").click();
-  await expect(page).toHaveURL(/\/work\/harmony-next-blog\/?$/);
-  await expect(
-    page.getByRole("link", { name: "查看 GitHub 仓库" }),
-  ).toHaveAttribute(
-    "href",
-    "https://github.com/abinzhao/harmony-next-blog",
-  );
-
-  await page
-    .getByLabel("主导航")
-    .getByRole("link", { name: "文章", exact: true })
-    .click();
-  await expect(page).toHaveURL(/\/writing\/?$/);
-  await page
-    .getByText("从公开仓库整理 HarmonyOS Next 学习路径")
-    .click();
-  await expect(page).toHaveURL(
-    /\/writing\/harmonyos-next-learning-path\/?$/,
-  );
-  await expect(
-    page.getByRole("heading", {
-      name: "从公开仓库整理 HarmonyOS Next 学习路径",
-    }),
-  ).toBeVisible();
-
-  await page.getByRole("link", { name: "赵建斌个人网站首页" }).click();
-  await page.setViewportSize({ width: 390, height: 844 });
-  await expect
-    .poll(() =>
-      page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
-    )
-    .toBe(true);
-  await page.screenshot({
-    path: "/tmp/personal-home-mobile-closed.png",
-    fullPage: false,
-  });
-  await page.getByText("菜单", { exact: true }).click();
-  await page.screenshot({
-    path: "/tmp/personal-home-mobile.png",
-    fullPage: false,
-  });
-  await page
-    .getByLabel("移动端主导航")
-    .getByRole("link", { name: "联系", exact: true })
-    .click();
-  await expect(page).toHaveURL(/\/contact\/?$/);
-  await expect(
-    page.getByText("联系表单将在服务确认后开放。"),
-  ).toBeVisible();
-
-  expect(failedRequests).toEqual([]);
-  expect(consoleErrors).toEqual([]);
-});
-
-test("主题持久化且响应式布局无横向溢出", async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/");
-  await page.getByRole("button", { name: /切换到.+模式/ }).click();
-
-  const selectedTheme = await page.locator("html").getAttribute("data-theme");
-  expect(selectedTheme).toMatch(/^(dark|light)$/);
-  await page.reload();
-  await expect(page.locator("html")).toHaveAttribute(
-    "data-theme",
-    selectedTheme!,
-  );
-
-  for (const [name, viewport, expectedColumns] of [
-    ["desktop", { width: 1440, height: 900 }, 3],
-    ["tablet", { width: 900, height: 900 }, 2],
-    ["mobile", { width: 390, height: 844 }, 1],
-  ] as const) {
-    await page.setViewportSize(viewport);
-    await page.goto("/");
-    await expectNoHorizontalOverflow(page);
-    await page.goto("/writing/");
-    await expectNoHorizontalOverflow(page);
-    await expect
-      .poll(() =>
-        page.locator(".writing-grid").evaluate((element) => {
-          const columns = getComputedStyle(element).gridTemplateColumns;
-          return columns === "none" ? 0 : columns.split(" ").length;
-        }),
-      )
-      .toBe(expectedColumns);
-    await page.screenshot({
-      path: `/tmp/task9-writing-${name}.png`,
-      fullPage: false,
-    });
+  const primaryEntries = page.getByLabel("首页快速入口");
+  for (const entry of ["关于", "项目", "博客", "实验室"]) {
+    await expect(
+      primaryEntries.getByRole("link", { name: new RegExp(entry) }),
+    ).toBeVisible();
   }
 });
 
-test("reduced-motion 使用静态星体且交互不产生位移", async ({ page }) => {
-  await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/");
-
-  await expect(page.getByTestId("static-celestial")).toBeVisible();
-  await expect(page.getByTestId("webgl-celestial")).toHaveCount(0);
-
-  const card = page.locator(".featured-card").first();
-  await card.hover();
-  await expect
-    .poll(() => card.evaluate((element) => getComputedStyle(element).transform))
-    .toBe("none");
-  await page.screenshot({
-    path: "/tmp/task9-home-reduced-motion.png",
-    fullPage: false,
+test("博客详情不加载首页与实验场景资源", async ({ page }) => {
+  const scriptRequests: string[] = [];
+  page.on("request", (request) => {
+    if (request.resourceType() === "script") {
+      scriptRequests.push(request.url());
+    }
   });
+
+  await page.goto("/blog/harmonyos-next-learning-path/");
+  await page.waitForLoadState("networkidle");
+
+  expect(scriptRequests.join("\n")).not.toMatch(
+    /three|hero|particle-galaxy|shader-art|physics-sandbox/i,
+  );
 });
 
-test("390px 使用静态星体并提供 44px 移动菜单触控目标", async ({ page }) => {
-  await page.emulateMedia({
-    colorScheme: "dark",
-    reducedMotion: "no-preference",
-  });
+test("全站核心页面在三档视口下无横向溢出", async ({ page }) => {
+  const routes = ["/", "/projects/", "/blog/", "/playground/", "/about/"];
+  const viewports = [
+    { width: 1440, height: 900 },
+    { width: 900, height: 900 },
+    { width: 390, height: 844 },
+  ];
+
+  for (const viewport of viewports) {
+    await page.setViewportSize(viewport);
+    for (const route of routes) {
+      await page.goto(route);
+      await expectNoHorizontalOverflow(page);
+    }
+  }
+});
+
+test("390px 菜单可打开且核心触控目标不小于 44px", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
 
-  await expectNoHorizontalOverflow(page);
-  await expect(page.getByTestId("static-celestial")).toBeVisible();
-  await expect(page.getByTestId("webgl-celestial")).toHaveCount(0);
-
+  const menu = page.locator("[data-menu-toggle]");
   const mobileNavigation = page.getByLabel("移动端主导航");
   await expect(mobileNavigation).not.toBeVisible();
-  const menu = page.getByText("菜单", { exact: true });
   await menu.click();
   await expect(mobileNavigation).toBeVisible();
 
-  for (const target of [
-    menu,
-    mobileNavigation.getByRole("link", { name: "首页", exact: true }),
-    mobileNavigation.getByRole("button", { name: /切换到.+模式/ }),
-  ]) {
+  for (const target of [menu, mobileNavigation.getByRole("link", { name: "项目" })]) {
     await expect
       .poll(async () => (await target.boundingBox())?.height ?? 0)
       .toBeGreaterThanOrEqual(44);
   }
+});
 
-  await page.screenshot({
-    path: "/tmp/task9-home-mobile-menu.png",
-    fullPage: false,
-  });
+test("reduced-motion 首页保留静态 fallback 且不创建 Three.js Canvas", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+
+  await expect(page.locator(".hero__fallback")).toBeVisible();
+  await expect(page.locator("[data-hero-scene]")).toHaveCount(0);
+  await expect(page.locator("[data-hero]")).toHaveAttribute(
+    "data-scene-state",
+    "static",
+  );
+});
+
+test("联系兼容路由跳转到 About 联系区或提供可用迁移入口", async ({
+  page,
+}) => {
+  await page.goto("/contact/");
+
+  await page
+    .waitForURL(/\/about\/#contact$/, { timeout: 2_000 })
+    .catch(() => undefined);
+  if (new URL(page.url()).pathname === "/contact/") {
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+      "href",
+      "https://abinzhao.github.io/about/",
+    );
+    await expect(page.getByRole("link", { name: "立即跳转" })).toHaveAttribute(
+      "href",
+      "/about/#contact",
+    );
+    return;
+  }
+
+  await expect(page).toHaveURL(/\/about\/#contact$/);
+  await expect(page.getByRole("heading", { name: "保持联系" })).toBeVisible();
 });

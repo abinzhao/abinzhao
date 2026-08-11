@@ -5,15 +5,6 @@
     "paths": { "@/*": ["src/*"] }
   },
   "exclude": [
-    "app",
-    "components",
-    "content",
-    "lib",
-    "tests/*.ts",
-    "tests/*.tsx",
-    "next-env.d.ts",
-    "next.config.ts",
-    ".next",
     "dist",
     "out"
   ]
