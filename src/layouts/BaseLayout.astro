@@ -1,0 +1,73 @@
+---
+import BackToTop from "@/components/global/BackToTop.astro";
+import Footer from "@/components/global/Footer.astro";
+import SiteHeader from "@/components/global/SiteHeader.astro";
+import { buildCanonical } from "@/lib/seo";
+import { site } from "@/lib/site";
+import "@/styles/base.css";
+import "@/styles/components.css";
+import "@/styles/tokens.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  canonicalPath?: string;
+  image?: string;
+  jsonLd?: Record<string, unknown>;
+}
+
+const {
+  title = site.title,
+  description = site.description,
+  canonicalPath = Astro.url.pathname,
+  image = "/og-default.png",
+  jsonLd,
+} = Astro.props;
+const canonical = buildCanonical(site.url, canonicalPath);
+const socialImage = new URL(image, site.url).toString();
+---
+
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={socialImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImage} />
+    {
+      jsonLd && (
+        <script
+          is:inline
+          type="application/ld+json"
+          set:html={JSON.stringify(jsonLd)}
+        />
+      )
+    }
+    <slot name="head" />
+    <script
+      is:inline
+      set:html={`(()=>{let s=null;try{s=localStorage.getItem("zjb-theme")}catch{}let d=false;try{d=matchMedia("(prefers-color-scheme: dark)").matches}catch{}document.documentElement.dataset.theme=s==="light"||s==="dark"?s:(d?"dark":"light")})()`}
+    />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">跳到主要内容</a>
+    <SiteHeader />
+    <main id="main-content">
+      <slot />
+    </main>
+    <Footer />
+    <BackToTop />
+    <slot name="scripts" />
+  </body>
+</html>

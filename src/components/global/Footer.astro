@@ -1,0 +1,24 @@
+---
+import { site } from "@/lib/site";
+---
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <p>
+      <strong>{site.name}</strong>
+      <span>{site.slogan}</span>
+    </p>
+    <nav aria-label="社交链接">
+      {
+        site.social.map((item) => (
+          <a href={item.href} rel="me noreferrer" target="_blank">
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+    <p class="site-footer__meta">
+      © {new Date().getFullYear()} {site.owner}。用好奇心、Astro 和 Three.js 构建。
+    </p>
+  </div>
+</footer>

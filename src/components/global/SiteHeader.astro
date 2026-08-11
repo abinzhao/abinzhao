@@ -1,0 +1,57 @@
+---
+import { site } from "@/lib/site";
+import BrandMark from "./BrandMark.astro";
+import ThemeToggle from "./ThemeToggle.astro";
+---
+
+<header class="site-header" data-site-header data-scrolled="false">
+  <div class="site-header__inner">
+    <BrandMark />
+
+    <nav class="desktop-navigation" aria-label="主导航">
+      {
+        site.navigation.map((item) => (
+          <a href={item.href} aria-current={Astro.url.pathname === item.href ? "page" : undefined}>
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="site-header__actions">
+      <ThemeToggle />
+      <button
+        class="menu-toggle"
+        type="button"
+        aria-label="打开菜单"
+        aria-controls="mobile-navigation"
+        aria-expanded="false"
+        data-menu-toggle
+      >
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </button>
+    </div>
+  </div>
+
+  <nav
+    class="mobile-navigation"
+    id="mobile-navigation"
+    aria-label="移动端主导航"
+    data-mobile-navigation
+  >
+    {
+      site.navigation.map((item) => (
+        <a href={item.href} aria-current={Astro.url.pathname === item.href ? "page" : undefined}>
+          {item.label}
+        </a>
+      ))
+    }
+  </nav>
+</header>
+
+<script>
+  import { initNavigation } from "@/scripts/navigation";
+
+  initNavigation();
+</script>
