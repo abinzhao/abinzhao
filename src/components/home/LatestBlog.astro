@@ -1,0 +1,58 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  entries: CollectionEntry<"blog">[];
+}
+
+const { entries } = Astro.props;
+const dateFormatter = new Intl.DateTimeFormat("zh-CN", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  timeZone: "UTC",
+});
+---
+
+<section
+  class="home-section home-blog"
+  id="latest-blog"
+  data-home-section
+  aria-labelledby="latest-blog-title"
+>
+  <header class="home-section__header">
+    <div>
+      <p class="home-kicker">FIELD NOTES / 02</p>
+      <h2 id="latest-blog-title">最新博客</h2>
+    </div>
+    <p>记录代码之外的判断过程：学到什么，为什么这样做，还有哪些问题没回答。</p>
+  </header>
+
+  <div class="home-blog__list">
+    {
+      entries.map((entry) => (
+        <article class="home-post" data-home-post>
+          <div class="home-post__meta">
+            <span>{entry.data.category}</span>
+            <time datetime={entry.data.date.toISOString()}>
+              {dateFormatter.format(entry.data.date)}
+            </time>
+          </div>
+          <h3>
+            <a href={`/blog/${entry.data.slug}/`}>{entry.data.title}</a>
+          </h3>
+          <p>{entry.data.summary}</p>
+          <a
+            class="home-post__link"
+            href={`/blog/${entry.data.slug}/`}
+            aria-label={`阅读文章：${entry.data.title}`}
+          >
+            阅读文章 <span>→</span>
+          </a>
+        </article>
+      ))
+    }
+  </div>
+
+  <a class="home-text-link" href="/blog/">浏览全部文章 <span>→</span></a>
+</section>

@@ -1,0 +1,50 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  experiments: CollectionEntry<"playground">[];
+}
+
+const { experiments } = Astro.props;
+---
+
+<section
+  class="home-section home-playground"
+  id="playground-preview"
+  data-home-section
+  aria-labelledby="playground-preview-title"
+>
+  <header class="home-section__header">
+    <div>
+      <p class="home-kicker">OPEN LAB / 03</p>
+      <h2 id="playground-preview-title">实验预览</h2>
+    </div>
+    <p>三个仍在生长的创意代码实验。先看原理和边界，再进入完整运行时。</p>
+  </header>
+
+  <div class="home-playground__grid">
+    {
+      experiments.map((experiment, index) => (
+        <article class="home-experiment" data-home-experiment>
+          <div class={`home-experiment__visual home-experiment__visual--${index + 1}`} aria-hidden="true">
+            <span></span>
+          </div>
+          <div class="home-experiment__body">
+            <p>{String(index + 1).padStart(2, "0")} / EXPERIMENT</p>
+            <h3>
+              <a href={`/playground/${experiment.data.slug}/`}>
+                {experiment.data.title}
+              </a>
+            </h3>
+            <p>{experiment.data.description}</p>
+            <ul aria-label="实验技术">
+              {experiment.data.tech.map((item) => <li>{item}</li>)}
+            </ul>
+          </div>
+        </article>
+      ))
+    }
+  </div>
+
+  <a class="home-text-link" href="/playground/">进入实验室 <span>→</span></a>
+</section>

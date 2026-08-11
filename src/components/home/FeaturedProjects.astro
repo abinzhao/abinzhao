@@ -1,0 +1,58 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { projectCategoryLabels } from "@/lib/content";
+
+interface Props {
+  projects: CollectionEntry<"projects">[];
+}
+
+const { projects } = Astro.props;
+---
+
+<section
+  class="home-section home-projects"
+  id="featured-projects"
+  data-home-section
+  aria-labelledby="featured-projects-title"
+>
+  <header class="home-section__header">
+    <div>
+      <p class="home-kicker">SELECTED WORK / 01</p>
+      <h2 id="featured-projects-title">精选项目</h2>
+    </div>
+    <p>从真实问题出发，把工程约束转化为清楚、可维护的产品体验。</p>
+  </header>
+
+  <div class="home-projects__list">
+    {
+      projects.map((project, index) => (
+        <article class="home-project" data-home-project>
+          <p class="home-project__index">{String(index + 1).padStart(2, "0")}</p>
+          <div class="home-project__body">
+            <p class="home-project__category">
+              {projectCategoryLabels[project.data.category]}
+            </p>
+            <h3>
+              <a href={`/projects/${project.data.slug}/`}>
+                {project.data.title}
+              </a>
+            </h3>
+            <p>{project.data.summary}</p>
+          </div>
+          <ul class="home-project__tags" aria-label="技术标签">
+            {project.data.tags.slice(0, 3).map((tag) => <li>{tag}</li>)}
+          </ul>
+          <a
+            class="home-project__arrow"
+            href={`/projects/${project.data.slug}/`}
+            aria-label={`查看项目：${project.data.title}`}
+          >
+            ↗
+          </a>
+        </article>
+      ))
+    }
+  </div>
+
+  <a class="home-text-link" href="/projects/">查看全部项目 <span>→</span></a>
+</section>
