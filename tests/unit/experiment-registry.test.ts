@@ -76,16 +76,15 @@ describe("实验注册表", () => {
     ]);
   });
 
-  it("粒子银河 loader 成功解析实验模块", async () => {
-    const module = await experimentLoaders["particle-galaxy"]();
+  it("已实现实验的 loader 成功解析实验模块", async () => {
+    for (const slug of ["particle-galaxy", "shader-art"] as const) {
+      const module = await experimentLoaders[slug]();
 
-    expect(module.mount).toBeTypeOf("function");
+      expect(module.mount).toBeTypeOf("function");
+    }
   });
 
-  it("未实现模块通过受控 loader 按各自标识明确拒绝", async () => {
-    await expect(experimentLoaders["shader-art"]()).rejects.toThrow(
-      "模块尚未实现：shader-art",
-    );
+  it("物理沙盒通过受控 loader 明确拒绝", async () => {
     await expect(experimentLoaders["physics-sandbox"]()).rejects.toThrow(
       "模块尚未实现：physics-sandbox",
     );
