@@ -17,14 +17,17 @@ export function initNavigation(
 
   pageDocument.documentElement.classList.add("navigation-ready");
 
-  const closeMenu = (): void => {
+  const setMenuOpen = (open: boolean): void => {
     if (!menuToggle || !mobileNavigation) {
       return;
     }
 
-    menuToggle.setAttribute("aria-expanded", "false");
-    mobileNavigation.hidden = true;
+    menuToggle.setAttribute("aria-expanded", String(open));
+    menuToggle.setAttribute("aria-label", open ? "关闭菜单" : "打开菜单");
+    mobileNavigation.hidden = !open;
   };
+
+  const closeMenu = (): void => setMenuOpen(false);
 
   const updateScrollState = (): void => {
     header?.setAttribute(
@@ -38,11 +41,10 @@ export function initNavigation(
   };
 
   if (menuToggle && mobileNavigation) {
-    mobileNavigation.hidden = true;
+    closeMenu();
     menuToggle.addEventListener("click", () => {
       const willOpen = menuToggle.getAttribute("aria-expanded") !== "true";
-      menuToggle.setAttribute("aria-expanded", String(willOpen));
-      mobileNavigation.hidden = !willOpen;
+      setMenuOpen(willOpen);
     });
 
     mobileNavigation.querySelectorAll("a").forEach((link) => {
@@ -50,7 +52,10 @@ export function initNavigation(
     });
 
     pageDocument.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") {
+      if (
+        event.key === "Escape" &&
+        menuToggle.getAttribute("aria-expanded") === "true"
+      ) {
         closeMenu();
         menuToggle.focus();
       }
