@@ -1,0 +1,44 @@
+---
+import { getCollection, type CollectionEntry } from "astro:content";
+import BlogCard from "@/components/blog/BlogCard.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import "@/styles/blog.css";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("blog", ({ data }) => !data.draft);
+  const tags = [...new Set(entries.flatMap(({ data }) => data.tags))];
+
+  return tags.map((tag) => ({
+    params: { tag: encodeURIComponent(tag) },
+    props: {
+      tag,
+      entries: entries
+        .filter(({ data }) => data.tags.includes(tag))
+        .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf()),
+    },
+  }));
+}
+
+interface Props {
+  tag: string;
+  entries: CollectionEntry<"blog">[];
+}
+
+const { tag, entries }: Props = Astro.props;
+---
+
+<BaseLayout
+  title={`${tag}｜文章标签｜ZJB.DEV`}
+  description={`浏览标签“${tag}”下的公开文章。`}
+  canonicalPath={`/tags/${encodeURIComponent(tag)}/`}
+>
+  <header class="blog-page-header">
+    <p class="blog-eyebrow">TAG ARCHIVE</p>
+    <h1>标签：{tag}</h1>
+    <a href="/tags/">← 全部标签</a>
+  </header>
+
+  <section class="blog-list tag-articles" aria-label={`${tag} 标签文章`}>
+    {entries.map((entry) => <BlogCard entry={entry} />)}
+  </section>
+</BaseLayout>

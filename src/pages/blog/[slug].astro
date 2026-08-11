@@ -1,0 +1,115 @@
+---
+import {
+  getCollection,
+  render,
+  type CollectionEntry,
+} from "astro:content";
+import ArticlePager from "@/components/blog/ArticlePager.astro";
+import ArticleToc from "@/components/blog/ArticleToc.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getAdjacentEntries, getReadingMinutes } from "@/lib/content";
+import { site } from "@/lib/site";
+import "@/styles/blog.css";
+
+export async function getStaticPaths() {
+  const entries = (await getCollection(
+    "blog",
+    ({ data }) => !data.draft,
+  )).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+  const sortableEntries = entries.map((entry) => ({
+    ...entry,
+    slug: entry.data.slug,
+  }));
+
+  return entries.map((entry) => ({
+    params: { slug: entry.data.slug },
+    props: {
+      entry,
+      adjacent: getAdjacentEntries(sortableEntries, entry.data.slug),
+    },
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<"blog">;
+  adjacent: {
+    previous?: CollectionEntry<"blog">;
+    next?: CollectionEntry<"blog">;
+  };
+}
+
+const { entry, adjacent }: Props = Astro.props;
+const { Content, headings } = await render(entry);
+const { title, slug, summary, date, updatedAt, category, subcategory, tags } =
+  entry.data;
+const readingMinutes = getReadingMinutes(entry.body ?? "");
+const articleUrl = new URL(`/blog/${slug}/`, site.url).toString();
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  headline: title,
+  description: summary,
+  url: articleUrl,
+  mainEntityOfPage: articleUrl,
+  datePublished: date.toISOString(),
+  ...(updatedAt ? { dateModified: updatedAt.toISOString() } : {}),
+  author: {
+    "@type": "Person",
+    name: site.owner,
+  },
+  keywords: tags,
+};
+---
+
+<BaseLayout
+  title={`${title}｜博客｜ZJB.DEV`}
+  description={summary}
+  canonicalPath={`/blog/${slug}/`}
+  jsonLd={jsonLd}
+>
+  <article class="article-detail">
+    <header class="article-header">
+      <a class="article-header__back" href="/blog/">← 返回博客</a>
+      <p class="blog-eyebrow">
+        {category}{subcategory ? ` / ${subcategory}` : ""}
+      </p>
+      <h1>{title}</h1>
+      <p class="article-header__summary">{summary}</p>
+      <div class="article-header__meta">
+        <time datetime={date.toISOString()}>
+          {
+            new Intl.DateTimeFormat("zh-CN", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+              timeZone: "UTC",
+            }).format(date)
+          }
+        </time>
+        <span>预计阅读 {readingMinutes} 分钟</span>
+      </div>
+      <ul class="article-tags" aria-label="文章标签">
+        {
+          tags.map((tag) => (
+            <li>
+              <a href={`/tags/${encodeURIComponent(tag)}/`}>{tag}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </header>
+
+    <div class="article-layout">
+      <div class="article-body">
+        <Content />
+      </div>
+      <ArticleToc headings={headings} />
+    </div>
+
+    <ArticlePager {...adjacent} />
+  </article>
+
+  <script>
+    import "@/scripts/article";
+  </script>
+</BaseLayout>

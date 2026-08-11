@@ -3,6 +3,19 @@ type ProjectEntry = {
   data: { featured: boolean; order: number; year?: number };
 };
 
+export type BlogCategory = "技术" | "随笔" | "折腾";
+
+type BlogEntry = {
+  data: {
+    date: Date;
+    category: string;
+    subcategory?: string;
+    tags: string[];
+  };
+};
+
+const blogCategoryOrder: BlogCategory[] = ["技术", "随笔", "折腾"];
+
 export const projectCategoryLabels = {
   web: "Web",
   backend: "后端",
@@ -33,6 +46,38 @@ export function sortProjects<T extends ProjectEntry>(entries: T[]): T[] {
       (b.data.year ?? 0) - (a.data.year ?? 0) ||
       a.slug.localeCompare(b.slug, "zh-CN"),
   );
+}
+
+export function getBlogFacets(entries: BlogEntry[]) {
+  const categories = new Set(entries.map(({ data }) => data.category));
+  const subcategories = new Set(
+    entries.flatMap(({ data }) =>
+      data.subcategory ? [data.subcategory] : [],
+    ),
+  );
+  const tags = new Set(entries.flatMap(({ data }) => data.tags));
+
+  return {
+    categories: blogCategoryOrder.filter((category) =>
+      categories.has(category),
+    ),
+    subcategories: [...subcategories].sort((a, b) =>
+      a.localeCompare(b, "zh-CN"),
+    ),
+    tags: [...tags].sort((a, b) => a.localeCompare(b, "zh-CN")),
+  };
+}
+
+export function groupBlogByMonth<T extends BlogEntry>(
+  entries: T[],
+): Record<string, T[]> {
+  return [...entries]
+    .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+    .reduce<Record<string, T[]>>((groups, entry) => {
+      const month = entry.data.date.toISOString().slice(0, 7);
+      (groups[month] ??= []).push(entry);
+      return groups;
+    }, {});
 }
 
 export function getReadingMinutes(text: string): number {

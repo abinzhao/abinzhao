@@ -1,0 +1,25 @@
+---
+import { getCollection } from "astro:content";
+import RedirectPage from "@/components/global/RedirectPage.astro";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("blog", ({ data }) => !data.draft);
+
+  return entries.map((entry) => ({
+    params: { slug: entry.data.slug },
+    props: {
+      to: `/blog/${entry.data.slug}/`,
+      label: entry.data.title,
+    },
+  }));
+}
+
+interface Props {
+  to: string;
+  label: string;
+}
+
+const { to, label }: Props = Astro.props;
+---
+
+<RedirectPage to={to} label={label} />

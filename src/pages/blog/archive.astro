@@ -1,0 +1,48 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { groupBlogByMonth } from "@/lib/content";
+import "@/styles/blog.css";
+
+const entries = await getCollection("blog", ({ data }) => !data.draft);
+const groups = groupBlogByMonth(entries);
+
+function formatMonth(month: string): string {
+  const [year, numericMonth] = month.split("-");
+  return `${year} 年 ${Number(numericMonth)} 月`;
+}
+---
+
+<BaseLayout
+  title="文章归档｜ZJB.DEV"
+  description="按年月浏览 ZJB.DEV 的公开文章。"
+  canonicalPath="/blog/archive/"
+>
+  <header class="blog-page-header">
+    <p class="blog-eyebrow">ARCHIVE</p>
+    <h1>文章归档</h1>
+    <a href="/blog/">← 返回博客</a>
+  </header>
+
+  <div class="archive-list">
+    {
+      Object.entries(groups).map(([month, posts]) => (
+        <section aria-labelledby={`archive-${month}`}>
+          <h2 id={`archive-${month}`}>
+            <time datetime={month}>{formatMonth(month)}</time>
+          </h2>
+          <ol>
+            {posts.map((post) => (
+              <li>
+                <time datetime={post.data.date.toISOString()}>
+                  {post.data.date.toISOString().slice(0, 10)}
+                </time>
+                <a href={`/blog/${post.data.slug}/`}>{post.data.title}</a>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ))
+    }
+  </div>
+</BaseLayout>

@@ -1,0 +1,31 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  previous?: CollectionEntry<"blog">;
+  next?: CollectionEntry<"blog">;
+}
+
+const { previous, next } = Astro.props;
+---
+
+{
+  (previous || next) && (
+    <nav class="article-pager" aria-label="文章翻页">
+      {previous ? (
+        <a href={`/blog/${previous.data.slug}/`}>
+          <span>上一篇</span>
+          <strong>{previous.data.title}</strong>
+        </a>
+      ) : (
+        <span />
+      )}
+      {next && (
+        <a href={`/blog/${next.data.slug}/`}>
+          <span>下一篇</span>
+          <strong>{next.data.title}</strong>
+        </a>
+      )}
+    </nav>
+  )
+}

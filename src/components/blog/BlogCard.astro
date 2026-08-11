@@ -1,0 +1,47 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  entry: CollectionEntry<"blog">;
+}
+
+const { entry } = Astro.props;
+const { title, slug, summary, date, category, subcategory, tags } = entry.data;
+const formattedDate = new Intl.DateTimeFormat("zh-CN", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+  timeZone: "UTC",
+}).format(date);
+---
+
+<article
+  class="blog-card"
+  data-blog-entry
+  data-blog-category={category}
+  data-blog-subcategory={subcategory}
+  data-blog-tags={JSON.stringify(tags)}
+>
+  <div class="blog-card__meta">
+    <span>{category}{subcategory ? ` / ${subcategory}` : ""}</span>
+    <time datetime={date.toISOString()}>{formattedDate}</time>
+  </div>
+  <h2>{title}</h2>
+  <p>{summary}</p>
+  <ul class="blog-card__tags" aria-label="文章标签">
+    {
+      tags.map((tag) => (
+        <li>
+          <a href={`/tags/${encodeURIComponent(tag)}/`}>{tag}</a>
+        </li>
+      ))
+    }
+  </ul>
+  <a
+    class="blog-card__link"
+    href={`/blog/${slug}/`}
+    aria-label={`阅读文章：${title}`}
+  >
+    阅读文章
+  </a>
+</article>

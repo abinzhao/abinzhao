@@ -1,0 +1,126 @@
+---
+import type { BlogCategory } from "@/lib/content";
+
+interface Props {
+  categories: BlogCategory[];
+  subcategories: string[];
+  tags: string[];
+}
+
+const { categories, subcategories, tags } = Astro.props;
+const dimensions = [
+  {
+    key: "category",
+    label: "按一级分类筛选",
+    options: categories,
+  },
+  {
+    key: "subcategory",
+    label: "按二级分类筛选",
+    options: subcategories,
+  },
+  {
+    key: "tag",
+    label: "按标签筛选",
+    options: tags,
+  },
+].filter(({ options }) => options.length > 1);
+---
+
+{
+  dimensions.length > 0 && (
+    <div class="blog-filters" data-blog-filters>
+      {dimensions.map(({ key, label, options }) => (
+        <div class="blog-filters__dimension">
+          <p id={`blog-filter-${key}`}>{label}</p>
+          <div
+            class="blog-filters__controls"
+            role="group"
+            aria-labelledby={`blog-filter-${key}`}
+          >
+            <button
+              type="button"
+              data-filter-key={key}
+              data-filter-value=""
+              aria-pressed="true"
+            >
+              全部
+            </button>
+            {options.map((option) => (
+              <button
+                type="button"
+                data-filter-key={key}
+                data-filter-value={option}
+                aria-pressed="false"
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+<script>
+  const roots = document.querySelectorAll<HTMLElement>("[data-blog-filters]");
+
+  for (const root of roots) {
+    const buttons = Array.from(
+      root.querySelectorAll<HTMLButtonElement>("[data-filter-key]"),
+    );
+    const entries = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-blog-entry]"),
+    );
+    const emptyState = document.querySelector<HTMLElement>("[data-blog-empty]");
+
+    const applyFilters = () => {
+      const params = new URL(window.location.href).searchParams;
+      let visibleCount = 0;
+
+      for (const entry of entries) {
+        const tags = JSON.parse(entry.dataset.blogTags ?? "[]") as string[];
+        const visible =
+          (!params.get("category") ||
+            entry.dataset.blogCategory === params.get("category")) &&
+          (!params.get("subcategory") ||
+            entry.dataset.blogSubcategory === params.get("subcategory")) &&
+          (!params.get("tag") || tags.includes(params.get("tag") ?? ""));
+        entry.hidden = !visible;
+        visibleCount += Number(visible);
+      }
+
+      if (emptyState) {
+        emptyState.hidden = visibleCount > 0;
+      }
+
+      for (const button of buttons) {
+        const key = button.dataset.filterKey ?? "";
+        const value = button.dataset.filterValue ?? "";
+        button.setAttribute(
+          "aria-pressed",
+          String((params.get(key) ?? "") === value),
+        );
+      }
+    };
+
+    for (const button of buttons) {
+      button.addEventListener("click", () => {
+        const key = button.dataset.filterKey ?? "";
+        const value = button.dataset.filterValue ?? "";
+        const url = new URL(window.location.href);
+        if (value) {
+          url.searchParams.set(key, value);
+        } else {
+          url.searchParams.delete(key);
+        }
+        window.history.pushState({}, "", url);
+        applyFilters();
+      });
+    }
+
+    window.addEventListener("popstate", applyFilters);
+    applyFilters();
+  }
+</script>
