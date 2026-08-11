@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title description">
+  <title id="title">ZJB.DEV</title>
+  <desc id="description">把复杂，做得有意思。</desc>
+  <defs>
+    <radialGradient id="signal" cx="78%" cy="22%" r="70%">
+      <stop offset="0" stop-color="#7c6dff" stop-opacity=".42"/>
+      <stop offset=".52" stop-color="#ff7653" stop-opacity=".12"/>
+      <stop offset="1" stop-color="#080914" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="orbit" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#f5cf64"/>
+      <stop offset="1" stop-color="#ff7653"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#080914"/>
+  <rect width="1200" height="630" fill="url(#signal)"/>
+  <g fill="none" stroke="#f4f2ff" stroke-opacity=".13">
+    <path d="M72 92h1056M72 538h1056"/>
+    <path d="M176 52v526M1024 52v526"/>
+  </g>
+  <g transform="translate(930 182)">
+    <ellipse rx="148" ry="54" fill="none" stroke="url(#orbit)" stroke-width="3" transform="rotate(-18)"/>
+    <circle r="42" fill="#010106" stroke="#7c6dff" stroke-opacity=".7"/>
+    <circle cx="128" cy="-44" r="8" fill="#f5cf64"/>
+  </g>
+  <circle cx="176" cy="132" r="8" fill="#ff7653"/>
+  <text x="176" y="322" fill="#f4f2ff" font-family="Inter,Arial,sans-serif" font-size="112" font-weight="800" letter-spacing="-5">ZJB.DEV</text>
+  <text x="180" y="394" fill="#b5b1c8" font-family="Inter,Arial,sans-serif" font-size="32" font-weight="500">把复杂，做得有意思。</text>
+  <text x="180" y="496" fill="#ff7653" font-family="monospace" font-size="18" letter-spacing="4">PROJECTS · WRITING · PLAYGROUND</text>
+</svg>

@@ -8,7 +8,7 @@ import ArticlePager from "@/components/blog/ArticlePager.astro";
 import ArticleToc from "@/components/blog/ArticleToc.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getAdjacentEntries, getReadingMinutes } from "@/lib/content";
-import { site } from "@/lib/site";
+import { buildBlogPostingJsonLd } from "@/lib/seo";
 import "@/styles/blog.css";
 
 export async function getStaticPaths() {
@@ -43,22 +43,14 @@ const { Content, headings } = await render(entry);
 const { title, slug, summary, date, updatedAt, category, subcategory, tags } =
   entry.data;
 const readingMinutes = getReadingMinutes(entry.body ?? "");
-const articleUrl = new URL(`/blog/${slug}/`, site.url).toString();
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "BlogPosting",
-  headline: title,
-  description: summary,
-  url: articleUrl,
-  mainEntityOfPage: articleUrl,
-  datePublished: date.toISOString(),
-  ...(updatedAt ? { dateModified: updatedAt.toISOString() } : {}),
-  author: {
-    "@type": "Person",
-    name: site.owner,
-  },
-  keywords: tags,
-};
+const jsonLd = buildBlogPostingJsonLd({
+  title,
+  summary,
+  path: `/blog/${slug}/`,
+  date,
+  updatedAt,
+  tags,
+});
 ---
 
 <BaseLayout

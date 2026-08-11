@@ -20,7 +20,7 @@ const {
   title = site.title,
   description = site.description,
   canonicalPath = Astro.url.pathname,
-  image = "/og-default.png",
+  image = "/og-default.svg",
   jsonLd,
 } = Astro.props;
 const canonical = buildCanonical(site.url, canonicalPath);

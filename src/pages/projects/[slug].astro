@@ -2,7 +2,7 @@
 import { getCollection, render, type CollectionEntry } from "astro:content";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { projectCategoryLabels } from "@/lib/content";
-import { site } from "@/lib/site";
+import { buildProjectJsonLd } from "@/lib/seo";
 import "@/styles/projects.css";
 
 export async function getStaticPaths() {
@@ -40,18 +40,15 @@ const statusLabels = {
   ongoing: "持续维护",
   archived: "已归档",
 } as const;
-const projectUrl = new URL(`/projects/${slug}/`, site.url).toString();
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "SoftwareSourceCode",
-  name: title,
-  description: summary,
-  url: projectUrl,
-  codeRepository: repositoryUrl,
-  applicationCategory: projectCategoryLabels[category],
-  keywords: tags,
-  ...(year ? { dateCreated: String(year) } : {}),
-};
+const jsonLd = buildProjectJsonLd({
+  title,
+  summary,
+  path: `/projects/${slug}/`,
+  repositoryUrl,
+  category: projectCategoryLabels[category],
+  tags,
+  year,
+});
 ---
 
 <BaseLayout

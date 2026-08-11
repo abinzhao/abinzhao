@@ -6,7 +6,7 @@ import LatestBlog from "@/components/home/LatestBlog.astro";
 import PlaygroundPreview from "@/components/home/PlaygroundPreview.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { sortProjects } from "@/lib/content";
-import { site } from "@/lib/site";
+import { buildPersonJsonLd } from "@/lib/seo";
 import "@/styles/home.css";
 
 const projects = sortProjects(
@@ -28,13 +28,7 @@ const experiments = (
   )
   .slice(0, 3);
 
-const personJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Person",
-  name: site.owner,
-  url: site.url,
-  sameAs: site.social.map(({ href }) => href),
-};
+const personJsonLd = buildPersonJsonLd();
 ---
 
 <BaseLayout jsonLd={personJsonLd}>

@@ -1,24 +1,22 @@
-# 赵建斌个人网站
+# ZJB.DEV
 
-基于 Next.js App Router 构建的个人品牌网站，展示公开项目、技术文章、个人介绍和联系方式。站点使用静态导出，并通过 GitHub Actions 部署到 GitHub Pages。
+> 把复杂，做得有意思。
 
-## 本地开发
+赵建斌的项目、技术文章与创意代码实验室。
 
-```bash
-npm ci
-cp .env.example .env.local
-npm run dev
-```
+站点包含三个主要入口：
 
-默认访问地址为 `http://localhost:3000`。
+- **项目**：公开项目与工程实践。
+- **博客**：技术文章与实践记录。
+- **实验室**：创意代码和交互实验。
 
-## 环境变量
+## 技术概览
 
-```env
-NEXT_PUBLIC_SITE_URL=https://abinzhao.github.io
-```
+站点基于 Astro、TypeScript、Three.js 与 Markdown 构建，静态产物通过 GitHub Pages 发布。
 
-该变量用于生成站点 Metadata、RSS、Sitemap 和 Robots 中的绝对地址。本地私有配置写入 `.env.local`，不要提交该文件。
+## 公开站点
+
+[https://abinzhao.github.io](https://abinzhao.github.io)
 
 ## 验证
 
@@ -29,8 +27,6 @@ npm run build
 npm run test:e2e
 ```
 
-`npm run build` 会将静态站点导出到 `out/`。`npm run start` 使用本地静态服务器预览该目录。
+## 真实性边界
 
-## 发布
-
-推送到 `master` 后，`.github/workflows/deploy-pages.yml` 会执行检查、构建静态站点，并部署 `out/` 到 GitHub Pages。
+站点内容只使用可核对的公开资料。未确认的个人联系方式、履历、合作信息与数据指标不会作为公开事实展示。

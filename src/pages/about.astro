@@ -1,0 +1,287 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { buildPersonJsonLd } from "@/lib/seo";
+import { site } from "@/lib/site";
+
+const technologyGroups = [
+  { title: "前端", items: ["TypeScript", "React", "JavaScript", "Astro"] },
+  { title: "后端", items: ["Node.js"] },
+  { title: "鸿蒙", items: ["HarmonyOS", "ArkTS", "ArkUI"] },
+  { title: "小程序", items: ["小程序"] },
+  { title: "跨端", items: ["跨端应用", "移动端", "PC 端"] },
+  { title: "工具", items: ["CLI", "Monorepo", "AI Agent"] },
+] as const;
+
+const principles = [
+  "从真实问题和约束出发，而不是从技术名词出发。",
+  "优先建立可验证的交付闭环，再扩展复杂度。",
+  "保持实现边界清晰，让跨端体验一致但不机械复制。",
+] as const;
+---
+
+<BaseLayout
+  title={`关于${site.owner}｜${site.name}`}
+  description="赵建斌的技术方向、工作原则与公开联系入口。"
+  jsonLd={buildPersonJsonLd()}
+>
+  <article class="about-page">
+    <header class="about-hero">
+      <p class="about-rail">ABOUT / PROFILE</p>
+      <div>
+        <p class="about-kicker">轨道实验室 · 公开档案</p>
+        <h1>关于{site.owner}</h1>
+        <p class="about-lead">
+          专注前端工程、HarmonyOS 与跨端应用开发，重视问题定义、实现边界和可验证交付。
+        </p>
+      </div>
+    </header>
+
+    <section class="about-section" aria-labelledby="technology-title">
+      <div class="section-heading">
+        <p>01 / TECHNOLOGY</p>
+        <h2 id="technology-title">技术坐标</h2>
+      </div>
+      <div class="technology-grid">
+        {
+          technologyGroups.map((group, index) => (
+            <section class="technology-group">
+              <span aria-hidden="true">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <h3>{group.title}</h3>
+              <ul>
+                {group.items.map((item) => <li>{item}</li>)}
+              </ul>
+            </section>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="about-section principles" aria-labelledby="principles-title">
+      <div class="section-heading">
+        <p>02 / PRINCIPLES</p>
+        <h2 id="principles-title">工作原则</h2>
+      </div>
+      <ol>
+        {
+          principles.map((principle, index) => (
+            <li>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <p>{principle}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <section class="about-section contact" id="contact" aria-labelledby="contact-title">
+      <div class="section-heading">
+        <p>03 / CONTACT</p>
+        <h2 id="contact-title">保持联系</h2>
+      </div>
+      <div class="contact-copy">
+        <p>公开项目与技术内容都从这里继续。</p>
+        <nav aria-label="联系入口">
+          {
+            site.social.map((item) => (
+              <a href={item.href} target="_blank" rel="me noreferrer">
+                <span>{item.label}</span>
+                <span aria-hidden="true">↗</span>
+              </a>
+            ))
+          }
+        </nav>
+      </div>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .about-page {
+    width: min(100% - 2rem, 76rem);
+    margin-inline: auto;
+    padding: clamp(3rem, 8vw, 7rem) 0 6rem;
+  }
+
+  .about-hero,
+  .about-section {
+    display: grid;
+    grid-template-columns: minmax(9rem, 0.34fr) minmax(0, 1fr);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .about-hero {
+    min-height: 34rem;
+    align-items: center;
+    border-top: 0;
+  }
+
+  .about-rail,
+  .section-heading p,
+  .about-kicker {
+    margin: 0;
+    color: var(--color-accent);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+  }
+
+  .about-rail {
+    align-self: start;
+    padding-top: 1rem;
+    writing-mode: vertical-rl;
+  }
+
+  h1 {
+    max-width: 9ch;
+    margin: 0.75rem 0 1.5rem;
+    font-size: clamp(3.5rem, 10vw, 8rem);
+    line-height: 0.92;
+    letter-spacing: -0.06em;
+  }
+
+  .about-lead {
+    max-width: 42rem;
+    margin: 0;
+    color: var(--color-muted);
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+  }
+
+  .about-section {
+    padding: clamp(3rem, 7vw, 6rem) 0;
+    gap: 2rem;
+  }
+
+  .section-heading h2 {
+    margin: 0.4rem 0 0;
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+  }
+
+  .technology-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-top: 1px solid var(--color-border);
+    border-left: 1px solid var(--color-border);
+  }
+
+  .technology-group {
+    min-height: 13rem;
+    padding: 1.5rem;
+    border-right: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .technology-group > span,
+  .principles li > span {
+    color: var(--color-accent);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.75rem;
+  }
+
+  .technology-group h3 {
+    margin: 1.5rem 0 0.75rem;
+    font-size: 1.5rem;
+  }
+
+  .technology-group ul {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+    gap: 0.5rem;
+    list-style: none;
+  }
+
+  .technology-group li {
+    padding: 0.25rem 0.6rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    color: var(--color-muted);
+    font-size: 0.875rem;
+  }
+
+  .principles ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .principles li {
+    display: grid;
+    grid-template-columns: 3rem 1fr;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .principles li:first-child {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .principles li p,
+  .contact-copy > p {
+    max-width: 38rem;
+    margin: 0;
+    font-size: clamp(1rem, 2vw, 1.25rem);
+  }
+
+  .contact {
+    scroll-margin-top: 5.5rem;
+  }
+
+  .contact-copy nav {
+    display: grid;
+    margin-top: 2rem;
+    gap: 0.75rem;
+  }
+
+  .contact-copy a {
+    display: flex;
+    min-height: 56px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-border);
+    background: color-mix(in srgb, var(--color-surface) 78%, transparent);
+    font-weight: 700;
+    text-decoration: none;
+    transition:
+      border-color 180ms ease,
+      transform 180ms ease;
+  }
+
+  .contact-copy a:hover {
+    border-color: var(--color-accent);
+    transform: translateX(0.25rem);
+  }
+
+  @media (max-width: 47.99rem) {
+    .about-hero,
+    .about-section {
+      grid-template-columns: 1fr;
+    }
+
+    .about-hero {
+      min-height: 28rem;
+      align-content: center;
+    }
+
+    .about-rail {
+      position: absolute;
+      padding: 0;
+      writing-mode: initial;
+    }
+
+    .about-section {
+      gap: 2.5rem;
+    }
+
+    .technology-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .technology-group {
+      min-height: 10rem;
+    }
+  }
+</style>
