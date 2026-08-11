@@ -1,0 +1,73 @@
+---
+import { getCollection } from "astro:content";
+import ProjectCard from "@/components/projects/ProjectCard.astro";
+import ProjectFilters from "@/components/projects/ProjectFilters.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getProjectCategories, sortProjects } from "@/lib/content";
+import "@/styles/projects.css";
+
+const entries = await getCollection("projects", ({ data }) => !data.draft);
+const projects = sortProjects(
+  entries.map((entry) => ({ ...entry, slug: entry.data.slug })),
+);
+const categories = getProjectCategories(projects);
+const featuredProjects = projects.filter(({ data }) => data.featured);
+const otherProjects = projects.filter(({ data }) => !data.featured);
+---
+
+<BaseLayout
+  title="项目｜ZJB.DEV"
+  description="赵建斌的公开项目与工程实践，涵盖 Web、后端和 HarmonyOS。"
+  canonicalPath="/projects/"
+>
+  <header class="projects-hero">
+    <p class="projects-hero__eyebrow">PROJECT ARCHIVE</p>
+    <h1>从真实问题出发，<br />把方案做成作品。</h1>
+    <p>
+      这里收录公开项目、工程工具与技术实践。所有描述均来自可核对的公开内容。
+    </p>
+  </header>
+
+  <div class="projects-layout">
+    <ProjectFilters categories={categories} />
+
+    {
+      featuredProjects.length > 0 && (
+        <section
+          class="projects-section"
+          aria-labelledby="featured-projects-title"
+        >
+          <div class="projects-section__heading">
+            <p>SELECTED WORK</p>
+            <h2 id="featured-projects-title">精选项目</h2>
+          </div>
+          <div class="project-grid project-grid--featured">
+            {featuredProjects.map((project) => (
+              <ProjectCard project={project} featured />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    {
+      otherProjects.length > 0 && (
+        <section class="projects-section" aria-labelledby="all-projects-title">
+          <div class="projects-section__heading">
+            <p>MORE PROJECTS</p>
+            <h2 id="all-projects-title">更多项目</h2>
+          </div>
+          <div class="project-grid">
+            {otherProjects.map((project) => (
+              <ProjectCard project={project} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <p class="projects-empty" data-project-empty hidden aria-live="polite">
+      该分类暂无公开项目
+    </p>
+  </div>
+</BaseLayout>

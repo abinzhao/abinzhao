@@ -1,0 +1,25 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import "@/styles/projects.css";
+
+interface Props {
+  to: string;
+  label: string;
+}
+
+const { to, label } = Astro.props;
+---
+
+<BaseLayout
+  title="页面已迁移｜ZJB.DEV"
+  description={`该页面已迁移至${label}。`}
+  canonicalPath={to}
+>
+  <meta slot="head" http-equiv="refresh" content={`0;url=${to}`} />
+  <section class="redirect-page">
+    <p class="redirect-page__eyebrow">ROUTE UPDATED</p>
+    <h1>页面已迁移</h1>
+    <p>正在前往{label}。如果页面没有自动跳转，请使用下方链接。</p>
+    <a href={to}>立即跳转</a>
+  </section>
+</BaseLayout>

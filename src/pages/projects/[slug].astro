@@ -1,0 +1,117 @@
+---
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { projectCategoryLabels } from "@/lib/content";
+import { site } from "@/lib/site";
+import "@/styles/projects.css";
+
+export async function getStaticPaths() {
+  const projects = await getCollection(
+    "projects",
+    ({ data }) => !data.draft,
+  );
+
+  return projects.map((project) => ({
+    params: { slug: project.data.slug },
+    props: { project },
+  }));
+}
+
+interface Props {
+  project: CollectionEntry<"projects">;
+}
+
+const { project }: Props = Astro.props;
+const { Content } = await render(project);
+const {
+  title,
+  slug,
+  summary,
+  category,
+  tags,
+  year,
+  status,
+  role,
+  repositoryUrl,
+  externalUrl,
+} = project.data;
+const statusLabels = {
+  completed: "已完成",
+  ongoing: "持续维护",
+  archived: "已归档",
+} as const;
+const projectUrl = new URL(`/projects/${slug}/`, site.url).toString();
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareSourceCode",
+  name: title,
+  description: summary,
+  url: projectUrl,
+  codeRepository: repositoryUrl,
+  applicationCategory: projectCategoryLabels[category],
+  keywords: tags,
+  ...(year ? { dateCreated: String(year) } : {}),
+};
+---
+
+<BaseLayout
+  title={`${title}｜项目｜ZJB.DEV`}
+  description={summary}
+  canonicalPath={`/projects/${slug}/`}
+  jsonLd={jsonLd}
+>
+  <article class="project-detail">
+    <header class="project-detail__header">
+      <a class="project-detail__back" href="/projects/">← 返回项目列表</a>
+      <p class="project-detail__category">
+        {projectCategoryLabels[category]} · {statusLabels[status]}
+      </p>
+      <h1>{title}</h1>
+      <p class="project-detail__summary">{summary}</p>
+
+      <dl class="project-detail__meta">
+        <div>
+          <dt>时间</dt>
+          <dd>{year ?? "时间未公开"}</dd>
+        </div>
+        <div>
+          <dt>角色</dt>
+          <dd>{role}</dd>
+        </div>
+        <div>
+          <dt>状态</dt>
+          <dd>{statusLabels[status]}</dd>
+        </div>
+      </dl>
+
+      <ul class="project-detail__tags" aria-label="技术标签">
+        {tags.map((tag) => <li>{tag}</li>)}
+      </ul>
+
+      <div class="project-detail__links">
+        <a
+          href={repositoryUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          查看 GitHub 仓库
+        </a>
+        {
+          externalUrl && (
+            <a
+              href={externalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              访问项目
+            </a>
+          )
+        }
+      </div>
+    </header>
+
+    <div class="project-detail__body">
+      <Content />
+    </div>
+  </article>
+</BaseLayout>

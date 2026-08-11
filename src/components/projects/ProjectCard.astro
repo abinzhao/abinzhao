@@ -1,0 +1,44 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { projectCategoryLabels } from "@/lib/content";
+
+interface Props {
+  project: CollectionEntry<"projects">;
+  featured?: boolean;
+}
+
+const { project, featured = false } = Astro.props;
+const { title, slug, summary, category, tags, repositoryUrl } = project.data;
+---
+
+<article
+  class:list={["project-card", { "project-card--featured": featured }]}
+  data-project-category={category}
+>
+  <div class="project-card__signal" aria-hidden="true"></div>
+  <div class="project-card__content">
+    <p class="project-card__category">{projectCategoryLabels[category]}</p>
+    <h3>{title}</h3>
+    <p class="project-card__summary">{summary}</p>
+    <ul class="project-card__tags" aria-label="技术标签">
+      {tags.map((tag) => <li>{tag}</li>)}
+    </ul>
+  </div>
+  <div class="project-card__actions">
+    <a
+      class="project-card__primary-link"
+      href={`/projects/${slug}/`}
+      aria-label={`查看项目：${title}`}
+    >
+      查看项目
+    </a>
+    <a
+      class="project-card__repository-link"
+      href={repositoryUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      GitHub <span aria-hidden="true">↗</span>
+    </a>
+  </div>
+</article>

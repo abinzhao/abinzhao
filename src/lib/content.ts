@@ -3,6 +3,28 @@ type ProjectEntry = {
   data: { featured: boolean; order: number; year?: number };
 };
 
+export const projectCategoryLabels = {
+  web: "Web",
+  backend: "后端",
+  harmonyos: "鸿蒙",
+  miniprogram: "小程序",
+  crossplatform: "跨端",
+  experiment: "实验",
+} as const;
+
+export type ProjectCategory = keyof typeof projectCategoryLabels;
+
+export function getProjectCategories(
+  entries: Array<{
+    data: { category: ProjectCategory };
+  }>,
+) {
+  const present = new Set(entries.map(({ data }) => data.category));
+  return (Object.keys(projectCategoryLabels) as ProjectCategory[]).filter(
+    (category) => present.has(category),
+  );
+}
+
 export function sortProjects<T extends ProjectEntry>(entries: T[]): T[] {
   return [...entries].sort(
     (a, b) =>

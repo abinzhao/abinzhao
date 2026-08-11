@@ -1,0 +1,38 @@
+---
+import {
+  projectCategoryLabels,
+  type ProjectCategory,
+} from "@/lib/content";
+
+interface Props {
+  categories: ProjectCategory[];
+}
+
+const { categories } = Astro.props;
+---
+
+<div class="project-filters" data-project-filters>
+  <p id="project-filter-label">按项目类型筛选</p>
+  <div
+    class="project-filters__controls"
+    role="group"
+    aria-labelledby="project-filter-label"
+  >
+    <button type="button" data-category="all" aria-pressed="true">全部</button>
+    {
+      categories.map((category) => (
+        <button type="button" data-category={category} aria-pressed="false">
+          {projectCategoryLabels[category]}
+        </button>
+      ))
+    }
+  </div>
+</div>
+
+<script>
+  import { initializeProjectFilters } from "@/scripts/filters";
+
+  document
+    .querySelectorAll<HTMLElement>("[data-project-filters]")
+    .forEach(initializeProjectFilters);
+</script>
