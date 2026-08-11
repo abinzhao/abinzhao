@@ -37,13 +37,46 @@ export async function initHomeTransitions(
     return { dispose };
   }
 
-  const [{ gsap }, { ScrollTrigger }] = await Promise.all([
-    import("gsap"),
-    import("gsap/ScrollTrigger"),
-  ]);
+  let disposed = false;
+  const state: {
+    animation?: {
+      scrollTrigger?: { kill: () => void };
+      kill: () => void;
+    };
+  } = {};
+  const dispose = () => {
+    disposed = true;
+    state.animation?.scrollTrigger?.kill();
+    state.animation?.kill();
+    window.removeEventListener("pagehide", dispose);
+    document.removeEventListener("astro:before-swap", dispose);
+  };
+  window.addEventListener("pagehide", dispose, { once: true });
+  document.addEventListener("astro:before-swap", dispose, { once: true });
+
+  let modules: [
+    typeof import("gsap"),
+    typeof import("gsap/ScrollTrigger"),
+  ];
+  try {
+    modules = await Promise.all([
+      import("gsap"),
+      import("gsap/ScrollTrigger"),
+    ]);
+  } catch {
+    dispose();
+    return;
+  }
+
+  if (disposed || !hero.isConnected || !visual.isConnected) {
+    dispose();
+    return;
+  }
+
+  const [{ gsap }, { ScrollTrigger }] = modules;
   gsap.registerPlugin(ScrollTrigger);
 
-  const animation = gsap.to(visual, {
+  state.animation = gsap.to(visual, {
     scale: 1.055,
     opacity: 0.36,
     ease: "none",
@@ -60,13 +93,5 @@ export async function initHomeTransitions(
     },
   });
 
-  const dispose = () => {
-    animation.scrollTrigger?.kill();
-    animation.kill();
-    window.removeEventListener("pagehide", dispose);
-    document.removeEventListener("astro:before-swap", dispose);
-  };
-  window.addEventListener("pagehide", dispose, { once: true });
-  document.addEventListener("astro:before-swap", dispose, { once: true });
   return { dispose };
 }
