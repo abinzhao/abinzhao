@@ -1,18 +1,24 @@
+import js from "@eslint/js";
 import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
+import tseslint from "typescript-eslint";
 
-const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
-  // Override default ignores of eslint-config-next.
+export default defineConfig(
   globalIgnores([
-    // Default ignores of eslint-config-next:
+    "dist/**",
+    ".astro/**",
+    ".superpowers/**",
     ".next/**",
     "out/**",
     "build/**",
+    "app/**",
+    "components/**",
+    "content/**",
+    "lib/**",
+    "tests/*.ts",
+    "tests/*.tsx",
     "next-env.d.ts",
+    "next.config.ts",
   ]),
-]);
-
-export default eslintConfig;
+  js.configs.recommended,
+  tseslint.configs.recommended,
+);
