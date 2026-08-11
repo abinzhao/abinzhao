@@ -1,5 +1,11 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { getBlogFacets, groupBlogByMonth } from "@/lib/content";
+
+const tagPageSource = readFileSync(
+  new URL("../../src/pages/tags/[tag].astro", import.meta.url),
+  "utf8",
+);
 
 describe("博客展示数据", () => {
   const entries = [
@@ -48,5 +54,17 @@ describe("博客展示数据", () => {
       "older",
       "oldest",
     ]);
+  });
+});
+
+describe("标签路由契约", () => {
+  it("静态路径使用原始标签且只在 URL 中编码", () => {
+    expect(tagPageSource).toContain("params: { tag },");
+    expect(tagPageSource).not.toContain(
+      "params: { tag: encodeURIComponent(tag) }",
+    );
+    expect(tagPageSource).toContain(
+      "canonicalPath={`/tags/${encodeURIComponent(tag)}/`}",
+    );
   });
 });

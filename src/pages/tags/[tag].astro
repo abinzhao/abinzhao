@@ -9,7 +9,7 @@ export async function getStaticPaths() {
   const tags = [...new Set(entries.flatMap(({ data }) => data.tags))];
 
   return tags.map((tag) => ({
-    params: { tag: encodeURIComponent(tag) },
+    params: { tag },
     props: {
       tag,
       entries: entries
