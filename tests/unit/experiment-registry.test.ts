@@ -76,18 +76,16 @@ describe("实验注册表", () => {
     ]);
   });
 
-  it("已实现实验的 loader 成功解析实验模块", async () => {
-    for (const slug of ["particle-galaxy", "shader-art"] as const) {
+  it("三个实验的 loader 均成功解析实验模块", async () => {
+    for (const slug of [
+      "particle-galaxy",
+      "shader-art",
+      "physics-sandbox",
+    ] as const) {
       const module = await experimentLoaders[slug]();
 
       expect(module.mount).toBeTypeOf("function");
     }
-  });
-
-  it("物理沙盒通过受控 loader 明确拒绝", async () => {
-    await expect(experimentLoaders["physics-sandbox"]()).rejects.toThrow(
-      "模块尚未实现：physics-sandbox",
-    );
   });
 });
 

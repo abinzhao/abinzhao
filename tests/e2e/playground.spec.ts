@@ -33,17 +33,6 @@ test("粒子银河详情保留说明、控制区和返回入口", async ({ page 
   );
 });
 
-test("未实现实验保留失败降级和重试入口", async ({ page }) => {
-  await page.goto("/playground/physics-sandbox/");
-
-  await expect(page.getByText("实验未能启动")).toBeVisible();
-  await expect(page.getByRole("button", { name: "重试实验" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "返回实验列表" })).toHaveAttribute(
-    "href",
-    "/playground/",
-  );
-});
-
 test("无 JavaScript 时实验说明和导航仍可用", async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
