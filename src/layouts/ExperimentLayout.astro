@@ -1,0 +1,52 @@
+---
+import type { CollectionEntry } from "astro:content";
+import ExperimentShell from "@/components/playground/ExperimentShell.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import "@/styles/playground.css";
+
+interface Props {
+  experiment: CollectionEntry<"playground">;
+}
+
+const { experiment }: Props = Astro.props;
+const { title, slug, description, tech, githubUrl } = experiment.data;
+---
+
+<BaseLayout
+  title={`${title}｜Playground｜ZJB.DEV`}
+  description={description}
+  canonicalPath={`/playground/${slug}/`}
+>
+  <article class="experiment-detail">
+    <header class="experiment-detail__header">
+      <a class="experiment-detail__back" href="/playground/">
+        ← 返回实验列表
+      </a>
+      <p class="experiment-detail__eyebrow">PLAYGROUND / {slug}</p>
+      <h1>{title}</h1>
+      <p class="experiment-detail__description">{description}</p>
+      <ul class="experiment-tags" aria-label="技术标签">
+        {tech.map((item) => <li>{item}</li>)}
+      </ul>
+      {
+        githubUrl && (
+          <a
+            class="experiment-detail__source"
+            href={githubUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            查看源码 <span aria-hidden="true">↗</span>
+          </a>
+        )
+      }
+    </header>
+
+    <div class="experiment-detail__layout" data-experiment-layout>
+      <div class="experiment-detail__notes">
+        <slot />
+      </div>
+      <ExperimentShell slug={slug} />
+    </div>
+  </article>
+</BaseLayout>

@@ -1,0 +1,37 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  experiment: CollectionEntry<"playground">;
+  index: number;
+}
+
+const { experiment, index } = Astro.props;
+const { title, slug, description, tech } = experiment.data;
+---
+
+<article class="experiment-card" data-experiment-card>
+  <a
+    class:list={[
+      "experiment-card__visual",
+      `experiment-visual--${slug}`,
+    ]}
+    href={`/playground/${slug}/`}
+    aria-label={`打开实验：${title}`}
+  >
+    <span aria-hidden="true"></span>
+  </a>
+
+  <div class="experiment-card__body">
+    <p class="experiment-card__index">
+      {String(index + 1).padStart(2, "0")} / OPEN LAB
+    </p>
+    <h2>
+      <a href={`/playground/${slug}/`}>{title}</a>
+    </h2>
+    <p>{description}</p>
+    <ul aria-label={`${title}技术标签`}>
+      {tech.map((item) => <li>{item}</li>)}
+    </ul>
+  </div>
+</article>

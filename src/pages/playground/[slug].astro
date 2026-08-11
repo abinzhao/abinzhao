@@ -1,0 +1,27 @@
+---
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import ExperimentLayout from "@/layouts/ExperimentLayout.astro";
+
+export async function getStaticPaths() {
+  const experiments = await getCollection(
+    "playground",
+    ({ data }) => !data.draft,
+  );
+
+  return experiments.map((experiment) => ({
+    params: { slug: experiment.data.slug },
+    props: { experiment },
+  }));
+}
+
+interface Props {
+  experiment: CollectionEntry<"playground">;
+}
+
+const { experiment }: Props = Astro.props;
+const { Content } = await render(experiment);
+---
+
+<ExperimentLayout experiment={experiment}>
+  <Content />
+</ExperimentLayout>
