@@ -21,4 +21,11 @@ describe("Astro 工程配置", () => {
     expect(tokens).toMatch(/^@import "tailwindcss";/);
     expect(tokens).toContain("@theme");
   });
+
+  it("迁移期间不收集根目录旧 Next.js 测试", () => {
+    const config = readFileSync("vitest.config.ts", "utf8");
+
+    expect(config).toContain('"tests/*.test.ts"');
+    expect(config).toContain('"tests/*.test.tsx"');
+  });
 });
