@@ -28,4 +28,12 @@ describe("Astro 工程配置", () => {
     expect(config).toContain('"tests/*.test.ts"');
     expect(config).toContain('"tests/*.test.tsx"');
   });
+
+  it("类型检查排除 Astro 构建产物", () => {
+    const config = JSON.parse(readFileSync("tsconfig.json", "utf8")) as {
+      exclude?: string[];
+    };
+
+    expect(config.exclude).toContain("dist");
+  });
 });
