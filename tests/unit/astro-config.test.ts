@@ -14,4 +14,11 @@ describe("Astro 工程配置", () => {
   it("不提交视觉伴侣运行目录", () => {
     expect(readFileSync(".gitignore", "utf8")).toContain(".superpowers/");
   });
+
+  it("在声明主题令牌的同一入口加载 Tailwind", () => {
+    const tokens = readFileSync("src/styles/tokens.css", "utf8");
+
+    expect(tokens).toMatch(/^@import "tailwindcss";/);
+    expect(tokens).toContain("@theme");
+  });
 });

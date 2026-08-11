@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 @theme {
   --color-orbit-bg: #080914;
   --color-orbit-text: #f4f2ff;
