@@ -1,9 +1,12 @@
-import { describe, expect, it } from "vitest";
+// @vitest-environment jsdom
+
+import { describe, expect, it, vi } from "vitest";
 import {
   THEME_STORAGE_KEY,
   resolveInitialTheme,
   type Theme,
 } from "@/lib/theme";
+import { initThemeToggle } from "@/scripts/theme";
 
 describe("主题初始化", () => {
   it("合法的用户选择优先于系统主题", () => {
@@ -21,5 +24,21 @@ describe("主题初始化", () => {
 
     expect(themes).toEqual(["light", "dark"]);
     expect(THEME_STORAGE_KEY).toBe("zjb-theme");
+  });
+
+  it("向 WebGL 场景广播主题变化", () => {
+    const listener = vi.fn();
+    document.addEventListener("zjb:themechange", listener);
+    document.body.innerHTML = '<button data-theme-toggle></button>';
+    document.documentElement.dataset.theme = "dark";
+
+    initThemeToggle(document);
+    document.querySelector<HTMLButtonElement>("[data-theme-toggle]")?.click();
+
+    expect(listener).toHaveBeenCalledOnce();
+    expect(listener.mock.calls[0]?.[0]).toMatchObject({
+      detail: { theme: "light" },
+    });
+    document.removeEventListener("zjb:themechange", listener);
   });
 });

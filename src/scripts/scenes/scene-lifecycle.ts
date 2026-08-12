@@ -1,3 +1,5 @@
+import { getCosmicQuality } from "./cosmic/quality";
+
 export interface SceneProfileInput {
   width: number;
   dpr: number;
@@ -12,15 +14,20 @@ export interface SceneProfile {
 }
 
 export function getSceneProfile(input: SceneProfileInput): SceneProfile {
-  const animated = !input.reducedMotion;
+  const quality = getCosmicQuality(input);
+  const particles =
+    quality.tier === "high"
+      ? 2200
+      : quality.tier === "medium"
+        ? 1400
+        : quality.tier === "mobile"
+          ? 800
+          : 0;
 
-  if (input.width < 768) {
-    return { animated, particles: 800, maxDpr: 1.5, fps: 30 };
-  }
-
-  if (input.width < 1024) {
-    return { animated, particles: 1400, maxDpr: 1.5, fps: 45 };
-  }
-
-  return { animated, particles: 2200, maxDpr: 1.75, fps: 60 };
+  return {
+    animated: quality.animated,
+    particles,
+    maxDpr: quality.maxDpr,
+    fps: quality.fps || 30,
+  };
 }

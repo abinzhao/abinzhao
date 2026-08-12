@@ -96,6 +96,16 @@
     transform 180ms ease;
 }
 
+.experiment-card.fluid-card {
+  background: transparent;
+}
+
+.experiment-card__visual,
+.experiment-card__body {
+  position: relative;
+  z-index: 1;
+}
+
 .experiment-card:first-child {
   grid-column: span 12;
   grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.65fr);

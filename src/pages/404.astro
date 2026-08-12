@@ -13,6 +13,7 @@ const recoveryLinks = [
 <BaseLayout
   title="信号丢失｜ZJB.DEV"
   description="请求的页面没有找到，请从站点主要入口继续浏览。"
+  cosmicVariant="not-found"
 >
   <section class="lost-signal">
     <div class="black-hole" aria-hidden="true">
@@ -63,6 +64,12 @@ const recoveryLinks = [
       radial-gradient(circle at center, #010106 0 18%, transparent 19%),
       radial-gradient(circle at center, transparent 0 25%, rgba(124, 109, 255, 0.2) 27%, transparent 40%),
       radial-gradient(circle at center, rgba(255, 118, 83, 0.08), transparent 67%);
+    transition: opacity 400ms ease, filter 400ms ease;
+  }
+
+  :global(.cosmic-scene[data-scene-state="ready"] ~ main) .black-hole {
+    opacity: 0.18;
+    filter: blur(2px);
   }
 
   .black-hole__core,

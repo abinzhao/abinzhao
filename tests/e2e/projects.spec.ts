@@ -3,6 +3,12 @@ import { expect, test } from "@playwright/test";
 test("项目可筛选、深链且空分类有明确状态", async ({ page }) => {
   await page.goto("/abinzhao/projects/");
 
+  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
+    "data-cosmic-variant",
+    "projects",
+  );
+  await expect(page.locator(".project-card__coordinate")).toHaveCount(5);
+
   const harmonyFilter = page.getByRole("button", { name: "鸿蒙" });
   await expect
     .poll(async () => (await harmonyFilter.boundingBox())?.height ?? 0)
@@ -42,6 +48,10 @@ test("项目详情只展示真实字段并输出 SoftwareSourceCode JSON-LD", as
 }) => {
   await page.goto("/abinzhao/projects/harmony-next-blog/");
 
+  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
+    "data-cosmic-variant",
+    "project",
+  );
   await expect(
     page.getByRole("heading", { name: "HarmonyOS Next 开发知识库" }),
   ).toBeVisible();

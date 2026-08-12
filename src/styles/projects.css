@@ -142,6 +142,27 @@
     transform 180ms ease;
 }
 
+.project-card.fluid-card {
+  background: transparent;
+}
+
+.project-card__coordinate {
+  position: absolute;
+  z-index: 2;
+  top: 1.25rem;
+  right: 1.5rem;
+  color: var(--color-accent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+}
+
+.project-card__content,
+.project-card__actions {
+  position: relative;
+  z-index: 1;
+}
+
 .project-card[hidden] {
   display: none;
 }
@@ -160,7 +181,7 @@
 
 .project-card__signal {
   position: absolute;
-  z-index: -1;
+  z-index: 0;
   top: -8rem;
   right: -6rem;
   width: 20rem;
@@ -308,7 +329,20 @@
 .project-detail__body {
   max-width: 48rem;
   margin-top: clamp(4rem, 10vw, 8rem);
+  padding: clamp(1.25rem, 4vw, 3rem);
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+  backdrop-filter: blur(18px);
   font-size: 1.05rem;
+}
+
+[data-cosmic-page="projects"] .project-card {
+  background-color: color-mix(
+    in srgb,
+    var(--color-surface) 88%,
+    transparent
+  );
+  backdrop-filter: blur(18px);
 }
 
 .project-detail__body h2 {

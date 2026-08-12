@@ -144,6 +144,10 @@
     transform 180ms ease;
 }
 
+.blog-card.fluid-card {
+  background: transparent;
+}
+
 .blog-card[hidden] {
   display: none;
 }
@@ -226,6 +230,8 @@
   padding-block: 2rem;
   border-top: 1px solid var(--color-border);
   gap: 2rem;
+  background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+  backdrop-filter: blur(16px);
 }
 
 .archive-list h2 {
@@ -270,7 +276,8 @@
   padding: 1.25rem;
   border: 1px solid var(--color-border);
   border-radius: 1rem;
-  background: var(--color-surface);
+  background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+  backdrop-filter: blur(16px);
   text-decoration: none;
 }
 
@@ -307,6 +314,10 @@
 
 .article-body {
   min-width: 0;
+  padding: clamp(1.25rem, 4vw, 3rem);
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-surface) 97%, transparent);
+  backdrop-filter: blur(16px);
   font-size: 1.0625rem;
   line-height: 1.75;
 }

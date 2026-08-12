@@ -31,11 +31,15 @@ test("桌面首页优先展示真实静态内容并按顺序组织叙事", async
   await expect(
     page.getByRole("heading", { name: "把复杂，做得有意思。" }),
   ).toBeVisible();
-  await expect(page.locator("[data-hero]")).toHaveAttribute(
+  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
+    "data-cosmic-variant",
+    "home",
+  );
+  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
     "data-scene-state",
     "ready",
   );
-  await expect(page.locator("[data-hero-scene]")).toBeVisible();
+  await expect(page.locator("[data-cosmic-canvas]")).toBeVisible();
   await expect(page.getByRole("heading", { name: "精选项目" })).toBeVisible();
   await expect(page.locator("[data-home-project]")).toHaveCount(3);
   await expect(page.getByRole("heading", { name: "最新博客" })).toBeVisible();
@@ -68,9 +72,9 @@ test("reduced-motion 保留 fallback 且不启动 Canvas 场景", async ({ page 
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/abinzhao/");
 
-  await expect(page.locator(".hero__fallback")).toBeVisible();
-  await expect(page.locator("[data-hero-scene]")).toHaveCount(0);
-  await expect(page.locator("[data-hero]")).toHaveAttribute(
+  await expect(page.locator(".cosmic-scene__fallback")).toBeVisible();
+  await expect(page.locator("[data-cosmic-canvas]")).toHaveCount(0);
+  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
     "data-scene-state",
     "static",
   );
@@ -146,4 +150,15 @@ test("无 JavaScript 时 Hero 文案与主要链接完整可用", async ({ brows
   await expect(page.locator(".hero__fallback")).toBeVisible();
 
   await context.close();
+});
+
+test("滚动至终点后进入银河核心并显示内容节点", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/abinzhao/");
+  await page.locator("[data-cosmic-journey]").evaluate((element) => {
+    window.scrollTo(0, element.getBoundingClientRect().height);
+  });
+
+  await expect(page.locator("[data-galaxy-copy]")).toHaveCSS("opacity", "1");
+  await expect(page.locator("[data-cosmic-cards]")).toHaveCSS("opacity", "1");
 });

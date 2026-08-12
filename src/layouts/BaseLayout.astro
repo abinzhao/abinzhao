@@ -1,11 +1,14 @@
 ---
 import BackToTop from "@/components/global/BackToTop.astro";
+import CosmicScene from "@/components/global/CosmicScene.astro";
 import Footer from "@/components/global/Footer.astro";
 import SiteHeader from "@/components/global/SiteHeader.astro";
 import { buildCanonical } from "@/lib/seo";
 import { site, withoutBase, withBase } from "@/lib/site";
+import type { CosmicVariant } from "@/scripts/scenes/cosmic/types";
 import "@/styles/base.css";
 import "@/styles/components.css";
+import "@/styles/cosmic.css";
 import "@/styles/tokens.css";
 
 interface Props {
@@ -14,6 +17,7 @@ interface Props {
   canonicalPath?: string;
   image?: string;
   jsonLd?: Record<string, unknown>;
+  cosmicVariant?: CosmicVariant;
 }
 
 const {
@@ -22,6 +26,7 @@ const {
   canonicalPath = withoutBase(Astro.url.pathname),
   image = withBase("/og-default.svg"),
   jsonLd,
+  cosmicVariant = "article",
 } = Astro.props;
 const canonical = buildCanonical(site.url, canonicalPath);
 const socialImage = new URL(image, site.url).toString();
@@ -61,7 +66,8 @@ const socialImage = new URL(image, site.url).toString();
       set:html={`(()=>{let s=null;try{s=localStorage.getItem("zjb-theme")}catch{}let d=false;try{d=matchMedia("(prefers-color-scheme: dark)").matches}catch{}document.documentElement.dataset.theme=s==="light"||s==="dark"?s:(d?"dark":"light")})()`}
     />
   </head>
-  <body>
+  <body data-cosmic-page={cosmicVariant}>
+    <CosmicScene variant={cosmicVariant} />
     <a class="skip-link" href="#main-content">跳到主要内容</a>
     <SiteHeader />
     <main id="main-content">

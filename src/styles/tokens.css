@@ -1,9 +1,33 @@
 @import "tailwindcss";
 
 @theme {
-  --color-orbit-bg: #080914;
-  --color-orbit-text: #f4f2ff;
-  --color-orbit-warm: #ff7653;
-  --color-orbit-signal: #f5cf64;
-  --color-orbit-violet: #7c6dff;
+  --color-orbit-bg: #010205;
+  --color-orbit-text: #f3fafc;
+  --color-orbit-warm: #ffe0b8;
+  --color-orbit-signal: #80eeff;
+  --color-orbit-violet: #6488ff;
+}
+
+:root[data-theme="dark"] {
+  --color-bg: #010205;
+  --color-surface: rgba(4, 16, 26, 0.88);
+  --color-text: #f3fafc;
+  --color-muted: #9aaeb7;
+  --color-border: rgba(128, 238, 255, 0.18);
+  --color-accent: #80eeff;
+  --color-focus: #ffe0b8;
+  --cosmic-nebula: rgba(27, 124, 164, 0.22);
+  --cosmic-horizon: rgba(51, 139, 255, 0.24);
+}
+
+:root[data-theme="light"] {
+  --color-bg: #eaf2f5;
+  --color-surface: rgba(240, 247, 249, 0.9);
+  --color-text: #09171d;
+  --color-muted: #425a64;
+  --color-border: rgba(7, 91, 120, 0.2);
+  --color-accent: #075b78;
+  --color-focus: #b66a24;
+  --cosmic-nebula: rgba(71, 139, 164, 0.2);
+  --cosmic-horizon: rgba(182, 106, 36, 0.16);
 }

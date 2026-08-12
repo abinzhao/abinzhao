@@ -23,6 +23,7 @@ const principles = [
   title={`关于${site.owner}｜${site.name}`}
   description="赵建斌的技术方向、工作原则与公开联系入口。"
   jsonLd={buildPersonJsonLd()}
+  cosmicVariant="about"
 >
   <article class="about-page">
     <header class="about-hero">
@@ -99,9 +100,27 @@ const principles = [
 
 <style>
   .about-page {
+    position: relative;
+    overflow: clip;
     width: min(100% - 2rem, 76rem);
     margin-inline: auto;
     padding: clamp(3rem, 8vw, 7rem) 0 6rem;
+  }
+
+  .about-page::before {
+    position: absolute;
+    z-index: -1;
+    top: 5rem;
+    right: -14%;
+    width: min(64vw, 48rem);
+    aspect-ratio: 1;
+    border: 1px solid var(--cosmic-horizon);
+    border-radius: 50%;
+    box-shadow:
+      0 0 2rem var(--cosmic-horizon),
+      inset 0 0 4rem color-mix(in srgb, var(--cosmic-horizon) 45%, transparent);
+    content: "";
+    opacity: 0.72;
   }
 
   .about-hero,
@@ -170,6 +189,8 @@ const principles = [
     padding: 1.5rem;
     border-right: 1px solid var(--color-border);
     border-bottom: 1px solid var(--color-border);
+    background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+    backdrop-filter: blur(18px);
   }
 
   .technology-group > span,

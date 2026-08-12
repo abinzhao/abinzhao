@@ -101,7 +101,9 @@ export async function mount(
   canvas: HTMLCanvasElement,
   controls: HTMLElement,
 ): Promise<ExperimentController> {
-  const three = await import("three");
+  const { loadThreeRuntime } =
+    await import("@/scripts/scenes/three-runtime");
+  const three = await loadThreeRuntime();
   const reducedMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)",
   ).matches;

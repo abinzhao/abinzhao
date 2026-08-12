@@ -25,20 +25,15 @@ test("首页展示品牌、Slogan 与四个主入口", async ({ page }) => {
   }
 });
 
-test("博客详情不加载首页与实验场景资源", async ({ page }) => {
-  const scriptRequests: string[] = [];
-  page.on("request", (request) => {
-    if (request.resourceType() === "script") {
-      scriptRequests.push(request.url());
-    }
-  });
-
+test("博客详情只加载共享宇宙场景而不创建实验 Canvas", async ({ page }) => {
   await page.goto("/abinzhao/blog/harmonyos-next-learning-path/");
-  await page.waitForLoadState("networkidle");
 
-  expect(scriptRequests.join("\n")).not.toMatch(
-    /three|hero|particle-galaxy|shader-art|physics-sandbox/i,
+  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
+    "data-cosmic-variant",
+    "article",
   );
+  await expect(page.locator("[data-cosmic-canvas]")).toHaveCount(1);
+  await expect(page.locator("[data-experiment-canvas]")).toHaveCount(0);
 });
 
 test("favicon 资源可正常访问", async ({ request }) => {
@@ -95,7 +90,7 @@ test("reduced-motion 首页保留静态 fallback 且不创建 Three.js Canvas", 
 
   await expect(page.locator(".hero__fallback")).toBeVisible();
   await expect(page.locator("[data-hero-scene]")).toHaveCount(0);
-  await expect(page.locator("[data-hero]")).toHaveAttribute(
+  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
     "data-scene-state",
     "static",
   );

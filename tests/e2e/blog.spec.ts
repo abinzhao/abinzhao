@@ -3,6 +3,11 @@ import { expect, test } from "@playwright/test";
 test("博客筛选写入 URL 并支持浏览器前进后退", async ({ page }) => {
   await page.goto("/abinzhao/blog/");
 
+  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
+    "data-cosmic-variant",
+    "blog",
+  );
+
   await expect(
     page.getByRole("heading", { name: "博客", exact: true }),
   ).toBeVisible();
@@ -53,6 +58,15 @@ test("博客详情具备目录、阅读时间、标签和真实 JSON-LD", async 
   page,
 }) => {
   await page.goto("/abinzhao/blog/harmonyos-next-learning-path/");
+
+  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
+    "data-cosmic-variant",
+    "article",
+  );
+  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
+    "data-transit-stars",
+    "false",
+  );
 
   await expect(page.getByText(/预计阅读 2 分钟/)).toBeVisible();
   await expect(
@@ -119,17 +133,29 @@ test("归档、标签、RSS 与旧写作路径来自真实公开文章", async (
   request,
 }) => {
   await page.goto("/abinzhao/blog/archive/");
+  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
+    "data-cosmic-variant",
+    "article",
+  );
   await expect(page.locator('time[datetime="2026-08"]')).toHaveText(
     "2026 年 8 月",
   );
 
   await page.goto("/abinzhao/tags/");
+  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
+    "data-cosmic-variant",
+    "article",
+  );
   await expect(page.getByRole("link", { name: "HarmonyOS 1 篇" })).toHaveAttribute(
     "href",
     "/abinzhao/tags/HarmonyOS/",
   );
 
   await page.goto("/abinzhao/tags/HarmonyOS/");
+  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
+    "data-cosmic-variant",
+    "article",
+  );
   await expect(
     page.getByRole("heading", { name: "标签：HarmonyOS" }),
   ).toBeVisible();

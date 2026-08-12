@@ -37,6 +37,11 @@ export function initThemeToggle(
 
       html.dataset.theme = nextTheme;
       updateToggleLabels(root, nextTheme);
+      pageDocument.dispatchEvent(
+        new CustomEvent("zjb:themechange", {
+          detail: { theme: nextTheme },
+        }),
+      );
 
       try {
         localStorage.setItem(THEME_STORAGE_KEY, nextTheme);

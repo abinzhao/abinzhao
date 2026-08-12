@@ -1,0 +1,37 @@
+---
+import { withBase } from "@/lib/site";
+import { getCosmicSceneConfig } from "@/scripts/scenes/cosmic/config";
+import type { CosmicVariant } from "@/scripts/scenes/cosmic/types";
+
+interface Props {
+  variant: CosmicVariant;
+}
+
+const { variant } = Astro.props;
+const config = getCosmicSceneConfig(variant);
+---
+
+<div
+  class="cosmic-scene"
+  data-cosmic-scene
+  data-cosmic-variant={variant}
+  data-render-mode={config.renderMode}
+  data-transit-stars={String(config.layers.transitStars)}
+  data-scene-state="static"
+  data-assets-base={withBase("/assets/cosmic/")}
+  aria-hidden="true"
+>
+  <div class="cosmic-scene__fallback"></div>
+  {config.renderMode === "webgl" && <canvas data-cosmic-canvas></canvas>}
+</div>
+
+{
+  config.renderMode === "webgl" && (
+    <script>
+      import { mountCosmicScene } from "@/scripts/scenes/cosmic/runtime";
+
+      const root = document.querySelector<HTMLElement>("[data-cosmic-scene]");
+      if (root) void mountCosmicScene(root);
+    </script>
+  )
+}

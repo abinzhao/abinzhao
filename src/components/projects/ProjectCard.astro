@@ -6,16 +6,24 @@ import { withBase } from "@/lib/site";
 interface Props {
   project: CollectionEntry<"projects">;
   featured?: boolean;
+  index: number;
 }
 
-const { project, featured = false } = Astro.props;
+const { project, featured = false, index } = Astro.props;
 const { title, slug, summary, category, tags, repositoryUrl } = project.data;
 ---
 
 <article
-  class:list={["project-card", { "project-card--featured": featured }]}
+  class:list={[
+    "project-card",
+    "fluid-card",
+    { "project-card--featured": featured },
+  ]}
   data-project-category={category}
 >
+  <span class="project-card__coordinate" aria-hidden="true">
+    NODE / {String(index + 1).padStart(2, "0")}
+  </span>
   <div class="project-card__signal" aria-hidden="true"></div>
   <div class="project-card__content">
     <p class="project-card__category">{projectCategoryLabels[category]}</p>

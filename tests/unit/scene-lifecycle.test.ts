@@ -9,7 +9,7 @@ describe("首页场景性能配置", () => {
     ).toEqual({
       animated: true,
       particles: 2200,
-      maxDpr: 1.75,
+      maxDpr: 1.6,
       fps: 60,
     });
     expect(
@@ -17,7 +17,7 @@ describe("首页场景性能配置", () => {
     ).toEqual({
       animated: true,
       particles: 800,
-      maxDpr: 1.5,
+      maxDpr: 1.2,
       fps: 30,
     });
     expect(
@@ -25,7 +25,7 @@ describe("首页场景性能配置", () => {
     ).toEqual({
       animated: true,
       particles: 1400,
-      maxDpr: 1.5,
+      maxDpr: 1.35,
       fps: 45,
     });
   });
