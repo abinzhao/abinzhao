@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from "astro:content";
+import { getReadingMinutes } from "@/lib/content";
 import { withBase } from "@/lib/site";
 
 interface Props {
@@ -23,10 +24,10 @@ const dateFormatter = new Intl.DateTimeFormat("zh-CN", {
 >
   <header class="home-section__header">
     <div>
-      <p class="home-kicker">FIELD NOTES / 02</p>
-      <h2 id="latest-blog-title">最新博客</h2>
+      <p class="home-kicker">WRITING / 01</p>
+      <h2 id="latest-blog-title">最新文章</h2>
     </div>
-    <p>记录代码之外的判断过程：学到什么，为什么这样做，还有哪些问题没回答。</p>
+    <p>只列出标题和必要信息。文章本身负责说服你继续读下去。</p>
   </header>
 
   <div class="home-blog__list">
@@ -38,20 +39,16 @@ const dateFormatter = new Intl.DateTimeFormat("zh-CN", {
             <time datetime={entry.data.date.toISOString()}>
               {dateFormatter.format(entry.data.date)}
             </time>
+            <span>{getReadingMinutes(entry.body ?? "")} 分钟</span>
           </div>
           <h3>
             <a href={withBase(`/blog/${entry.data.slug}/`)}>
               {entry.data.title}
             </a>
           </h3>
-          <p>{entry.data.summary}</p>
-          <a
-            class="home-post__link"
-            href={withBase(`/blog/${entry.data.slug}/`)}
-            aria-label={`阅读文章：${entry.data.title}`}
-          >
-            阅读文章 <span>→</span>
-          </a>
+          <ul class="home-post__tags" aria-label="文章标签">
+            {entry.data.tags.slice(0, 3).map((tag) => <li>{tag}</li>)}
+          </ul>
         </article>
       ))
     }

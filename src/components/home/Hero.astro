@@ -5,76 +5,30 @@ import { withBase } from "@/lib/site";
 <section
   class="hero"
   id="hero"
-  data-home-section
-  data-hero
-  data-cosmic-journey
   aria-labelledby="hero-title"
 >
-  <div class="hero__frame">
-    <div class="hero__copy" data-hero-copy>
-      <p class="hero__eyebrow">赵建斌 / 开发者与实验者</p>
-      <h1 id="hero-title" aria-label="把复杂，做得有意思。">
-        把复杂，做得<strong>有意思。</strong>
-      </h1>
-      <p class="hero__intro">
-        构建前端、鸿蒙与跨端体验，也把技术实验、生活观察和没做完的好奇心留在这里。
-      </p>
-      <div class="hero__actions">
-        <a class="hero__primary-action" href={withBase("/projects/")}
-          >查看项目</a
-        >
-        <a class="hero__secondary-action" href={withBase("/playground/")}
-          >进入实验室</a
-        >
-      </div>
+  <div class="hero__copy">
+    <p class="hero__eyebrow">ZJB.DEV / FRONTEND × HARMONYOS × AI</p>
+    <h1 id="hero-title" aria-label="在鸿蒙上，用前端的方式，把 AI 变成应用。">
+      在鸿蒙上，用前端的方式，<strong>把 AI 变成应用。</strong>
+    </h1>
+    <p class="hero__intro">
+      我是赵建斌，一名关注全场景应用的开发者。这里记录前端工程、HarmonyOS
+      学习与 AI 应用架构中的真实判断和实践。
+    </p>
+    <ul class="hero__roles" aria-label="关注方向">
+      <li>前端工程师</li>
+      <li>鸿蒙开发者</li>
+      <li>AI 实践者</li>
+    </ul>
+    <div class="hero__actions">
+      <a class="button button--primary" href={withBase("/blog/")}>看最新文章 <span aria-hidden="true">→</span></a>
+      <a class="text-link" href={withBase("/about/")}>了解我在做什么</a>
     </div>
-
-    <div class="hero__visual" aria-hidden="true">
-      <div class="hero__fallback">
-        <span class="hero__horizon"></span>
-        <span class="hero__atmosphere"></span>
-        <span class="hero__starfield"></span>
-      </div>
-    </div>
-
-    <div class="hero__galaxy-copy" data-galaxy-copy>
-      <p class="hero__eyebrow">ZJB.DEV / DIGITAL UNIVERSE</p>
-      <p class="hero__galaxy-title">从近地轨道，驶向创造的核心。</p>
-      <p>
-        项目、文章与实验不是孤立页面，而是同一片数字宇宙中的持续坐标。
-      </p>
-    </div>
-
-    <div class="hero__cosmic-cards" data-cosmic-cards>
-      <a class="fluid-card" href={withBase("/projects/")}>
-        <span>01 / PROJECTS</span>
-        <strong>构建可落地的产品体验</strong>
-      </a>
-      <a class="fluid-card" href={withBase("/blog/")}>
-        <span>02 / NOTES</span>
-        <strong>记录技术与思考轨迹</strong>
-      </a>
-      <a class="fluid-card" href={withBase("/playground/")}>
-        <span>03 / LAB</span>
-        <strong>验证尚未定型的想法</strong>
-      </a>
-    </div>
-
-    <span class="hero__sticker">BUILD · BREAK · LEARN</span>
-    <nav class="hero__quick-links" aria-label="首页快速入口">
-      <a href={withBase("/about/")}>01 关于</a>
-      <a href={withBase("/projects/")}>02 项目</a>
-      <a href={withBase("/blog/")}>03 博客</a>
-      <a href={withBase("/playground/")}>04 实验室</a>
-    </nav>
   </div>
+  <aside class="hero__note" aria-label="本站主张">
+    <span>001</span>
+    <p>前端是根基，鸿蒙是舞台，AI 是杠杆。</p>
+    <small>不追逐每一个热点，只记录能够复现、验证和长期使用的经验。</small>
+  </aside>
 </section>
-
-<script>
-  import { initHomeTransitions } from "@/scripts/transitions";
-
-  const hero = document.querySelector<HTMLElement>("[data-cosmic-journey]");
-  if (hero) {
-    void initHomeTransitions(hero);
-  }
-</script>

@@ -1,0 +1,93 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { withBase } from "@/lib/site";
+
+const pagefindCss = withBase("/pagefind/pagefind-ui.css");
+const pagefindScript = withBase("/pagefind/pagefind-ui.js");
+---
+
+<BaseLayout
+  title="全文搜索｜ZJB.DEV"
+  description="搜索 ZJB.DEV 的文章、项目与实验。"
+  canonicalPath="/search/"
+>
+  <link slot="head" rel="stylesheet" href={pagefindCss} />
+  <section class="search-page" aria-labelledby="search-title">
+    <p class="search-page__eyebrow">SEARCH / INDEX</p>
+    <h1 id="search-title">全文搜索</h1>
+    <p>索引在构建时生成，搜索过程完全在浏览器本地完成。</p>
+    <div data-pagefind-search></div>
+    <noscript>请启用 JavaScript 使用全文搜索。你仍可通过文章与标签页面浏览内容。</noscript>
+  </section>
+  <script define:vars={{ pagefindScript }} is:inline>
+    const target = document.querySelector("[data-pagefind-search]");
+    const initializeSearch = () => {
+      if (!target || !window.PagefindUI) return;
+      target.replaceChildren();
+      new window.PagefindUI({
+        element: target,
+        showSubResults: true,
+        resetStyles: false,
+        translations: {
+          placeholder: "搜索文章、项目与实验",
+          zero_results: "没有找到关于 [SEARCH_TERM] 的内容",
+          clear_search: "清除",
+        },
+      });
+    };
+    const script = document.createElement("script");
+    script.src = pagefindScript;
+    script.onload = initializeSearch;
+    document.head.append(script);
+    document.addEventListener("astro:page-load", initializeSearch);
+  </script>
+</BaseLayout>
+
+<style>
+  .search-page {
+    width: min(calc(100% - 3rem), 56rem);
+    min-height: 70svh;
+    margin-inline: auto;
+    padding-block: clamp(4rem, 10vw, 8rem);
+  }
+
+  .search-page__eyebrow {
+    color: var(--color-accent);
+    font-family: var(--font-ui);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+  }
+
+  .search-page h1 {
+    font-size: clamp(3rem, 7vw, 6rem);
+  }
+
+  .search-page > p:not(.search-page__eyebrow) {
+    color: var(--color-muted);
+  }
+
+  [data-pagefind-search] {
+    margin-top: 3rem;
+    font-family: var(--font-ui);
+    --pagefind-ui-primary: var(--color-accent);
+    --pagefind-ui-text: var(--color-text);
+    --pagefind-ui-background: var(--color-surface);
+    --pagefind-ui-border: var(--color-border);
+    --pagefind-ui-tag: var(--color-surface-raised);
+    --pagefind-ui-border-width: 1px;
+    --pagefind-ui-border-radius: var(--radius-sm);
+  }
+
+  noscript {
+    display: block;
+    margin-top: 2rem;
+    color: var(--color-muted);
+  }
+
+  @media (max-width: 680px) {
+    .search-page {
+      width: min(calc(100% - 1.5rem), 56rem);
+    }
+  }
+</style>

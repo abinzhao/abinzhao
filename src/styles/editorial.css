@@ -1,0 +1,197 @@
+html {
+  color-scheme: light dark;
+  scroll-behavior: smooth;
+  background: var(--color-bg);
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  background-color: var(--color-bg);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 0.98rem + 0.1vw, 1.08rem);
+  line-height: 1.8;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+::selection {
+  background: var(--color-selection);
+  color: var(--color-text);
+}
+
+a {
+  color: inherit;
+  text-decoration-color: color-mix(in oklch, var(--color-accent), transparent 50%);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--color-accent);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+:where(a, button, input):focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+h1,
+h2,
+h3 {
+  margin-block: 0;
+  font-family: var(--font-display);
+  font-weight: 560;
+  line-height: 1.14;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+main {
+  position: relative;
+  z-index: 1;
+}
+
+.site-header {
+  position: sticky;
+  z-index: 50;
+  top: 0;
+  border-bottom: 1px solid color-mix(in oklch, var(--color-border), transparent 18%);
+  background: color-mix(in oklch, var(--color-bg), transparent 8%);
+  color: var(--color-text);
+  backdrop-filter: blur(16px);
+}
+
+.site-header__inner {
+  width: min(calc(100% - 2rem), var(--content-wide));
+  min-height: 4.25rem;
+  margin-inline: auto;
+}
+
+.brand-mark {
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+.brand-mark__signal {
+  background: var(--color-accent);
+  box-shadow: none;
+}
+
+.desktop-navigation a,
+.mobile-navigation a {
+  color: var(--color-muted);
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+}
+
+.desktop-navigation a:hover,
+.desktop-navigation a[aria-current="page"],
+.mobile-navigation a:hover,
+.mobile-navigation a[aria-current="page"] {
+  color: var(--color-accent);
+}
+
+.theme-toggle,
+.menu-toggle,
+.back-to-top {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: none;
+}
+
+.site-footer {
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-muted);
+}
+
+.site-footer__inner {
+  width: min(calc(100% - 2rem), var(--content-wide));
+  margin-inline: auto;
+}
+
+.button {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: 0.88rem;
+  font-weight: 750;
+  text-decoration: none;
+  transition: transform 160ms ease, background-color 160ms ease;
+}
+
+.button:hover {
+  transform: translateY(-2px);
+}
+
+.button--primary {
+  background: var(--color-accent);
+  color: var(--color-bg);
+}
+
+.button--primary:hover {
+  color: var(--color-bg);
+}
+
+.text-link,
+.home-text-link {
+  font-family: var(--font-ui);
+  font-size: 0.88rem;
+  font-weight: 750;
+}
+
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 180ms;
+  animation-timing-function: ease-out;
+}
+
+@media (max-width: 760px) {
+  .site-header__inner,
+  .site-footer__inner {
+    width: min(calc(100% - 1.25rem), var(--content-wide));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

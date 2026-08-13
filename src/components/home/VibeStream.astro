@@ -1,0 +1,39 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  entries: CollectionEntry<"vibes">[];
+}
+
+const { entries } = Astro.props;
+const dateFormatter = new Intl.DateTimeFormat("zh-CN", {
+  month: "2-digit",
+  day: "2-digit",
+  timeZone: "UTC",
+});
+---
+
+<section class="home-section home-vibes" aria-labelledby="vibes-title">
+  <header class="home-section__header">
+    <div>
+      <p class="home-kicker">VIBES / 02</p>
+      <h2 id="vibes-title">动态碎片</h2>
+    </div>
+    <p>开发过程里的短记录：刚验证的判断、踩过的边界，以及还没长成文章的想法。</p>
+  </header>
+  <ol class="vibe-list">
+    {
+      entries.map((entry) => (
+        <li>
+          <time datetime={entry.data.date.toISOString()}>
+            {dateFormatter.format(entry.data.date)}
+          </time>
+          <p>{entry.data.text}</p>
+          <ul aria-label="动态标签">
+            {entry.data.tags.map((tag) => <li>{tag}</li>)}
+          </ul>
+        </li>
+      ))
+    }
+  </ol>
+</section>

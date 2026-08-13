@@ -3,8 +3,8 @@ import { expect, test } from "@playwright/test";
 test("项目可筛选、深链且空分类有明确状态", async ({ page }) => {
   await page.goto("/abinzhao/projects/");
 
-  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
-    "data-cosmic-variant",
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-page-variant",
     "projects",
   );
   await expect(page.locator(".project-card__coordinate")).toHaveCount(5);
@@ -48,8 +48,8 @@ test("项目详情只展示真实字段并输出 SoftwareSourceCode JSON-LD", as
 }) => {
   await page.goto("/abinzhao/projects/harmony-next-blog/");
 
-  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
-    "data-cosmic-variant",
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-page-variant",
     "project",
   );
   await expect(

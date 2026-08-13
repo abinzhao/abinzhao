@@ -1,15 +1,17 @@
 ---
 import BackToTop from "@/components/global/BackToTop.astro";
-import CosmicScene from "@/components/global/CosmicScene.astro";
 import Footer from "@/components/global/Footer.astro";
 import SiteHeader from "@/components/global/SiteHeader.astro";
 import { buildCanonical } from "@/lib/seo";
 import { site, withoutBase, withBase } from "@/lib/site";
 import type { CosmicVariant } from "@/scripts/scenes/cosmic/types";
+import "@fontsource-variable/fraunces/wght.css";
+import "@fontsource-variable/jetbrains-mono/wght.css";
+import "@fontsource-variable/literata/wght.css";
 import "@/styles/base.css";
 import "@/styles/components.css";
-import "@/styles/cosmic.css";
 import "@/styles/tokens.css";
+import "@/styles/editorial.css";
 
 interface Props {
   title?: string;
@@ -66,8 +68,7 @@ const socialImage = new URL(image, site.url).toString();
       set:html={`(()=>{let s=null;try{s=localStorage.getItem("zjb-theme")}catch{}let d=false;try{d=matchMedia("(prefers-color-scheme: dark)").matches}catch{}document.documentElement.dataset.theme=s==="light"||s==="dark"?s:(d?"dark":"light")})()`}
     />
   </head>
-  <body data-cosmic-page={cosmicVariant}>
-    <CosmicScene variant={cosmicVariant} />
+  <body data-page-variant={cosmicVariant}>
     <a class="skip-link" href="#main-content">跳到主要内容</a>
     <SiteHeader />
     <main id="main-content">

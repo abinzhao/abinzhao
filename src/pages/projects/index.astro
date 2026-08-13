@@ -5,6 +5,7 @@ import ProjectFilters from "@/components/projects/ProjectFilters.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getProjectCategories, sortProjects } from "@/lib/content";
 import "@/styles/projects.css";
+import "@/styles/editorial-projects.css";
 
 const entries = await getCollection("projects", ({ data }) => !data.draft);
 const projects = sortProjects(

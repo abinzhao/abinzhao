@@ -10,7 +10,13 @@ interface Props {
 }
 
 const { project, featured = false, index } = Astro.props;
-const { title, slug, summary, category, tags, repositoryUrl } = project.data;
+const { title, slug, summary, category, tags, repositoryUrl, role, status } =
+  project.data;
+const statusLabels = {
+  completed: "已完成",
+  ongoing: "持续维护",
+  archived: "已归档",
+} as const;
 ---
 
 <article
@@ -50,4 +56,21 @@ const { title, slug, summary, category, tags, repositoryUrl } = project.data;
       GitHub <span aria-hidden="true">↗</span>
     </a>
   </div>
+  <details class="project-card__boundary">
+    <summary>查看工程边界</summary>
+    <dl>
+      <div>
+        <dt>公开身份</dt>
+        <dd>{role}</dd>
+      </div>
+      <div>
+        <dt>当前状态</dt>
+        <dd>{statusLabels[status]}</dd>
+      </div>
+      <div>
+        <dt>可验证来源</dt>
+        <dd><a href={repositoryUrl}>GitHub 仓库</a></dd>
+      </div>
+    </dl>
+  </details>
 </article>

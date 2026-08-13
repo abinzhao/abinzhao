@@ -1,33 +1,47 @@
 @import "tailwindcss";
 
 @theme {
-  --color-orbit-bg: #010205;
-  --color-orbit-text: #f3fafc;
-  --color-orbit-warm: #ffe0b8;
-  --color-orbit-signal: #80eeff;
-  --color-orbit-violet: #6488ff;
+  --color-paper: oklch(97% 0.008 85);
+  --color-ink: oklch(22% 0.015 45);
+  --color-clay: oklch(52% 0.18 35);
 }
 
 :root[data-theme="dark"] {
-  --color-bg: #010205;
-  --color-surface: rgba(4, 16, 26, 0.88);
-  --color-text: #f3fafc;
-  --color-muted: #9aaeb7;
-  --color-border: rgba(128, 238, 255, 0.18);
-  --color-accent: #80eeff;
-  --color-focus: #ffe0b8;
-  --cosmic-nebula: rgba(27, 124, 164, 0.22);
-  --cosmic-horizon: rgba(51, 139, 255, 0.24);
+  --color-bg: oklch(18% 0.01 45);
+  --color-surface: oklch(21% 0.012 45);
+  --color-surface-raised: oklch(24% 0.014 45);
+  --color-text: oklch(92% 0.005 85);
+  --color-muted: oklch(72% 0.012 65);
+  --color-border: oklch(34% 0.014 55);
+  --color-accent: oklch(69% 0.15 35);
+  --color-accent-muted: oklch(48% 0.08 35);
+  --color-focus: oklch(78% 0.13 75);
+  --color-selection: oklch(55% 0.18 35);
+  --shadow-card: 0 1px 3px rgb(0 0 0 / 18%);
 }
 
 :root[data-theme="light"] {
-  --color-bg: #eaf2f5;
-  --color-surface: rgba(240, 247, 249, 0.9);
-  --color-text: #09171d;
-  --color-muted: #425a64;
-  --color-border: rgba(7, 91, 120, 0.2);
-  --color-accent: #075b78;
-  --color-focus: #b66a24;
-  --cosmic-nebula: rgba(71, 139, 164, 0.2);
-  --cosmic-horizon: rgba(182, 106, 36, 0.16);
+  --color-bg: oklch(97% 0.008 85);
+  --color-surface: oklch(98% 0.006 85);
+  --color-surface-raised: oklch(99% 0.004 85);
+  --color-text: oklch(22% 0.015 45);
+  --color-muted: oklch(43% 0.012 50);
+  --color-border: oklch(88% 0.012 85);
+  --color-accent: oklch(48% 0.18 35);
+  --color-accent-muted: oklch(68% 0.08 35);
+  --color-focus: oklch(43% 0.16 35);
+  --color-selection: oklch(78% 0.1 35);
+  --shadow-card: 0 1px 3px rgb(56 38 26 / 7%);
+}
+
+:root {
+  --font-display: "Fraunces Variable", "Noto Serif SC", "Songti SC", serif;
+  --font-body: "Literata Variable", "Noto Serif SC", "Songti SC", serif;
+  --font-ui: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Noto Sans SC", sans-serif;
+  --font-mono: "JetBrains Mono Variable", "SFMono-Regular", Consolas, monospace;
+  --radius-sm: 0.4rem;
+  --radius-md: 0.7rem;
+  --content-wide: 76rem;
+  --content-reading: 46rem;
 }

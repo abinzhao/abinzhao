@@ -29,37 +29,26 @@ test("桌面首页优先展示真实静态内容并按顺序组织叙事", async
   await page.goto("/abinzhao/");
 
   await expect(
-    page.getByRole("heading", { name: "把复杂，做得有意思。" }),
+    page.getByRole("heading", {
+      name: "在鸿蒙上，用前端的方式，把 AI 变成应用。",
+    }),
   ).toBeVisible();
-  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
-    "data-cosmic-variant",
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-page-variant",
     "home",
   );
-  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
-    "data-scene-state",
-    "ready",
-  );
-  await expect(page.locator("[data-cosmic-canvas]")).toBeVisible();
+  await expect(page.locator("canvas")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "最新文章" })).toBeVisible();
+  await expect(page.locator("[data-home-post]")).toHaveCount(1);
+  await expect(page.getByRole("heading", { name: "动态碎片" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "精选项目" })).toBeVisible();
   await expect(page.locator("[data-home-project]")).toHaveCount(3);
-  await expect(page.getByRole("heading", { name: "最新博客" })).toBeVisible();
-  await expect(page.locator("[data-home-post]")).toHaveCount(1);
   await expect(page.getByRole("heading", { name: "实验预览" })).toBeVisible();
   await expect(page.locator("[data-home-experiment]")).toHaveCount(3);
   await expect(
-    page.getByRole("heading", { name: "还想知道更多？" }),
+    page.getByRole("heading", { name: "保持低频联系" }),
   ).toBeVisible();
 
-  const sectionOrder = await page
-    .locator("main > [data-home-section]")
-    .evaluateAll((sections) => sections.map((section) => section.id));
-  expect(sectionOrder).toEqual([
-    "hero",
-    "featured-projects",
-    "latest-blog",
-    "playground-preview",
-    "about",
-  ]);
   expect(diagnostics).toEqual({
     errors: [],
     heroWarnings: [],
@@ -67,17 +56,13 @@ test("桌面首页优先展示真实静态内容并按顺序组织叙事", async
   });
 });
 
-test("reduced-motion 保留 fallback 且不启动 Canvas 场景", async ({ page }) => {
+test("reduced-motion 保留完整内容且不启动 Canvas 场景", async ({ page }) => {
   const diagnostics = collectRuntimeDiagnostics(page);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/abinzhao/");
 
-  await expect(page.locator(".cosmic-scene__fallback")).toBeVisible();
-  await expect(page.locator("[data-cosmic-canvas]")).toHaveCount(0);
-  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
-    "data-scene-state",
-    "static",
-  );
+  await expect(page.getByRole("heading", { name: "最新文章" })).toBeVisible();
+  await expect(page.locator("canvas")).toHaveCount(0);
   expect(diagnostics).toEqual({
     errors: [],
     heroWarnings: [],
@@ -103,33 +88,21 @@ test("滚动增强在动态导入前建立离页清理边界", () => {
   expect(postImportGuard).toBeGreaterThan(dynamicImport);
 });
 
-test("GSAP 动态导入失败时不产生未处理 rejection", async ({ page }) => {
+test("首页不再请求 GSAP 动态运行时", async ({ page }) => {
   const runtimeErrors: string[] = [];
+  const gsapRequests: string[] = [];
   page.on("pageerror", (error) => runtimeErrors.push(error.message));
-  await page.addInitScript(() => {
-    window.addEventListener("unhandledrejection", (event) => {
-      document.documentElement.dataset.unhandledRejection = String(
-        event.reason,
-      );
-    });
+  page.on("request", (request) => {
+    if (/\/_astro\/gsap\..+\.js$/.test(request.url())) {
+      gsapRequests.push(request.url());
+    }
   });
-  await page.route(/\/_astro\/gsap\..+\.js$/, (route) =>
-    route.abort("failed"),
-  );
-  const failedImport = page.waitForEvent(
-    "requestfailed",
-    (request) => /\/_astro\/gsap\..+\.js$/.test(request.url()),
-  );
 
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/abinzhao/");
-  await failedImport;
-  await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 0)));
 
   expect(runtimeErrors).toEqual([]);
-  await expect(page.locator("html")).not.toHaveAttribute(
-    "data-unhandled-rejection",
-  );
+  expect(gsapRequests).toEqual([]);
 });
 
 test("无 JavaScript 时 Hero 文案与主要链接完整可用", async ({ browser }) => {
@@ -138,27 +111,27 @@ test("无 JavaScript 时 Hero 文案与主要链接完整可用", async ({ brows
   await page.goto("/abinzhao/");
 
   await expect(
-    page.getByRole("heading", { name: "把复杂，做得有意思。" }),
+    page.getByRole("heading", {
+      name: "在鸿蒙上，用前端的方式，把 AI 变成应用。",
+    }),
   ).toBeVisible();
-  await expect(page.getByText("赵建斌 / 开发者与实验者")).toBeVisible();
+  await expect(page.getByText("前端工程师")).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "查看项目", exact: true }),
-  ).toHaveAttribute("href", "/abinzhao/projects/");
+    page.getByRole("link", { name: /看最新文章/ }),
+  ).toHaveAttribute("href", "/abinzhao/blog/");
   await expect(
-    page.getByRole("link", { name: "进入实验室", exact: true }),
-  ).toHaveAttribute("href", "/abinzhao/playground/");
-  await expect(page.locator(".hero__fallback")).toBeVisible();
+    page.getByRole("link", { name: "了解我在做什么" }),
+  ).toHaveAttribute("href", "/abinzhao/about/");
+  await expect(page.locator("canvas")).toHaveCount(0);
 
   await context.close();
 });
 
-test("滚动至终点后进入银河核心并显示内容节点", async ({ page }) => {
+test("滚动后文章、动态与项目内容保持可访问", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/abinzhao/");
-  await page.locator("[data-cosmic-journey]").evaluate((element) => {
-    window.scrollTo(0, element.getBoundingClientRect().height);
-  });
+  await page.getByRole("heading", { name: "动态碎片" }).scrollIntoViewIfNeeded();
 
-  await expect(page.locator("[data-galaxy-copy]")).toHaveCSS("opacity", "1");
-  await expect(page.locator("[data-cosmic-cards]")).toHaveCSS("opacity", "1");
+  await expect(page.getByRole("heading", { name: "动态碎片" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "精选项目" })).toBeVisible();
 });

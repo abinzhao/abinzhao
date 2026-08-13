@@ -11,6 +11,7 @@ import { getAdjacentEntries, getReadingMinutes } from "@/lib/content";
 import { buildBlogPostingJsonLd } from "@/lib/seo";
 import { withBase } from "@/lib/site";
 import "@/styles/blog.css";
+import "@/styles/editorial-article.css";
 
 export async function getStaticPaths() {
   const entries = (await getCollection(
@@ -27,6 +28,13 @@ export async function getStaticPaths() {
     props: {
       entry,
       adjacent: getAdjacentEntries(sortableEntries, entry.data.slug),
+      related: entries
+        .filter(
+          (candidate) =>
+            candidate.data.slug !== entry.data.slug &&
+            candidate.data.tags.some((tag) => entry.data.tags.includes(tag)),
+        )
+        .slice(0, 2),
     },
   }));
 }
@@ -37,9 +45,10 @@ interface Props {
     previous?: CollectionEntry<"blog">;
     next?: CollectionEntry<"blog">;
   };
+  related: CollectionEntry<"blog">[];
 }
 
-const { entry, adjacent }: Props = Astro.props;
+const { entry, adjacent, related }: Props = Astro.props;
 const { Content, headings } = await render(entry);
 const { title, slug, summary, date, updatedAt, category, subcategory, tags } =
   entry.data;
@@ -61,6 +70,9 @@ const jsonLd = buildBlogPostingJsonLd({
   jsonLd={jsonLd}
   cosmicVariant="article"
 >
+  <div class="reading-progress" data-reading-progress aria-hidden="true">
+    <span data-reading-progress-bar></span>
+  </div>
   <article class="article-detail">
     <header class="article-header">
       <a class="article-header__back" href={withBase("/blog/")}>← 返回博客</a>
@@ -101,6 +113,29 @@ const jsonLd = buildBlogPostingJsonLd({
       </div>
       <ArticleToc headings={headings} />
     </div>
+
+    <section class="article-feedback" aria-labelledby="article-feedback-title">
+      <p id="article-feedback-title">这篇文章对你有帮助吗？</p>
+      <button type="button" data-article-feedback>这个观点改变了我的想法</button>
+      <span data-feedback-status aria-live="polite"></span>
+    </section>
+
+    {
+      related.length > 0 && (
+        <section class="article-related" aria-labelledby="article-related-title">
+          <h2 id="article-related-title">继续阅读</h2>
+          <ul>
+            {related.map((item) => (
+              <li>
+                <a href={withBase(`/blog/${item.data.slug}/`)}>
+                  {item.data.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
 
     <ArticlePager {...adjacent} />
   </article>

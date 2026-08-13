@@ -17,6 +17,21 @@ const principles = [
   "优先建立可验证的交付闭环，再扩展复杂度。",
   "保持实现边界清晰，让跨端体验一致但不机械复制。",
 ] as const;
+
+const nowDoing = [
+  {
+    label: "在写",
+    value: "HarmonyOS Next 学习路径与前端经验迁移",
+  },
+  {
+    label: "在做",
+    value: "用 Astro 维护一个内容优先、可长期演进的个人站",
+  },
+  {
+    label: "在思考",
+    value: "AI 能力如何进入应用，而不是停留在演示界面",
+  },
+] as const;
 ---
 
 <BaseLayout
@@ -29,17 +44,35 @@ const principles = [
     <header class="about-hero">
       <p class="about-rail">ABOUT / PROFILE</p>
       <div>
-        <p class="about-kicker">轨道实验室 · 公开档案</p>
+        <p class="about-kicker">前端 · 鸿蒙 · AI</p>
         <h1>关于{site.owner}</h1>
         <p class="about-lead">
-          专注前端工程、HarmonyOS 与跨端应用开发，重视问题定义、实现边界和可验证交付。
+          以网页工程为根基，持续学习 HarmonyOS，并关注 AI
+          能力如何成为可交付、可维护的应用体验。
         </p>
       </div>
     </header>
 
+    <section class="about-section now-doing" aria-labelledby="now-title">
+      <div class="section-heading">
+        <p>01 / NOW</p>
+        <h2 id="now-title">现在在做什么</h2>
+      </div>
+      <dl>
+        {
+          nowDoing.map((item) => (
+            <div>
+              <dt>{item.label}</dt>
+              <dd>{item.value}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </section>
+
     <section class="about-section" aria-labelledby="technology-title">
       <div class="section-heading">
-        <p>01 / TECHNOLOGY</p>
+        <p>02 / TECHNOLOGY</p>
         <h2 id="technology-title">技术坐标</h2>
       </div>
       <div class="technology-grid">
@@ -61,7 +94,7 @@ const principles = [
 
     <section class="about-section principles" aria-labelledby="principles-title">
       <div class="section-heading">
-        <p>02 / PRINCIPLES</p>
+        <p>03 / PRINCIPLES</p>
         <h2 id="principles-title">工作原则</h2>
       </div>
       <ol>
@@ -78,7 +111,7 @@ const principles = [
 
     <section class="about-section contact" id="contact" aria-labelledby="contact-title">
       <div class="section-heading">
-        <p>03 / CONTACT</p>
+        <p>04 / CONTACT</p>
         <h2 id="contact-title">保持联系</h2>
       </div>
       <div class="contact-copy">
@@ -108,19 +141,7 @@ const principles = [
   }
 
   .about-page::before {
-    position: absolute;
-    z-index: -1;
-    top: 5rem;
-    right: -14%;
-    width: min(64vw, 48rem);
-    aspect-ratio: 1;
-    border: 1px solid var(--cosmic-horizon);
-    border-radius: 50%;
-    box-shadow:
-      0 0 2rem var(--cosmic-horizon),
-      inset 0 0 4rem color-mix(in srgb, var(--cosmic-horizon) 45%, transparent);
-    content: "";
-    opacity: 0.72;
+    display: none;
   }
 
   .about-hero,
@@ -182,6 +203,35 @@ const principles = [
     grid-template-columns: repeat(2, minmax(0, 1fr));
     border-top: 1px solid var(--color-border);
     border-left: 1px solid var(--color-border);
+  }
+
+  .now-doing dl {
+    margin: 0;
+  }
+
+  .now-doing dl div {
+    display: grid;
+    grid-template-columns: 6rem 1fr;
+    gap: 1rem;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .now-doing dl div:first-child {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .now-doing dt {
+    color: var(--color-accent);
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    font-weight: 750;
+  }
+
+  .now-doing dd {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.2rem;
   }
 
   .technology-group {
@@ -298,6 +348,10 @@ const principles = [
     }
 
     .technology-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .now-doing dl div {
       grid-template-columns: 1fr;
     }
 

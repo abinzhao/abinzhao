@@ -9,8 +9,8 @@ const experiments = [
 test("实验列表只展示真实集合中的三个公开实验", async ({ page }) => {
   await page.goto("/abinzhao/playground/");
 
-  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
-    "data-cosmic-variant",
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-page-variant",
     "playground",
   );
 
@@ -28,8 +28,8 @@ test("粒子银河详情保留说明、控制区和返回入口", async ({ page 
   await expect(page.locator("canvas")).toHaveCount(1);
   await expect(page.locator("[data-experiment-canvas]")).toHaveCount(1);
   await expect(page.locator("[data-cosmic-canvas]")).toHaveCount(0);
-  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
-    "data-cosmic-variant",
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-page-variant",
     "experiment",
   );
 

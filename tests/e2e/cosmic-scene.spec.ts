@@ -5,7 +5,7 @@ for (const viewport of [
   { width: 900, height: 900 },
   { width: 390, height: 844 },
 ]) {
-  test(`宇宙首页构图适配 ${viewport.width}px`, async ({ page }) => {
+  test(`编辑式首页构图适配 ${viewport.width}px`, async ({ page }) => {
     await page.setViewportSize(viewport);
     await page.goto("/abinzhao/");
 
@@ -16,8 +16,8 @@ for (const viewport of [
         ),
       )
       .toBe(true);
-    await expect(page.locator("[data-hero-copy]")).toBeVisible();
-    await expect(page.locator("[data-cosmic-scene]")).toBeVisible();
+    await expect(page.locator(".hero__copy")).toBeVisible();
+    await expect(page.locator("canvas")).toHaveCount(0);
   });
 }
 
@@ -34,7 +34,7 @@ test("移动端无 JavaScript 首帧导航不挤压首页内容", async ({ brows
   await expect(navigation).toHaveCSS("position", "fixed");
 
   const headerBox = await page.locator("[data-site-header]").boundingBox();
-  const heroBox = await page.locator("[data-cosmic-journey]").boundingBox();
+  const heroBox = await page.locator(".hero").boundingBox();
   expect(headerBox).not.toBeNull();
   expect(heroBox).not.toBeNull();
   expect(heroBox!.y).toBeLessThanOrEqual(headerBox!.height + 1);
@@ -42,23 +42,19 @@ test("移动端无 JavaScript 首帧导航不挤压首页内容", async ({ brows
   await context.close();
 });
 
-test("普通页面只挂载一个全局宇宙 Canvas", async ({ page }) => {
+test("普通页面不挂载全局宇宙 Canvas", async ({ page }) => {
   await page.goto("/abinzhao/projects/");
 
-  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
-    "data-cosmic-variant",
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-page-variant",
     "projects",
   );
-  await expect(page.locator("[data-cosmic-canvas]")).toHaveCount(1);
+  await expect(page.locator("canvas")).toHaveCount(0);
 });
 
 test("实验详情只保留实验自身 Canvas", async ({ page }) => {
   await page.goto("/abinzhao/playground/particle-galaxy/");
 
-  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
-    "data-render-mode",
-    "static",
-  );
   await expect(page.locator("[data-cosmic-canvas]")).toHaveCount(0);
   await expect(page.locator("[data-experiment-canvas]")).toHaveCount(1);
 });
@@ -76,24 +72,9 @@ test("地球纹理可从 GitHub Pages base 下本地访问", async ({ request })
   }
 });
 
-test("WebGL context loss switches to fallback without rebuilding", async ({
-  page,
-}) => {
+test("主站页面切换后仍不创建全局 Canvas", async ({ page }) => {
   await page.goto("/abinzhao/");
-  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
-    "data-scene-state",
-    "ready",
-  );
-
-  await page.locator("[data-cosmic-canvas]").evaluate((canvas) => {
-    canvas.dispatchEvent(
-      new Event("webglcontextlost", { cancelable: true }),
-    );
-  });
-
-  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
-    "data-scene-state",
-    "fallback",
-  );
-  await expect(page.locator("[data-cosmic-canvas]")).toHaveCount(1);
+  await page.getByRole("link", { name: "项目", exact: true }).click();
+  await expect(page).toHaveURL(/\/projects\/$/);
+  await expect(page.locator("canvas")).toHaveCount(0);
 });

@@ -92,4 +92,19 @@ const playground = defineCollection({
   }),
 });
 
-export const collections = { projects, blog, playground };
+const vibes = defineCollection({
+  loader: glob({
+    pattern: "**/*.md",
+    base: "./src/content/vibes",
+    generateId,
+  }),
+  schema: z.object({
+    slug,
+    date: z.coerce.date(),
+    text: z.string().min(1),
+    tags: z.array(z.string().min(1)).default([]),
+    draft: z.boolean().default(false),
+  }),
+});
+
+export const collections = { projects, blog, playground, vibes };

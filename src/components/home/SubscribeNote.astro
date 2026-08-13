@@ -1,0 +1,14 @@
+---
+import { withBase } from "@/lib/site";
+---
+
+<section class="home-section subscribe-note" aria-labelledby="subscribe-title">
+  <p class="home-kicker">KEEP IN TOUCH / 05</p>
+  <div>
+    <h2 id="subscribe-title">保持低频联系</h2>
+    <p>
+      暂不收集邮箱。通过 RSS 订阅，你可以在自己的阅读器里收到新文章，没有广告，也没有追踪。
+    </p>
+  </div>
+  <a class="button button--primary" href={withBase("/rss.xml")}>订阅 RSS <span aria-hidden="true">↗</span></a>
+</section>

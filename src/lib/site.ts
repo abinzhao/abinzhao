@@ -31,16 +31,18 @@ export function withoutBase(path: string): string {
 export const site = {
   name: "ZJB.DEV",
   owner: "赵建斌",
-  title: "ZJB.DEV｜赵建斌的数字实验室",
-  description: "赵建斌的项目、技术文章与创意代码实验室。",
-  slogan: "把复杂，做得有意思。",
+  title: "ZJB.DEV｜前端、鸿蒙与 AI 应用实践",
+  description:
+    "赵建斌关于前端工程、HarmonyOS 与 AI 应用架构的文章、项目和实践记录。",
+  slogan: "在鸿蒙上，用前端的方式，把 AI 变成应用。",
   url: "https://abinzhao.github.io/abinzhao",
   navigation: [
     { href: withBase("/"), label: "首页" },
+    { href: withBase("/blog/"), label: "文章" },
     { href: withBase("/projects/"), label: "项目" },
-    { href: withBase("/blog/"), label: "博客" },
-    { href: withBase("/playground/"), label: "实验室" },
+    { href: withBase("/playground/"), label: "实验" },
     { href: withBase("/about/"), label: "关于" },
+    { href: withBase("/search/"), label: "搜索" },
   ],
   social: [
     { label: "GitHub", href: "https://github.com/abinzhao" },

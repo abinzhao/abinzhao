@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test("全局壳输出品牌、SEO 和可访问导航", async ({ page }) => {
   await page.goto("/abinzhao/");
 
-  await expect(page).toHaveTitle("ZJB.DEV｜赵建斌的数字实验室");
+  await expect(page).toHaveTitle("ZJB.DEV｜前端、鸿蒙与 AI 应用实践");
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
     "href",
     "https://abinzhao.github.io/abinzhao/",

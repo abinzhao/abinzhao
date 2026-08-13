@@ -5,8 +5,8 @@ test("About 展示六类公开技术方向、联系入口和隐私边界", async
 }) => {
   await page.goto("/abinzhao/about/");
 
-  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
-    "data-cosmic-variant",
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-page-variant",
     "about",
   );
 
@@ -46,8 +46,8 @@ test("Contact 原始 HTML 提供正确 canonical 和无 JavaScript 跳转链接"
 test("404 页面提供信号丢失说明和四个恢复入口", async ({ page }) => {
   await page.goto("/abinzhao/404/");
 
-  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
-    "data-cosmic-variant",
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-page-variant",
     "not-found",
   );
   await expect(

@@ -12,27 +12,26 @@ test("首页展示品牌、Slogan 与四个主入口", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/abinzhao/");
 
-  await expect(page).toHaveTitle("ZJB.DEV｜赵建斌的数字实验室");
+  await expect(page).toHaveTitle("ZJB.DEV｜前端、鸿蒙与 AI 应用实践");
   await expect(page.getByRole("link", { name: "ZJB.DEV 首页" })).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "把复杂，做得有意思。" }),
+    page.getByRole("heading", {
+      name: "在鸿蒙上，用前端的方式，把 AI 变成应用。",
+    }),
   ).toBeVisible();
-  const primaryEntries = page.getByLabel("首页快速入口");
-  for (const entry of ["关于", "项目", "博客", "实验室"]) {
-    await expect(
-      primaryEntries.getByRole("link", { name: new RegExp(entry) }),
-    ).toBeVisible();
+  for (const role of ["前端工程师", "鸿蒙开发者", "AI 实践者"]) {
+    await expect(page.getByText(role)).toBeVisible();
   }
 });
 
-test("博客详情只加载共享宇宙场景而不创建实验 Canvas", async ({ page }) => {
+test("博客详情不加载全局宇宙场景或实验 Canvas", async ({ page }) => {
   await page.goto("/abinzhao/blog/harmonyos-next-learning-path/");
 
-  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
-    "data-cosmic-variant",
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-page-variant",
     "article",
   );
-  await expect(page.locator("[data-cosmic-canvas]")).toHaveCount(1);
+  await expect(page.locator("[data-cosmic-canvas]")).toHaveCount(0);
   await expect(page.locator("[data-experiment-canvas]")).toHaveCount(0);
 });
 
@@ -82,18 +81,14 @@ test("390px 菜单可打开且核心触控目标不小于 44px", async ({ page }
   }
 });
 
-test("reduced-motion 首页保留静态 fallback 且不创建 Three.js Canvas", async ({
+test("reduced-motion 首页保留完整内容且不创建 Three.js Canvas", async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/abinzhao/");
 
-  await expect(page.locator(".hero__fallback")).toBeVisible();
-  await expect(page.locator("[data-hero-scene]")).toHaveCount(0);
-  await expect(page.locator("[data-cosmic-scene]")).toHaveAttribute(
-    "data-scene-state",
-    "static",
-  );
+  await expect(page.getByRole("heading", { name: "最新文章" })).toBeVisible();
+  await expect(page.locator("canvas")).toHaveCount(0);
 });
 
 test("联系兼容路由跳转到 About 联系区或提供可用迁移入口", async ({
