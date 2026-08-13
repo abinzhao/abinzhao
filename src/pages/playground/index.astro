@@ -2,7 +2,7 @@
 import { getCollection } from "astro:content";
 import ExperimentCard from "@/components/playground/ExperimentCard.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import "@/styles/playground.css";
+import "@/styles/glass-playground.css";
 
 const experiments = (
   await getCollection("playground", ({ data }) => !data.draft)

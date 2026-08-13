@@ -4,7 +4,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import { projectCategoryLabels } from "@/lib/content";
 import { buildProjectJsonLd } from "@/lib/seo";
 import { withBase } from "@/lib/site";
-import "@/styles/projects.css";
+import "@/styles/glass-content.css";
 
 export async function getStaticPaths() {
   const projects = await getCollection(

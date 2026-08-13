@@ -2,7 +2,7 @@
 import { getCollection } from "astro:content";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { withBase } from "@/lib/site";
-import "@/styles/blog.css";
+import "@/styles/glass-content.css";
 
 const entries = await getCollection("blog", ({ data }) => !data.draft);
 const counts = new Map<string, number>();

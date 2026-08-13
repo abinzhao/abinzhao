@@ -9,8 +9,7 @@ import VibeStream from "@/components/home/VibeStream.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { sortProjects } from "@/lib/content";
 import { buildPersonJsonLd } from "@/lib/seo";
-import "@/styles/home.css";
-import "@/styles/editorial-home.css";
+import "@/styles/glass-home.css";
 
 const projects = sortProjects(
   (await getCollection("projects", ({ data }) => !data.draft)).map(

@@ -1,0 +1,306 @@
+.about-page,
+.search-page,
+.lost-signal,
+.redirect-page {
+  width: min(calc(100% - 2rem), var(--content-wide));
+  margin-inline: auto;
+}
+
+.about-page {
+  overflow: visible;
+  padding: 0 0 2rem;
+}
+
+body .about-page::before {
+  display: none;
+}
+
+body .about-page .about-hero,
+body .about-page .about-section,
+.search-page,
+.lost-signal,
+.redirect-page {
+  position: relative;
+  overflow: hidden;
+  margin-top: 2.4rem;
+  padding: clamp(3rem, 6vw, 5rem);
+  border: 1px solid var(--glass-highlight);
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(circle at 92% 6%, color-mix(in oklch, var(--color-accent-secondary), transparent 72%), transparent 32%),
+    var(--glass);
+  box-shadow: var(--shadow-card), inset 0 1px 0 var(--glass-highlight);
+  backdrop-filter: blur(30px) saturate(145%);
+}
+
+body .about-page .about-hero,
+body .about-page .about-section {
+  display: grid;
+  grid-template-columns: minmax(9rem, 0.28fr) minmax(0, 1fr);
+  gap: 2rem;
+  border-top: 1px solid var(--glass-highlight);
+}
+
+body .about-page .about-hero {
+  min-height: 32rem;
+  align-items: center;
+}
+
+body .about-page .about-rail,
+body .about-page .about-kicker,
+body .about-page .section-heading p,
+.search-page__eyebrow {
+  margin: 0;
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 780;
+  letter-spacing: 0.12em;
+}
+
+body .about-page .about-rail {
+  align-self: start;
+  writing-mode: vertical-rl;
+}
+
+body .about-page .about-hero h1,
+.search-page h1,
+.lost-signal h1,
+.redirect-page h1 {
+  max-width: 10ch;
+  margin: 0.8rem 0 1.5rem;
+  font-size: clamp(3.2rem, 8vw, 7rem);
+  line-height: 0.94;
+}
+
+body .about-page .about-lead,
+.search-page > p:not(.search-page__eyebrow),
+.lost-signal p,
+.redirect-page p {
+  max-width: 44rem;
+  color: var(--color-muted);
+  font-size: 1.08rem;
+}
+
+body .about-page .section-heading h2 {
+  margin-top: 0.4rem;
+  font-size: clamp(1.7rem, 3vw, 2.7rem);
+}
+
+body .about-page .now-doing dl,
+body .about-page .principles ol {
+  margin: 0;
+  padding: 0;
+}
+
+body .about-page .now-doing dl div,
+body .about-page .principles li {
+  display: grid;
+  grid-template-columns: 6rem 1fr;
+  gap: 1rem;
+  padding: 1.2rem;
+  border: 1px solid var(--glass-highlight);
+  border-radius: var(--radius-md);
+  background: color-mix(in oklch, var(--glass-strong), transparent 8%);
+}
+
+body .about-page .now-doing dl div + div,
+body .about-page .principles li + li {
+  margin-top: 0.7rem;
+}
+
+body .about-page .now-doing dt,
+body .about-page .principles li > span {
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+}
+
+body .about-page .now-doing dd,
+body .about-page .principles li p {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.16rem;
+}
+
+body .about-page .technology-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  border: 0;
+}
+
+body .about-page .technology-group {
+  min-height: 12rem;
+  padding: 1.4rem;
+  border: 1px solid var(--glass-highlight);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(circle at 95% 5%, color-mix(in oklch, var(--color-mint), transparent 70%), transparent 38%),
+    var(--glass-strong);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+body .about-page .technology-group h3 {
+  margin: 1.4rem 0 0.7rem;
+  font-size: 1.5rem;
+}
+
+body .about-page .technology-group > span {
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+}
+
+body .about-page .technology-group ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+body .about-page .technology-group li {
+  padding: 0.28rem 0.6rem;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--color-selection), transparent 38%);
+  color: var(--color-muted);
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+}
+
+body .about-page .contact-copy nav {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 1.5rem;
+}
+
+body .about-page .contact-copy a {
+  display: flex;
+  min-height: 3.2rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--glass-highlight);
+  border-radius: var(--radius-md);
+  background: var(--glass-strong);
+  font-family: var(--font-ui);
+  font-weight: 720;
+  text-decoration: none;
+}
+
+[data-pagefind-search] {
+  margin-top: 2.5rem;
+  font-family: var(--font-ui);
+  --pagefind-ui-primary: var(--color-accent);
+  --pagefind-ui-text: var(--color-text);
+  --pagefind-ui-background: var(--glass-strong);
+  --pagefind-ui-border: var(--color-border);
+  --pagefind-ui-tag: var(--color-selection);
+  --pagefind-ui-border-width: 1px;
+  --pagefind-ui-border-radius: var(--radius-md);
+}
+
+.lost-signal {
+  display: grid;
+  min-height: 68svh;
+  grid-template-columns: minmax(15rem, 0.8fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: 3rem;
+}
+
+.black-hole {
+  position: relative;
+  display: grid;
+  min-height: 22rem;
+  place-items: center;
+}
+
+.black-hole__core {
+  width: 10rem;
+  aspect-ratio: 1;
+  border-radius: 42% 58% 62% 38%;
+  background: linear-gradient(145deg, var(--color-mint), var(--color-accent), var(--color-accent-secondary));
+  box-shadow: 0 28px 70px color-mix(in oklch, var(--color-accent), transparent 60%), inset 1rem 1rem 2rem oklch(100% 0 0 / 34%);
+  animation: lost-blob 12s ease-in-out infinite alternate;
+}
+
+.black-hole__ring {
+  position: absolute;
+  width: 15rem;
+  height: 7rem;
+  border: 1px solid var(--glass-highlight);
+  border-radius: 50%;
+  transform: rotate(-18deg);
+}
+
+.particle-field {
+  display: none;
+}
+
+.lost-signal__copy nav,
+.redirect-page nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: 1.5rem;
+}
+
+.lost-signal__copy a,
+.redirect-page a {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-secondary));
+  color: white;
+  font-family: var(--font-ui);
+  font-weight: 740;
+  text-decoration: none;
+}
+
+@keyframes lost-blob {
+  from { border-radius: 42% 58% 62% 38%; transform: rotate(-8deg); }
+  to { border-radius: 61% 39% 44% 56%; transform: rotate(12deg); }
+}
+
+@media (max-width: 760px) {
+  .about-page,
+  .search-page,
+  .lost-signal,
+  .redirect-page {
+    width: calc(100% - 1rem);
+  }
+
+  body .about-page .about-hero,
+  body .about-page .about-section,
+  .search-page,
+  .lost-signal,
+  .redirect-page {
+    margin-top: 1.5rem;
+    padding: 3rem 1.3rem;
+    border-radius: var(--radius-lg);
+  }
+
+  body .about-page .about-hero,
+  body .about-page .about-section,
+  .lost-signal {
+    grid-template-columns: 1fr;
+  }
+
+  body .about-page .about-rail {
+    position: static;
+    writing-mode: initial;
+  }
+
+  body .about-page .technology-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body .about-page .now-doing dl div,
+  body .about-page .principles li {
+    grid-template-columns: 1fr;
+  }
+}

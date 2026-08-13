@@ -1,17 +1,30 @@
 ---
 import BackToTop from "@/components/global/BackToTop.astro";
+import AmbientLight from "@/components/global/AmbientLight.astro";
 import Footer from "@/components/global/Footer.astro";
 import SiteHeader from "@/components/global/SiteHeader.astro";
 import { buildCanonical } from "@/lib/seo";
 import { site, withoutBase, withBase } from "@/lib/site";
-import type { CosmicVariant } from "@/scripts/scenes/cosmic/types";
 import "@fontsource-variable/fraunces/wght.css";
 import "@fontsource-variable/jetbrains-mono/wght.css";
 import "@fontsource-variable/literata/wght.css";
-import "@/styles/base.css";
-import "@/styles/components.css";
+import frauncesLatinUrl from "@fontsource-variable/fraunces/files/fraunces-latin-wght-normal.woff2?url";
+import jetBrainsMonoLatinUrl from "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?url";
+import literataLatinUrl from "@fontsource-variable/literata/files/literata-latin-wght-normal.woff2?url";
 import "@/styles/tokens.css";
-import "@/styles/editorial.css";
+import "@/styles/glass-system.css";
+import "@/styles/glass-pages.css";
+
+type PageVariant =
+  | "home"
+  | "projects"
+  | "project"
+  | "blog"
+  | "article"
+  | "playground"
+  | "experiment"
+  | "about"
+  | "not-found";
 
 interface Props {
   title?: string;
@@ -19,7 +32,7 @@ interface Props {
   canonicalPath?: string;
   image?: string;
   jsonLd?: Record<string, unknown>;
-  cosmicVariant?: CosmicVariant;
+  cosmicVariant?: PageVariant;
 }
 
 const {
@@ -41,6 +54,9 @@ const socialImage = new URL(image, site.url).toString();
     <meta name="viewport" content="width=device-width" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="preload" href={frauncesLatinUrl} as="font" type="font/woff2" crossorigin="anonymous" />
+    <link rel="preload" href={jetBrainsMonoLatinUrl} as="font" type="font/woff2" crossorigin="anonymous" />
+    <link rel="preload" href={literataLatinUrl} as="font" type="font/woff2" crossorigin="anonymous" />
     <link rel="canonical" href={canonical} />
     <link rel="icon" href={withBase("/favicon.ico")} sizes="any" />
     <meta property="og:type" content="website" />
@@ -69,6 +85,7 @@ const socialImage = new URL(image, site.url).toString();
     />
   </head>
   <body data-page-variant={cosmicVariant}>
+    <AmbientLight />
     <a class="skip-link" href="#main-content">跳到主要内容</a>
     <SiteHeader />
     <main id="main-content">

@@ -10,8 +10,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getAdjacentEntries, getReadingMinutes } from "@/lib/content";
 import { buildBlogPostingJsonLd } from "@/lib/seo";
 import { withBase } from "@/lib/site";
-import "@/styles/blog.css";
-import "@/styles/editorial-article.css";
+import "@/styles/glass-content.css";
 
 export async function getStaticPaths() {
   const entries = (await getCollection(

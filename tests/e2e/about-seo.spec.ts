@@ -53,6 +53,9 @@ test("404 页面提供信号丢失说明和四个恢复入口", async ({ page })
   await expect(
     page.getByRole("heading", { name: "信号丢失" }),
   ).toBeVisible();
+    await expect(
+      page.locator(".black-hole, .black-hole__core, .black-hole__ring"),
+    ).toHaveCount(0);
   const recovery = page.getByRole("navigation", { name: "页面恢复入口" });
   await expect(recovery.getByRole("link", { name: "首页" })).toHaveAttribute(
     "href",

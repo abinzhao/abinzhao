@@ -5,8 +5,7 @@ import BlogFilters from "@/components/blog/BlogFilters.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getBlogFacets } from "@/lib/content";
 import { withBase } from "@/lib/site";
-import "@/styles/blog.css";
-import "@/styles/editorial-list.css";
+import "@/styles/glass-content.css";
 
 const entries = (await getCollection("blog", ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),

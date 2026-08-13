@@ -3,7 +3,7 @@ import { getCollection, type CollectionEntry } from "astro:content";
 import BlogCard from "@/components/blog/BlogCard.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { withBase } from "@/lib/site";
-import "@/styles/blog.css";
+import "@/styles/glass-content.css";
 
 export async function getStaticPaths() {
   const entries = await getCollection("blog", ({ data }) => !data.draft);

@@ -21,7 +21,7 @@ for (const viewport of [
   });
 }
 
-test("移动端无 JavaScript 首帧导航不挤压首页内容", async ({ browser }) => {
+test("移动端无 JavaScript 首帧导航与首页保持合理间距", async ({ browser }) => {
   const context = await browser.newContext({
     javaScriptEnabled: false,
     viewport: { width: 390, height: 844 },
@@ -37,7 +37,9 @@ test("移动端无 JavaScript 首帧导航不挤压首页内容", async ({ brows
   const heroBox = await page.locator(".hero").boundingBox();
   expect(headerBox).not.toBeNull();
   expect(heroBox).not.toBeNull();
-  expect(heroBox!.y).toBeLessThanOrEqual(headerBox!.height + 1);
+  expect(heroBox!.y).toBeLessThanOrEqual(
+    headerBox!.y + headerBox!.height + 24,
+  );
 
   await context.close();
 });

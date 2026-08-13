@@ -1,0 +1,264 @@
+.playground-hero,
+.playground-list,
+.experiment-detail {
+  width: min(calc(100% - 2rem), var(--content-wide));
+  margin-inline: auto;
+}
+
+.playground-hero,
+.experiment-detail__header {
+  position: relative;
+  overflow: hidden;
+  margin-top: 2.4rem;
+  padding: clamp(3.5rem, 7vw, 6rem);
+  border: 1px solid var(--glass-highlight);
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(circle at 88% 8%, color-mix(in oklch, var(--color-accent-secondary), transparent 64%), transparent 34%),
+    var(--glass);
+  box-shadow: var(--shadow-card), inset 0 1px 0 var(--glass-highlight);
+  backdrop-filter: blur(30px) saturate(145%);
+}
+
+.playground-hero__eyebrow,
+.experiment-detail__eyebrow,
+.experiment-detail__back,
+.experiment-card__index,
+.experiment-shell__eyebrow {
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 760;
+  letter-spacing: 0.12em;
+}
+
+.playground-hero h1,
+.experiment-detail__header h1 {
+  max-width: 14ch;
+  margin-top: 0.8rem;
+  font-size: clamp(3.2rem, 7vw, 6.6rem);
+  line-height: 0.96;
+}
+
+.playground-hero > p:last-child,
+.experiment-detail__description {
+  max-width: 44rem;
+  color: var(--color-muted);
+}
+
+.playground-list {
+  margin-top: 1.2rem;
+  padding: clamp(2rem, 5vw, 4rem);
+  border: 1px solid var(--glass-highlight);
+  border-radius: var(--radius-xl);
+  background: var(--glass);
+  box-shadow: var(--shadow-card), inset 0 1px 0 var(--glass-highlight);
+  backdrop-filter: blur(30px) saturate(145%);
+}
+
+.playground-list__heading h2 {
+  font-size: clamp(2.3rem, 4vw, 4rem);
+}
+
+.experiment-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.experiment-card {
+  overflow: hidden;
+  border: 1px solid var(--glass-highlight);
+  border-radius: var(--radius-lg);
+  background: var(--glass-strong);
+  box-shadow: 0 22px 56px color-mix(in oklch, var(--color-accent), transparent 90%), inset 0 1px 0 var(--glass-highlight);
+  transition: transform 160ms ease;
+}
+
+.experiment-card:hover {
+  transform: translateY(-3px);
+}
+
+.experiment-card__preview {
+  position: relative;
+  height: 11rem;
+  overflow: hidden;
+  background: linear-gradient(135deg, color-mix(in oklch, var(--color-accent), transparent 38%), color-mix(in oklch, var(--color-mint), transparent 42%));
+}
+
+.experiment-card__preview::after {
+  position: absolute;
+  inset: 20%;
+  border-radius: 44% 56% 63% 37%;
+  background: oklch(100% 0 0 / 48%);
+  box-shadow: 0 0 45px oklch(100% 0 0 / 28%);
+  content: "";
+}
+
+.experiment-card__body {
+  padding: 1.5rem;
+}
+
+.experiment-card h3 {
+  margin: 1rem 0 0.7rem;
+  font-size: 2rem;
+}
+
+.experiment-card p {
+  color: var(--color-muted);
+}
+
+.experiment-card a {
+  text-decoration: none;
+}
+
+.experiment-detail {
+  padding-bottom: 2rem;
+}
+
+.experiment-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.experiment-tags li {
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--color-selection), transparent 34%);
+  color: var(--color-muted);
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+}
+
+.experiment-detail__source {
+  display: inline-flex;
+  margin-top: 1.2rem;
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+.experiment-detail__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.28fr);
+  gap: 1rem;
+  margin-top: 1.2rem;
+}
+
+.experiment-shell,
+.experiment-detail__notes {
+  border: 1px solid var(--glass-highlight);
+  border-radius: var(--radius-xl);
+  background: var(--glass);
+  box-shadow: var(--shadow-card), inset 0 1px 0 var(--glass-highlight);
+  backdrop-filter: blur(30px) saturate(145%);
+}
+
+.experiment-shell {
+  overflow: hidden;
+}
+
+.experiment-shell__status,
+.experiment-shell__controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.experiment-shell__controls {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.experiment-shell__controls button {
+  min-height: 2.6rem;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid var(--glass-highlight);
+  border-radius: 999px;
+  background: var(--glass-strong);
+  cursor: pointer;
+}
+
+.experiment-shell__stage {
+  position: relative;
+  min-height: 32rem;
+  overflow: hidden;
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+  background: oklch(13% 0.035 275);
+}
+
+.experiment-shell__stage canvas,
+.experiment-shell__fallback {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.experiment-shell__fallback {
+  background:
+    radial-gradient(circle at 30% 40%, oklch(55% 0.2 280 / 42%), transparent 28%),
+    radial-gradient(circle at 70% 60%, oklch(64% 0.16 190 / 35%), transparent 25%),
+    oklch(13% 0.035 275);
+}
+
+.experiment-detail__notes {
+  padding: 1.5rem;
+}
+
+.experiment-detail__notes h2 {
+  font-size: 1.8rem;
+}
+
+.experiment-detail__notes p,
+.experiment-detail__notes li {
+  color: var(--color-muted);
+}
+
+@media (max-width: 900px) {
+  .experiment-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .experiment-detail__layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .playground-hero,
+  .playground-list,
+  .experiment-detail {
+    width: calc(100% - 2rem);
+  }
+
+  .playground-hero,
+  .experiment-detail__header {
+    margin-top: 1.5rem;
+    padding: 3rem 1.4rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .playground-list {
+    padding: 2rem 1.2rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .experiment-shell,
+  .experiment-detail__notes {
+    border-radius: var(--radius-lg);
+  }
+
+  .experiment-shell__stage {
+    min-height: 26rem;
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  }
+}

@@ -14,12 +14,16 @@ test("首页表达前端、鸿蒙与 AI 的编辑式品牌定位", async ({ page
   await expect(page.getByRole("heading", { name: "最新文章" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "动态碎片" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "保持低频联系" })).toBeVisible();
+  await expect(page.locator("[data-ambient-light]")).toBeVisible();
+  await expect(page.locator(".hero")).toHaveCSS("border-radius", "44px");
+  await expect(page.locator(".site-header")).toHaveCSS("border-radius", "999px");
 });
 
 test("主站不加载全局 WebGL，实验详情保持独立 Canvas", async ({ page }) => {
   await page.goto("/abinzhao/");
   await expect(page.locator("[data-cosmic-canvas]")).toHaveCount(0);
   await expect(page.locator("canvas")).toHaveCount(0);
+  await expect(page.locator("[data-ambient-light]")).toHaveCount(1);
 
   await page.goto("/abinzhao/playground/shader-art/");
   await expect(page.locator("[data-experiment-canvas]")).toHaveCount(1);
