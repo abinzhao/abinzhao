@@ -9,7 +9,7 @@ test("博客筛选写入 URL 并支持浏览器前进后退", async ({ page }) =
   );
 
   await expect(
-    page.getByRole("heading", { name: "博客", exact: true }),
+    page.getByRole("heading", { name: "文章", exact: true }),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", {

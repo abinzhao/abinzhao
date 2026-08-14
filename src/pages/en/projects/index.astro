@@ -13,12 +13,16 @@ const projects = sortProjects(
 ---
 
 <BaseLayout title="Projects | abinzhao" description="Public engineering work by Abin." canonicalPath="/en/projects/" cosmicVariant="projects" locale="en">
-  <header class="projects-hero">
-    <p class="projects-hero__eyebrow">PROJECT ARCHIVE</p>
-    <h1>Build from real constraints.</h1>
-    <p>Public projects, engineering tools, and technical experiments with verifiable source material.</p>
-  </header>
   <div class="projects-layout">
+    <header class="compact-page-header">
+      <div>
+        <p class="compact-page-header__eyebrow">PROJECT ARCHIVE</p>
+        <h1>Projects</h1>
+      </div>
+      <p class="compact-page-header__summary">
+        {projects.length} public projects built from real constraints and verifiable source material.
+      </p>
+    </header>
     <section class="projects-section">
       <div class="projects-section__heading"><p>SELECTED WORK</p><h2>Engineering evidence</h2></div>
       <div class="project-grid">

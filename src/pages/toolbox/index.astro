@@ -11,30 +11,58 @@ import "@/styles/cinematic-toolbox.css";
   canonicalPath="/toolbox/"
   cosmicVariant="toolbox"
 >
-  <div class="toolbox-page">
-    <header class="toolbox-hero">
-      <p>LOCAL-FIRST / ZERO UPLOAD</p>
-      <h1>把常用处理，留在<span>浏览器本地。</span></h1>
-      <p>
-        开发、文本、设计与 AI 辅助工具统一收进一个安静的工作台。输入默认不上传、不保存，每个工具都有可直接访问的独立页面。
+  <div class="toolbox-page" data-toolbox-catalog>
+    <header class="compact-page-header">
+      <div>
+        <p class="compact-page-header__eyebrow">LOCAL-FIRST / ZERO UPLOAD</p>
+        <h1>工具箱</h1>
+      </div>
+      <p class="compact-page-header__summary">
+        {toolboxTools.length} 个开发、文本、设计与 AI 工具。所有输入默认只在浏览器本地处理。
       </p>
     </header>
 
-    <label class="toolbox-search">
-      <span class="sr-only">搜索工具</span>
-      <input
-        type="search"
-        name="tool-search"
-        placeholder="搜索工具，例如 JSON、颜色、Prompt…"
-        data-tool-search
-      />
-    </label>
+    <div class="toolbox-catalog__controls">
+      <label class="toolbox-search">
+        <span class="sr-only">搜索工具</span>
+        <input
+          type="search"
+          name="tool-search"
+          placeholder="搜索工具，例如 JSON、颜色、Prompt…"
+          data-tool-search
+        />
+      </label>
+      <div class="toolbox-categories" role="group" aria-label="按工具类型筛选">
+        <button
+          type="button"
+          data-tool-group-filter="all"
+          aria-pressed="true"
+        >
+          全部
+        </button>
+        {
+          toolboxGroups.map((group) => (
+            <button
+              type="button"
+              data-tool-group-filter={group.id}
+              aria-pressed="false"
+            >
+              {group.label}
+            </button>
+          ))
+        }
+      </div>
+    </div>
 
     {
       toolboxGroups.map((group) => {
         const tools = toolboxTools.filter((tool) => tool.group === group.id);
         return (
-          <section class="toolbox-group" aria-labelledby={`toolbox-${group.id}`}>
+          <section
+            class="toolbox-group"
+            data-toolbox-group={group.id}
+            aria-labelledby={`toolbox-${group.id}`}
+          >
             <div class="toolbox-group__head">
               <h2 id={`toolbox-${group.id}`}>{group.label}</h2>
               <p>{group.description}</p>
@@ -50,11 +78,5 @@ import "@/styles/cinematic-toolbox.css";
 </BaseLayout>
 
 <script>
-  const input = document.querySelector<HTMLInputElement>("[data-tool-search]");
-  input?.addEventListener("input", () => {
-    const query = input.value.trim().toLocaleLowerCase("zh-CN");
-    document.querySelectorAll<HTMLElement>(".tool-card").forEach((card) => {
-      card.hidden = !card.textContent?.toLocaleLowerCase("zh-CN").includes(query);
-    });
-  });
+  import "@/scripts/toolbox-catalog";
 </script>

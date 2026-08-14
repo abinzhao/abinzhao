@@ -21,15 +21,17 @@ const otherProjects = projects.filter(({ data }) => !data.featured);
   canonicalPath="/projects/"
   cosmicVariant="projects"
 >
-  <header class="projects-hero">
-    <p class="projects-hero__eyebrow">PROJECT ARCHIVE</p>
-    <h1>从真实问题出发，<br />把方案做成作品。</h1>
-    <p>
-      这里收录公开项目、工程工具与技术实践。所有描述均来自可核对的公开内容。
-    </p>
-  </header>
-
   <div class="projects-layout">
+    <header class="compact-page-header">
+      <div>
+        <p class="compact-page-header__eyebrow">PROJECT ARCHIVE</p>
+        <h1>项目</h1>
+      </div>
+      <p class="compact-page-header__summary">
+        公开项目与工程实践，共 {projects.length} 项。所有描述均来自可核对的公开内容。
+      </p>
+    </header>
+
     <ProjectFilters categories={categories} />
 
     {

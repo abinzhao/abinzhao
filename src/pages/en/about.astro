@@ -1,28 +1,65 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import "@/styles/cinematic-home.css";
+import "@/styles/cinematic-content.css";
+
+const currentWork = [
+  ["Writing", "HarmonyOS learning paths and transferable frontend methods"],
+  ["Building", "A content-first personal site designed to evolve"],
+  ["Exploring", "How AI capabilities become maintainable product behavior"],
+] as const;
+
+const principles = [
+  ["Start from facts", "Separate confirmed evidence from assumptions."],
+  ["Build the real thing", "Move from demos into verifiable product behavior."],
+  ["State the boundary", "Make constraints and fallback behavior visible."],
+  ["Design for change", "Prefer portable, file-based engineering assets."],
+] as const;
 ---
 
 <BaseLayout title="About Abin | abinzhao" description="How Abin works across frontend, HarmonyOS, and AI." canonicalPath="/en/about/" cosmicVariant="about" locale="en">
   <article class="about-page">
-    <header class="about-hero">
-      <p class="about-hero__eyebrow">ABOUT / ABIN</p>
-      <h1>Engineering with clarity and sincerity.</h1>
-      <p>I focus on frontend systems, HarmonyOS experiences, and AI-native applications. “纯爱掌门人” is a reminder to treat technology, creation, and long-term relationships seriously.</p>
+    <header class="compact-page-header">
+      <div>
+        <p class="compact-page-header__eyebrow">ABOUT / PROFILE</p>
+        <h1>About Abin</h1>
+      </div>
+      <p class="compact-page-header__summary">
+        Frontend · HarmonyOS · AI. Engineering with clarity and sincerity.
+      </p>
     </header>
+
+    <section class="about-overview" aria-labelledby="about-profile-title">
+      <div class="about-profile">
+        <p>ENGINEER / CREATOR</p>
+        <h2 id="about-profile-title">Abin</h2>
+        <p>I build frontend systems, HarmonyOS experiences, and AI-native applications that move beyond demos.</p>
+        <span>纯爱掌门人</span>
+      </div>
+      <dl class="about-now">
+        {currentWork.map(([label, value]) => (
+          <div><dt>{label}</dt><dd>{value}</dd></div>
+        ))}
+      </dl>
+    </section>
+
     <div class="about-layout">
       <section class="about-section">
         <div class="about-section__heading"><p>01 / PRINCIPLES</p><h2>How I work</h2></div>
-        <div class="signal-grid">
-          <article class="signal-card"><small>CLARITY</small><h3>Start from facts</h3><p>Separate confirmed evidence from assumptions.</p></article>
-          <article class="signal-card"><small>CRAFT</small><h3>Build the real thing</h3><p>Move from demos into verifiable product behavior.</p></article>
-          <article class="signal-card"><small>BOUNDARIES</small><h3>State limits</h3><p>Make constraints and fallback behavior visible.</p></article>
-          <article class="signal-card"><small>LONG TERM</small><h3>Keep it maintainable</h3><p>Prefer portable, file-based engineering assets.</p></article>
-        </div>
+        <ol class="about-principles">
+          {principles.map(([title, description], index) => (
+            <li>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <div><h3>{title}</h3><p>{description}</p></div>
+            </li>
+          ))}
+        </ol>
       </section>
-      <section class="about-section">
+      <section class="about-section contact" id="contact">
         <div class="about-section__heading"><p>02 / CONTACT</p><h2>Stay in touch</h2></div>
-        <p><a class="cinematic-button" href="https://github.com/abinzhao">GitHub ↗</a> <a class="cinematic-button" href="mailto:abin_v@163.com">Email ↗</a></p>
+        <nav class="about-contact-links" aria-label="Contact links">
+          <a href="https://github.com/abinzhao">GitHub <span aria-hidden="true">↗</span></a>
+          <a href="mailto:abin_v@163.com">Email <span aria-hidden="true">↗</span></a>
+        </nav>
       </section>
     </div>
   </article>

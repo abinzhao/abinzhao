@@ -6,14 +6,43 @@ import "@/styles/cinematic-toolbox.css";
 ---
 
 <BaseLayout title="Toolbox | abinzhao" description="Local-first developer, text, design, and AI utilities." canonicalPath="/en/toolbox/" cosmicVariant="toolbox" locale="en">
-  <div class="toolbox-page">
-    <header class="toolbox-hero">
-      <p>LOCAL-FIRST / ZERO UPLOAD</p>
-      <h1>Keep everyday processing <span>inside your browser.</span></h1>
-      <p>Focused utilities for development, text, interface design, and AI workflows. Inputs are not uploaded or persisted.</p>
+  <div class="toolbox-page" data-toolbox-catalog>
+    <header class="compact-page-header">
+      <div>
+        <p class="compact-page-header__eyebrow">LOCAL-FIRST / ZERO UPLOAD</p>
+        <h1>Toolbox</h1>
+      </div>
+      <p class="compact-page-header__summary">
+        {toolboxTools.length} focused utilities. Inputs stay inside your browser.
+      </p>
     </header>
+    <div class="toolbox-catalog__controls">
+      <label class="toolbox-search">
+        <span class="sr-only">Search tools</span>
+        <input
+          type="search"
+          name="tool-search"
+          placeholder="Search JSON, color, Prompt..."
+          data-tool-search
+        />
+      </label>
+      <div class="toolbox-categories" role="group" aria-label="Filter by tool type">
+        <button type="button" data-tool-group-filter="all" aria-pressed="true">
+          All
+        </button>
+        {toolboxGroups.map((group) => (
+          <button
+            type="button"
+            data-tool-group-filter={group.id}
+            aria-pressed="false"
+          >
+            {group.labelEn}
+          </button>
+        ))}
+      </div>
+    </div>
     {toolboxGroups.map((group) => (
-      <section class="toolbox-group">
+      <section class="toolbox-group" data-toolbox-group={group.id}>
         <div class="toolbox-group__head"><h2>{group.labelEn}</h2><p>{group.description}</p></div>
         <div class="toolbox-grid">
           {toolboxTools.filter((tool) => tool.group === group.id).map((tool) => <ToolCard tool={tool} />)}
@@ -22,3 +51,7 @@ import "@/styles/cinematic-toolbox.css";
     ))}
   </div>
 </BaseLayout>
+
+<script>
+  import "@/scripts/toolbox-catalog";
+</script>

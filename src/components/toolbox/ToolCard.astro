@@ -9,7 +9,13 @@ interface Props {
 const { tool } = Astro.props;
 ---
 
-<a class="tool-card" href={withBase(`/toolbox/${tool.slug}/`)} data-tilt>
+<a
+  class="tool-card"
+  href={withBase(`/toolbox/${tool.slug}/`)}
+  data-tool-card
+  data-tool-group={tool.group}
+  data-tilt
+>
   <small>{tool.group.toUpperCase()}</small>
   <div>
     <h2>{tool.title}</h2>

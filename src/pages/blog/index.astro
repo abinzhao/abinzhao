@@ -19,18 +19,22 @@ const facets = getBlogFacets(entries);
   canonicalPath="/blog/"
   cosmicVariant="blog"
 >
-  <header class="blog-hero">
-    <p class="blog-eyebrow">WRITING ARCHIVE</p>
-    <h1>博客</h1>
-    <p>记录技术实践、日常思考和动手折腾的过程。</p>
-    <nav aria-label="博客辅助导航">
-      <a href={withBase("/blog/archive/")}>文章归档</a>
-      <a href={withBase("/tags/")}>全部标签</a>
-      <a href={withBase("/rss.xml")}>RSS</a>
-    </nav>
-  </header>
-
   <div class="blog-list-layout">
+    <header class="compact-page-header">
+      <div>
+        <p class="compact-page-header__eyebrow">WRITING ARCHIVE</p>
+        <h1>文章</h1>
+      </div>
+      <div class="compact-page-header__aside">
+        <p>{entries.length} 篇公开文章，记录可复用的技术判断与实践。</p>
+        <nav class="compact-page-header__actions" aria-label="博客辅助导航">
+          <a href={withBase("/blog/archive/")}>归档</a>
+          <a href={withBase("/tags/")}>标签</a>
+          <a href={withBase("/rss.xml")}>RSS</a>
+        </nav>
+      </div>
+    </header>
+
     <BlogFilters {...facets} />
     <section class="blog-list" aria-label="文章列表">
       {entries.map((entry) => <BlogCard entry={entry} />)}

@@ -3,13 +3,28 @@ import { expect, test } from "@playwright/test";
 test("工具箱索引提供四类和十六个独立工具", async ({ page }) => {
   await page.goto("/abinzhao/toolbox/");
 
-  await expect(page.getByRole("heading", { name: /浏览器本地/ })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "工具箱", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator(".toolbox-hero")).toHaveCount(0);
   await expect(page.locator(".toolbox-group")).toHaveCount(4);
   await expect(page.locator(".tool-card")).toHaveCount(16);
   await expect(page.getByRole("link", { name: /JSON 格式化/ })).toHaveAttribute(
     "href",
     "/abinzhao/toolbox/json/",
   );
+});
+
+test("工具箱支持搜索和分类组合筛选", async ({ page }) => {
+  await page.goto("/abinzhao/toolbox/");
+
+  await page.getByRole("button", { name: "AI 提效" }).click();
+  await expect(page.locator(".tool-card:visible")).toHaveCount(3);
+  await expect(page.locator(".toolbox-group:visible")).toHaveCount(1);
+
+  await page.getByRole("searchbox", { name: "搜索工具" }).fill("Token");
+  await expect(page.locator(".tool-card:visible")).toHaveCount(1);
+  await expect(page.getByRole("link", { name: /Token 粗估/ })).toBeVisible();
 });
 
 test("JSON 工具本地处理正常与错误输入", async ({ page }) => {

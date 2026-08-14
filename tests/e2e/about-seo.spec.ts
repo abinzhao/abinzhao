@@ -9,6 +9,9 @@ test("About 展示六类公开技术方向、联系入口和隐私边界", async
     "data-page-variant",
     "about",
   );
+  await expect(page.locator(".about-hero")).toHaveCount(0);
+  await expect(page.locator(".compact-page-header")).toBeVisible();
+  await expect(page.locator(".about-overview")).toBeVisible();
 
   const contact = page.locator("#contact");
   await expect(contact).toBeVisible();
