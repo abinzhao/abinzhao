@@ -5,20 +5,27 @@ import { withBase } from "@/lib/site";
 interface Props {
   experiment: CollectionEntry<"playground">;
   index: number;
+  locale?: "zh-CN" | "en";
 }
 
-const { experiment, index } = Astro.props;
+const { experiment, index, locale = "zh-CN" } = Astro.props;
 const { title, slug, description, tech } = experiment.data;
+const isEnglish = locale === "en";
+const openLabel = isEnglish ? `Open experiment: ${title}` : `打开实验：${title}`;
+const techLabel = isEnglish ? `${title} technologies` : `${title}技术标签`;
 ---
 
-<article class="experiment-card fluid-card" data-experiment-card>
+<article
+  class:list={["experiment-card", { "experiment-card--featured": index === 0 }]}
+  data-experiment-card
+>
   <a
     class:list={[
       "experiment-card__visual",
       `experiment-visual--${slug}`,
     ]}
     href={withBase(`/playground/${slug}/`)}
-    aria-label={`打开实验：${title}`}
+    aria-label={openLabel}
   >
     <span aria-hidden="true"></span>
   </a>
@@ -31,8 +38,12 @@ const { title, slug, description, tech } = experiment.data;
       <a href={withBase(`/playground/${slug}/`)}>{title}</a>
     </h2>
     <p>{description}</p>
-    <ul aria-label={`${title}技术标签`}>
+    <ul aria-label={techLabel}>
       {tech.map((item) => <li>{item}</li>)}
     </ul>
+    <a class="experiment-card__action" href={withBase(`/playground/${slug}/`)}>
+      {isEnglish ? "Launch experiment" : "进入实验"}
+      <span aria-hidden="true">↗</span>
+    </a>
   </div>
 </article>

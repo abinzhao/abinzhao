@@ -2,7 +2,7 @@
 import { getCollection } from "astro:content";
 import ExperimentCard from "@/components/playground/ExperimentCard.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import "@/styles/cinematic-content.css";
+import "@/styles/playground.css";
 
 const experiments = (
   await getCollection("playground", ({ data }) => !data.draft)
@@ -20,25 +20,29 @@ const experiments = (
   canonicalPath="/playground/"
   cosmicVariant="playground"
 >
-  <header class="playground-hero">
-    <p class="playground-hero__eyebrow">OPEN LAB / LIVE SYSTEMS</p>
-    <h1>让代码脱离文档，<br />开始运动。</h1>
-    <p>
-      三个围绕图形、交互与实时系统的公开实验。每个实验都保留原理说明、性能边界和静态降级。
-    </p>
-  </header>
-
-  <section class="playground-list" aria-labelledby="experiment-list-title">
-    <header class="playground-list__heading">
-      <p>TRANSMISSIONS</p>
-      <h2 id="experiment-list-title">实验信号</h2>
+  <main class="playground-index">
+    <header class="playground-workbench-header">
+      <div>
+        <p class="playground-eyebrow">OPEN LAB / {String(experiments.length).padStart(2, "0")}</p>
+        <h1>实验室</h1>
+      </div>
+      <p>
+        运行中的图形、物理与交互系统。每个实验都保留原理说明、性能边界和静态降级。
+      </p>
     </header>
-    <div class="experiment-grid">
-      {
-        experiments.map((experiment, index) => (
-          <ExperimentCard experiment={experiment} index={index} />
-        ))
-      }
-    </div>
-  </section>
+
+    <section class="playground-catalog" aria-labelledby="experiment-list-title">
+      <header class="playground-catalog__heading">
+        <p>LIVE TRANSMISSIONS</p>
+        <h2 id="experiment-list-title">选择一个系统开始运行</h2>
+      </header>
+      <div class="experiment-grid">
+        {
+          experiments.map((experiment, index) => (
+            <ExperimentCard experiment={experiment} index={index} />
+          ))
+        }
+      </div>
+    </section>
+  </main>
 </BaseLayout>

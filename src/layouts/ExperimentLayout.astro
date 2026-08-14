@@ -22,34 +22,41 @@ const { title, slug, description, tech, githubUrl } = experiment.data;
 >
   <article class="experiment-detail">
     <header class="experiment-detail__header">
-      <a class="experiment-detail__back" href={withBase("/playground/")}>
-        ← 返回实验列表
-      </a>
-      <p class="experiment-detail__eyebrow">PLAYGROUND / {slug}</p>
-      <h1>{title}</h1>
-      <p class="experiment-detail__description">{description}</p>
-      <ul class="experiment-tags" aria-label="技术标签">
-        {tech.map((item) => <li>{item}</li>)}
-      </ul>
-      {
-        githubUrl && (
-          <a
-            class="experiment-detail__source"
-            href={githubUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            查看源码 <span aria-hidden="true">↗</span>
-          </a>
-        )
-      }
+      <div class="experiment-detail__identity">
+        <a class="experiment-detail__back" href={withBase("/playground/")}>
+          ← 返回实验列表
+        </a>
+        <p class="experiment-detail__eyebrow">PLAYGROUND / {slug}</p>
+        <h1>{title}</h1>
+      </div>
+      <div class="experiment-detail__summary">
+        <p class="experiment-detail__description">{description}</p>
+        <ul class="experiment-tags" aria-label="技术标签">
+          {tech.map((item) => <li>{item}</li>)}
+        </ul>
+        {
+          githubUrl && (
+            <a
+              class="experiment-detail__source"
+              href={githubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              查看源码 <span aria-hidden="true">↗</span>
+            </a>
+          )
+        }
+      </div>
     </header>
 
     <div class="experiment-detail__layout" data-experiment-layout>
-      <div class="experiment-detail__notes">
-        <slot />
-      </div>
       <ExperimentShell slug={slug} />
+      <aside class="experiment-detail__notes" data-experiment-notes>
+        <p class="experiment-detail__notes-label">EXPERIMENT NOTES</p>
+        <div class="experiment-detail__notes-content">
+          <slot />
+        </div>
+      </aside>
     </div>
   </article>
 </BaseLayout>

@@ -13,31 +13,35 @@ const { slug } = Astro.props;
   data-state="idle"
   aria-labelledby="experiment-status-title"
 >
-  <header class="experiment-shell__status">
-    <div>
-      <p class="experiment-shell__eyebrow">RUNTIME SIGNAL</p>
-      <h2 id="experiment-status-title">实验状态</h2>
+  <header class="experiment-shell__toolbar">
+    <div class="experiment-shell__status">
+      <div>
+        <p class="experiment-shell__eyebrow">RUNTIME SIGNAL</p>
+        <h2 id="experiment-status-title">实验状态</h2>
+      </div>
+      <p data-experiment-status aria-live="polite">
+        需要 JavaScript 才能启动交互实验
+      </p>
     </div>
-    <p data-experiment-status aria-live="polite">
-      需要 JavaScript 才能启动交互实验
-    </p>
-  </header>
 
-  <div class="experiment-shell__controls" aria-label="实验控制">
-    <button type="button" data-experiment-action="pause" disabled>
-      暂停实验
-    </button>
-    <button type="button" data-experiment-action="resume" disabled>
-      继续实验
-    </button>
-    <button type="button" data-experiment-action="reset" disabled>
-      重置实验
-    </button>
-    <button type="button" data-experiment-retry hidden>
-      重试实验
-    </button>
-    <div data-experiment-controls></div>
-  </div>
+    <div class="experiment-shell__controls" aria-label="实验控制">
+      <div class="experiment-shell__primary-controls">
+        <button type="button" data-experiment-action="pause" disabled>
+          暂停实验
+        </button>
+        <button type="button" data-experiment-action="resume" disabled>
+          继续实验
+        </button>
+        <button type="button" data-experiment-action="reset" disabled>
+          重置实验
+        </button>
+        <button type="button" data-experiment-retry hidden>
+          重试实验
+        </button>
+      </div>
+      <div class="experiment-shell__dynamic-controls" data-experiment-controls></div>
+    </div>
+  </header>
 
   <div class:list={["experiment-shell__stage", `experiment-visual--${slug}`]}>
     <canvas data-experiment-canvas aria-hidden="true"></canvas>
