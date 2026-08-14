@@ -1,0 +1,86 @@
+---
+import type { ToolboxTool } from "@/lib/toolbox/types";
+import { withBase } from "@/lib/site";
+
+interface Props {
+  tool: ToolboxTool;
+}
+
+const { tool } = Astro.props;
+const hasNoInput = tool.slug === "uuid";
+const modes: Record<string, Array<{ value: string; label: string }>> = {
+  json: [
+    { value: "format", label: "格式化" },
+    { value: "compact", label: "压缩" },
+  ],
+  base64: [
+    { value: "encode", label: "编码" },
+    { value: "decode", label: "解码" },
+  ],
+  "url-codec": [
+    { value: "encode", label: "编码" },
+    { value: "decode", label: "解码" },
+  ],
+  "case-converter": [
+    { value: "camel", label: "camelCase" },
+    { value: "pascal", label: "PascalCase" },
+    { value: "kebab", label: "kebab-case" },
+    { value: "snake", label: "snake_case" },
+  ],
+};
+const options = modes[tool.slug] ?? [];
+---
+
+<div class="tool-workspace" data-tool-workspace data-tool-slug={tool.slug}>
+  <header class="tool-workspace__header">
+    <div>
+      <a href={withBase("/toolbox/")}>← 工具箱</a>
+      <h1>{tool.title}</h1>
+      <p>{tool.description}</p>
+    </div>
+    <span class="tool-workspace__local">● LOCAL ONLY</span>
+  </header>
+
+  <div class:list={["tool-workspace__editor", { "tool-workspace__editor--single": hasNoInput }]}>
+    {
+      !hasNoInput && (
+        <label class="tool-workspace__pane">
+          <span>INPUT</span>
+          <textarea
+            name="tool-input"
+            data-tool-input
+            placeholder={tool.placeholder}
+            spellcheck="false"
+          >{tool.sample}</textarea>
+        </label>
+      )
+    }
+    <section class="tool-workspace__pane" aria-live="polite">
+      <span>OUTPUT</span>
+      <pre data-tool-output>点击运行查看结果。</pre>
+    </section>
+  </div>
+
+  <footer class="tool-workspace__actions">
+    {
+      options.length > 0 && (
+        <label>
+          <span class="sr-only">处理模式</span>
+          <select name="tool-mode" data-tool-mode>
+            {options.map((option) => <option value={option.value}>{option.label}</option>)}
+          </select>
+        </label>
+      )
+    }
+    <button type="button" data-tool-clear>清空</button>
+    <button type="button" data-tool-copy>复制结果</button>
+    <button class="tool-workspace__run" type="button" data-tool-run>运行</button>
+  </footer>
+</div>
+
+<script>
+  import { initToolbox } from "@/scripts/toolbox";
+
+  initToolbox();
+  document.addEventListener("astro:page-load", () => initToolbox());
+</script>

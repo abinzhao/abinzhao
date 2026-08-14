@@ -10,7 +10,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getAdjacentEntries, getReadingMinutes } from "@/lib/content";
 import { buildBlogPostingJsonLd } from "@/lib/seo";
 import { withBase } from "@/lib/site";
-import "@/styles/glass-content.css";
+import "@/styles/cinematic-content.css";
 
 export async function getStaticPaths() {
   const entries = (await getCollection(
@@ -63,7 +63,7 @@ const jsonLd = buildBlogPostingJsonLd({
 ---
 
 <BaseLayout
-  title={`${title}｜博客｜ZJB.DEV`}
+  title={`${title}｜文章｜abinzhao`}
   description={summary}
   canonicalPath={`/blog/${slug}/`}
   jsonLd={jsonLd}

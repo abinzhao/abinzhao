@@ -20,13 +20,17 @@ test("About 展示六类公开技术方向、联系入口和隐私边界", async
     "href",
     "https://juejin.cn/user/2849548342403454",
   );
+  await expect(contact.getByRole("link", { name: "邮箱" })).toHaveAttribute(
+    "href",
+    "mailto:abin_v@163.com",
+  );
 
   for (const group of ["前端", "后端", "鸿蒙", "小程序", "跨端", "工具"]) {
     await expect(page.getByRole("heading", { name: group })).toBeVisible();
   }
 
   await expect(page.locator("body")).not.toContainText(
-    /邮箱|微信|公司|工作年限/,
+    /微信|公司|工作年限/,
   );
 });
 
@@ -93,10 +97,11 @@ test("About 输出 canonical、Person JSON-LD 和默认 OG 图", async ({ page }
   expect(JSON.parse(jsonLd ?? "{}")).toMatchObject({
     "@context": "https://schema.org",
     "@type": "Person",
-    name: "赵建斌",
+    name: "阿斌",
     sameAs: [
       "https://github.com/abinzhao",
       "https://juejin.cn/user/2849548342403454",
+      "https://blog.csdn.net/qq_44924880",
     ],
   });
 });

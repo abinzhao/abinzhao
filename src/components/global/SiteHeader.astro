@@ -1,7 +1,30 @@
 ---
 import { site } from "@/lib/site";
+import {
+  localeFromPath,
+  localizedPath,
+  switchLocalePath,
+} from "@/lib/i18n";
+import { withoutBase } from "@/lib/site";
 import BrandMark from "./BrandMark.astro";
 import ThemeToggle from "./ThemeToggle.astro";
+
+const locale = localeFromPath(Astro.url.pathname);
+const navigation =
+  locale === "en"
+    ? [
+        "Home",
+        "Projects",
+        "Writing",
+        "Lab",
+        "Toolbox",
+        "About",
+      ]
+    : site.navigation.map((item) => item.label);
+const localeHref = switchLocalePath(
+  Astro.url.pathname,
+  locale === "en" ? "zh" : "en",
+);
 ---
 
 <header class="site-header" data-site-header data-scrolled="false">
@@ -10,16 +33,38 @@ import ThemeToggle from "./ThemeToggle.astro";
 
     <nav class="desktop-navigation" aria-label="主导航">
       {
-        site.navigation.map((item) => (
-          <a href={item.href} aria-current={Astro.url.pathname === item.href ? "page" : undefined}>
-            {item.label}
+        site.navigation.map((item, index) => {
+          const href = localizedPath(withoutBase(item.href), locale);
+          return (
+          <a href={href} aria-current={Astro.url.pathname === href ? "page" : undefined}>
+            {navigation[index]}
           </a>
-        ))
+        )})
       }
     </nav>
 
     <div class="site-header__actions">
+      <a class="language-toggle" href={localeHref} lang={locale === "en" ? "zh-CN" : "en"}>
+        {locale === "en" ? "中" : "EN"}
+      </a>
       <ThemeToggle />
+      <button
+        class="command-toggle"
+        type="button"
+        aria-label="打开搜索与命令"
+        data-command-open
+      >
+        <span aria-hidden="true">⌕</span>
+        <kbd>⌘K</kbd>
+      </button>
+      <a
+        class="github-link"
+        href="https://github.com/abinzhao"
+        rel="me noreferrer"
+        target="_blank"
+      >
+        GitHub
+      </a>
       <button
         class="menu-toggle"
         type="button"
@@ -41,11 +86,13 @@ import ThemeToggle from "./ThemeToggle.astro";
     data-mobile-navigation
   >
     {
-      site.navigation.map((item) => (
-        <a href={item.href} aria-current={Astro.url.pathname === item.href ? "page" : undefined}>
-          {item.label}
+      site.navigation.map((item, index) => {
+        const href = localizedPath(withoutBase(item.href), locale);
+        return (
+        <a href={href} aria-current={Astro.url.pathname === href ? "page" : undefined}>
+          {navigation[index]}
         </a>
-      ))
+      )})
     }
   </nav>
 </header>

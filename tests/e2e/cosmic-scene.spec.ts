@@ -16,7 +16,7 @@ for (const viewport of [
         ),
       )
       .toBe(true);
-    await expect(page.locator(".hero__copy")).toBeVisible();
+    await expect(page.locator(".home-hero > div").first()).toBeVisible();
     await expect(page.locator("canvas")).toHaveCount(0);
   });
 }
@@ -31,10 +31,10 @@ test("移动端无 JavaScript 首帧导航与首页保持合理间距", async ({
 
   const navigation = page.locator("[data-mobile-navigation]");
   await expect(navigation).toBeVisible();
-  await expect(navigation).toHaveCSS("position", "fixed");
+  await expect(navigation).toHaveCSS("position", "absolute");
 
   const headerBox = await page.locator("[data-site-header]").boundingBox();
-  const heroBox = await page.locator(".hero").boundingBox();
+  const heroBox = await page.locator(".home-hero").boundingBox();
   expect(headerBox).not.toBeNull();
   expect(heroBox).not.toBeNull();
   expect(heroBox!.y).toBeLessThanOrEqual(

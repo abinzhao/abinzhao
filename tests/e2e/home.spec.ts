@@ -30,7 +30,7 @@ test("桌面首页优先展示真实静态内容并按顺序组织叙事", async
 
   await expect(
     page.getByRole("heading", {
-      name: "在鸿蒙上，用前端的方式，把 AI 变成应用。",
+      name: /让模型能力/,
     }),
   ).toBeVisible();
   await expect(page.locator("body")).toHaveAttribute(
@@ -38,15 +38,13 @@ test("桌面首页优先展示真实静态内容并按顺序组织叙事", async
     "home",
   );
   await expect(page.locator("canvas")).toHaveCount(0);
-  await expect(page.getByRole("heading", { name: "最新文章" })).toBeVisible();
-  await expect(page.locator("[data-home-post]")).toHaveCount(1);
-  await expect(page.getByRole("heading", { name: "动态碎片" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "精选项目" })).toBeVisible();
-  await expect(page.locator("[data-home-project]")).toHaveCount(3);
-  await expect(page.getByRole("heading", { name: "实验预览" })).toBeVisible();
-  await expect(page.locator("[data-home-experiment]")).toHaveCount(3);
+  await expect(page.getByRole("heading", { name: "写下能复用的技术判断。" })).toBeVisible();
+  await expect(page.locator(".home-content-card")).toHaveCount(4);
+  await expect(page.getByRole("heading", { name: "代表项目不是陈列，而是工程判断的证据。" })).toBeVisible();
+  await expect(page.locator(".home-project")).toHaveCount(3);
+  await expect(page.getByRole("heading", { name: "实验是可以运行的技术说明。" })).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "保持低频联系" }),
+    page.getByRole("heading", { name: "认真对待技术，也认真对待长期关系。" }),
   ).toBeVisible();
 
   expect(diagnostics).toEqual({
@@ -61,7 +59,7 @@ test("reduced-motion 保留完整内容且不启动 Canvas 场景", async ({ pag
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/abinzhao/");
 
-  await expect(page.getByRole("heading", { name: "最新文章" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "写下能复用的技术判断。" })).toBeVisible();
   await expect(page.locator("canvas")).toHaveCount(0);
   expect(diagnostics).toEqual({
     errors: [],
@@ -112,16 +110,15 @@ test("无 JavaScript 时 Hero 文案与主要链接完整可用", async ({ brows
 
   await expect(
     page.getByRole("heading", {
-      name: "在鸿蒙上，用前端的方式，把 AI 变成应用。",
+      name: /让模型能力/,
     }),
   ).toBeVisible();
-  await expect(page.getByText("前端工程师")).toBeVisible();
   await expect(
-    page.getByRole("link", { name: /看最新文章/ }),
-  ).toHaveAttribute("href", "/abinzhao/blog/");
+    page.getByRole("link", { name: /查看代表项目/ }),
+  ).toHaveAttribute("href", "/abinzhao/projects/");
   await expect(
-    page.getByRole("link", { name: "了解我在做什么" }),
-  ).toHaveAttribute("href", "/abinzhao/about/");
+    page.getByRole("link", { name: /打开工具箱/ }),
+  ).toHaveAttribute("href", "/abinzhao/toolbox/");
   await expect(page.locator("canvas")).toHaveCount(0);
 
   await context.close();
@@ -130,8 +127,8 @@ test("无 JavaScript 时 Hero 文案与主要链接完整可用", async ({ brows
 test("滚动后文章、动态与项目内容保持可访问", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/abinzhao/");
-  await page.getByRole("heading", { name: "动态碎片" }).scrollIntoViewIfNeeded();
+  await page.getByRole("heading", { name: "公开运行轨迹，而不是提交噪音。" }).scrollIntoViewIfNeeded();
 
-  await expect(page.getByRole("heading", { name: "动态碎片" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "精选项目" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "公开运行轨迹，而不是提交噪音。" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "代表项目不是陈列，而是工程判断的证据。" })).toBeVisible();
 });

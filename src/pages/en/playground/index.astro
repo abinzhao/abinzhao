@@ -1,0 +1,30 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { withBase } from "@/lib/site";
+
+const experiments = (await getCollection("playground", ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+
+<BaseLayout title="Lab | abinzhao" description="Runnable technical experiments by Abin." canonicalPath="/en/playground/" cosmicVariant="playground" locale="en">
+  <header class="playground-hero">
+    <p class="playground-hero__eyebrow">OPEN LAB</p>
+    <h1>Runnable technical notes.</h1>
+    <p>Each experiment documents its mechanism, performance boundary, and fallback behavior.</p>
+  </header>
+  <div class="playground-layout">
+    <section class="playground-section">
+      <div class="playground-section__heading"><p>EXPERIMENTS</p><h2>Explore the lab</h2></div>
+      <div class="playground-grid">
+        {experiments.map((experiment) => (
+          <article class="experiment-card" data-tilt>
+            <div class="experiment-card__meta">{experiment.data.tech.join(" · ")}</div>
+            <h2><a href={withBase(`/playground/${experiment.data.slug}/`)}>{experiment.data.title}</a></h2>
+            <p>{experiment.data.description}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  </div>
+</BaseLayout>

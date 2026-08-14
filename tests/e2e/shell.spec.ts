@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test("全局壳输出品牌、SEO 和可访问导航", async ({ page }) => {
   await page.goto("/abinzhao/");
 
-  await expect(page).toHaveTitle("ZJB.DEV｜前端、鸿蒙与 AI 应用实践");
+  await expect(page).toHaveTitle("abinzhao｜前端、鸿蒙与 AI 应用实践");
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
     "href",
     "https://abinzhao.github.io/abinzhao/",
@@ -13,7 +13,7 @@ test("全局壳输出品牌、SEO 和可访问导航", async ({ page }) => {
     "#main-content",
   );
   await expect(page.locator("main")).toHaveAttribute("id", "main-content");
-  await expect(page.getByRole("link", { name: "ZJB.DEV 首页" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "abinzhao 首页" })).toBeVisible();
   await expect(page.getByRole("navigation", { name: "主导航" })).toBeVisible();
 });
 
@@ -81,7 +81,7 @@ test("菜单关闭时 Escape 不改变当前焦点", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/abinzhao/");
 
-  const brand = page.getByRole("link", { name: "ZJB.DEV 首页" });
+  const brand = page.getByRole("link", { name: "abinzhao 首页" });
   await brand.focus();
   await page.keyboard.press("Escape");
 

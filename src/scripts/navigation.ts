@@ -29,15 +29,25 @@ export function initNavigation(
 
   const closeMenu = (): void => setMenuOpen(false);
 
+  let scrollFrame = 0;
   const updateScrollState = (): void => {
     header?.setAttribute(
       "data-scrolled",
-      window.scrollY > 24 ? "true" : "false",
+      window.scrollY > 32 ? "true" : "false",
     );
 
     if (backToTop) {
       backToTop.hidden = window.scrollY <= window.innerHeight;
     }
+  };
+  const requestScrollUpdate = (): void => {
+    if (scrollFrame) {
+      return;
+    }
+    scrollFrame = window.requestAnimationFrame(() => {
+      scrollFrame = 0;
+      updateScrollState();
+    });
   };
 
   if (menuToggle && mobileNavigation) {
@@ -49,6 +59,17 @@ export function initNavigation(
 
     mobileNavigation.querySelectorAll("a").forEach((link) => {
       link.addEventListener("click", closeMenu);
+    });
+
+    pageDocument.addEventListener("pointerdown", (event) => {
+      if (
+        menuToggle.getAttribute("aria-expanded") === "true" &&
+        event.target instanceof Node &&
+        !mobileNavigation.contains(event.target) &&
+        !menuToggle.contains(event.target)
+      ) {
+        closeMenu();
+      }
     });
 
     pageDocument.addEventListener("keydown", (event) => {
@@ -69,6 +90,6 @@ export function initNavigation(
     window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
   });
 
-  window.addEventListener("scroll", updateScrollState, { passive: true });
+  window.addEventListener("scroll", requestScrollUpdate, { passive: true });
   updateScrollState();
 }

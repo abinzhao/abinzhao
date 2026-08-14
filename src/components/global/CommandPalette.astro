@@ -1,0 +1,77 @@
+---
+import { toolboxTools } from "@/lib/toolbox/registry";
+import { site, withBase } from "@/lib/site";
+
+const commands = [
+  ...site.navigation.map((item) => ({
+    label: `前往：${item.label}`,
+    href: item.href,
+    type: "页面",
+  })),
+  ...toolboxTools.map((tool) => ({
+    label: tool.title,
+    href: withBase(`/toolbox/${tool.slug}/`),
+    type: "工具",
+  })),
+];
+---
+
+<div class="command-palette" data-command-palette hidden>
+  <button
+    class="command-palette__backdrop"
+    type="button"
+    aria-label="关闭命令面板"
+    data-command-close
+  ></button>
+  <section
+    class="command-palette__dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="command-palette-title"
+  >
+    <h2 id="command-palette-title" class="sr-only">搜索与命令</h2>
+    <label class="command-palette__search">
+      <span aria-hidden="true">⌕</span>
+      <input
+        type="search"
+        name="command-query"
+        role="combobox"
+        aria-controls="command-results"
+        aria-expanded="true"
+        autocomplete="off"
+        placeholder="搜索页面、项目、文章、实验或工具…"
+        data-command-input
+      />
+      <kbd>ESC</kbd>
+    </label>
+    <div class="command-palette__results" id="command-results" role="listbox">
+      {
+        commands.map((command) => (
+          <a
+            href={command.href}
+            role="option"
+            data-command-item
+            data-search={`${command.label} ${command.type}`}
+          >
+            <span>{command.label}</span>
+            <small>{command.type}</small>
+          </a>
+        ))
+      }
+      <button type="button" role="option" data-command-theme data-command-item data-search="切换 主题 深色 浅色">
+        <span>切换主题</span>
+        <small>操作</small>
+      </button>
+      <p class="command-palette__empty" data-command-empty hidden>
+        没有匹配项。可以前往<a href={withBase("/search/")}>完整搜索页</a>。
+      </p>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { initCommandPalette } from "@/scripts/command-palette";
+
+  initCommandPalette();
+  document.addEventListener("astro:page-load", () => initCommandPalette());
+</script>

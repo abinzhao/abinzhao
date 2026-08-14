@@ -43,10 +43,11 @@ describe("structured data", () => {
   it("Person 仅公开已确认的身份和社交入口", () => {
     const person = buildPersonJsonLd();
 
-    expect(person.name).toBe("赵建斌");
+    expect(person.name).toBe("阿斌");
     expect(person.sameAs).toEqual([
       "https://github.com/abinzhao",
       "https://juejin.cn/user/2849548342403454",
+      "https://blog.csdn.net/qq_44924880",
     ]);
     expect(JSON.stringify(person)).not.toMatch(/email|worksFor|telephone/i);
   });

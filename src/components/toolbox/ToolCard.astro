@@ -1,0 +1,19 @@
+---
+import type { ToolboxTool } from "@/lib/toolbox/types";
+import { withBase } from "@/lib/site";
+
+interface Props {
+  tool: ToolboxTool;
+}
+
+const { tool } = Astro.props;
+---
+
+<a class="tool-card" href={withBase(`/toolbox/${tool.slug}/`)} data-tilt>
+  <small>{tool.group.toUpperCase()}</small>
+  <div>
+    <h2>{tool.title}</h2>
+    <p>{tool.description}</p>
+  </div>
+  <span aria-hidden="true">↗</span>
+</a>

@@ -1,0 +1,24 @@
+---
+import ToolCard from "@/components/toolbox/ToolCard.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { toolboxGroups, toolboxTools } from "@/lib/toolbox/registry";
+import "@/styles/cinematic-toolbox.css";
+---
+
+<BaseLayout title="Toolbox | abinzhao" description="Local-first developer, text, design, and AI utilities." canonicalPath="/en/toolbox/" cosmicVariant="toolbox" locale="en">
+  <div class="toolbox-page">
+    <header class="toolbox-hero">
+      <p>LOCAL-FIRST / ZERO UPLOAD</p>
+      <h1>Keep everyday processing <span>inside your browser.</span></h1>
+      <p>Focused utilities for development, text, interface design, and AI workflows. Inputs are not uploaded or persisted.</p>
+    </header>
+    {toolboxGroups.map((group) => (
+      <section class="toolbox-group">
+        <div class="toolbox-group__head"><h2>{group.labelEn}</h2><p>{group.description}</p></div>
+        <div class="toolbox-grid">
+          {toolboxTools.filter((tool) => tool.group === group.id).map((tool) => <ToolCard tool={tool} />)}
+        </div>
+      </section>
+    ))}
+  </div>
+</BaseLayout>

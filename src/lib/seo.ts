@@ -20,7 +20,9 @@ export function buildPersonJsonLd() {
     "@type": "Person",
     name: site.owner,
     url: site.url,
-    sameAs: site.social.map(({ href }) => href),
+    sameAs: site.social
+      .map(({ href }) => href)
+      .filter((href) => href.startsWith("https://")),
   };
 }
 

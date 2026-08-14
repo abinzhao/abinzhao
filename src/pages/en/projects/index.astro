@@ -1,0 +1,36 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { sortProjects } from "@/lib/content";
+import { withBase } from "@/lib/site";
+
+const projects = sortProjects(
+  (await getCollection("projects", ({ data }) => !data.draft)).map((entry) => ({
+    ...entry,
+    slug: entry.data.slug,
+  })),
+);
+---
+
+<BaseLayout title="Projects | abinzhao" description="Public engineering work by Abin." canonicalPath="/en/projects/" cosmicVariant="projects" locale="en">
+  <header class="projects-hero">
+    <p class="projects-hero__eyebrow">PROJECT ARCHIVE</p>
+    <h1>Build from real constraints.</h1>
+    <p>Public projects, engineering tools, and technical experiments with verifiable source material.</p>
+  </header>
+  <div class="projects-layout">
+    <section class="projects-section">
+      <div class="projects-section__heading"><p>SELECTED WORK</p><h2>Engineering evidence</h2></div>
+      <div class="project-grid">
+        {projects.map((project) => (
+          <article class="project-card" data-tilt>
+            <div class="project-card__meta">{project.data.status.toUpperCase()} / {project.data.year}</div>
+            <h2><a href={withBase(`/projects/${project.data.slug}/`)}>{project.data.title}</a></h2>
+            <p>{project.data.summary}</p>
+            <div class="project-card__tags">{project.data.tags.join(" · ")}</div>
+          </article>
+        ))}
+      </div>
+    </section>
+  </div>
+</BaseLayout>

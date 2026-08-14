@@ -1,8 +1,11 @@
 ---
 import BackToTop from "@/components/global/BackToTop.astro";
-import AmbientLight from "@/components/global/AmbientLight.astro";
+import CommandPalette from "@/components/global/CommandPalette.astro";
+import FluidBackdrop from "@/components/global/FluidBackdrop.astro";
 import Footer from "@/components/global/Footer.astro";
+import PointerEffects from "@/components/global/PointerEffects.astro";
 import SiteHeader from "@/components/global/SiteHeader.astro";
+import { localeFromPath, type Locale } from "@/lib/i18n";
 import { buildCanonical } from "@/lib/seo";
 import { site, withoutBase, withBase } from "@/lib/site";
 import "@fontsource-variable/fraunces/wght.css";
@@ -12,8 +15,8 @@ import frauncesLatinUrl from "@fontsource-variable/fraunces/files/fraunces-latin
 import jetBrainsMonoLatinUrl from "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?url";
 import literataLatinUrl from "@fontsource-variable/literata/files/literata-latin-wght-normal.woff2?url";
 import "@/styles/tokens.css";
-import "@/styles/glass-system.css";
-import "@/styles/glass-pages.css";
+import "@/styles/cinematic-system.css";
+import "@/styles/cinematic-content.css";
 
 type PageVariant =
   | "home"
@@ -23,6 +26,7 @@ type PageVariant =
   | "article"
   | "playground"
   | "experiment"
+  | "toolbox"
   | "about"
   | "not-found";
 
@@ -33,6 +37,7 @@ interface Props {
   image?: string;
   jsonLd?: Record<string, unknown>;
   cosmicVariant?: PageVariant;
+  locale?: Locale;
 }
 
 const {
@@ -42,13 +47,14 @@ const {
   image = withBase("/og-default.svg"),
   jsonLd,
   cosmicVariant = "article",
+  locale = localeFromPath(Astro.url.pathname),
 } = Astro.props;
 const canonical = buildCanonical(site.url, canonicalPath);
 const socialImage = new URL(image, site.url).toString();
 ---
 
 <!doctype html>
-<html lang="zh-CN" data-theme="dark">
+<html lang={locale === "en" ? "en" : "zh-CN"} data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
@@ -85,14 +91,18 @@ const socialImage = new URL(image, site.url).toString();
     />
   </head>
   <body data-page-variant={cosmicVariant}>
-    <AmbientLight />
-    <a class="skip-link" href="#main-content">跳到主要内容</a>
+    <FluidBackdrop />
+    <PointerEffects />
+    <a class="skip-link" href="#main-content">
+      {locale === "en" ? "Skip to content" : "跳到主要内容"}
+    </a>
     <SiteHeader />
     <main id="main-content">
       <slot />
     </main>
     <Footer />
     <BackToTop />
+    <CommandPalette />
     <slot name="scripts" />
   </body>
 </html>

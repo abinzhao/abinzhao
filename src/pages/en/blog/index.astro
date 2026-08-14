@@ -1,0 +1,32 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { withBase } from "@/lib/site";
+
+const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+---
+
+<BaseLayout title="Writing | abinzhao" description="Technical writing by Abin." canonicalPath="/en/blog/" cosmicVariant="blog" locale="en">
+  <header class="blog-hero">
+    <p class="blog-hero__eyebrow">TECHNICAL WRITING</p>
+    <h1>Reusable engineering judgment.</h1>
+    <p>Articles remain in their original language and focus on methods, constraints, and verifiable implementation details.</p>
+  </header>
+  <div class="blog-layout">
+    <section class="blog-section">
+      <div class="blog-section__heading"><p>ARCHIVE</p><h2>Latest articles</h2></div>
+      <div class="blog-grid">
+        {posts.map((post) => (
+          <article class="blog-card" data-tilt>
+            <div class="blog-card__meta">ZH · {post.data.date.toISOString().slice(0, 10)}</div>
+            <h2><a href={withBase(`/blog/${post.data.slug}/`)}>{post.data.title}</a></h2>
+            <p>{post.data.summary}</p>
+            <div class="blog-card__tags">{post.data.tags.join(" · ")}</div>
+          </article>
+        ))}
+      </div>
+    </section>
+  </div>
+</BaseLayout>

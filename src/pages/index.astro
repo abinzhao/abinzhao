@@ -1,21 +1,11 @@
 ---
 import { getCollection } from "astro:content";
-import FeaturedProjects from "@/components/home/FeaturedProjects.astro";
-import Hero from "@/components/home/Hero.astro";
-import LatestBlog from "@/components/home/LatestBlog.astro";
-import PlaygroundPreview from "@/components/home/PlaygroundPreview.astro";
-import SubscribeNote from "@/components/home/SubscribeNote.astro";
-import VibeStream from "@/components/home/VibeStream.astro";
+import githubSnapshot from "@/data/github-snapshot.json";
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { sortProjects } from "@/lib/content";
 import { buildPersonJsonLd } from "@/lib/seo";
-import "@/styles/glass-home.css";
+import { withBase } from "@/lib/site";
+import "@/styles/cinematic-home.css";
 
-const projects = sortProjects(
-  (await getCollection("projects", ({ data }) => !data.draft)).map(
-    (entry) => ({ ...entry, slug: entry.data.slug }),
-  ),
-).slice(0, 3);
 const posts = (await getCollection("blog", ({ data }) => !data.draft))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0, 3);
@@ -29,18 +19,203 @@ const experiments = (
       a.data.slug.localeCompare(b.data.slug, "zh-CN"),
   )
   .slice(0, 3);
-const vibes = (await getCollection("vibes", ({ data }) => !data.draft))
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
-  .slice(0, 4);
 
 const personJsonLd = buildPersonJsonLd();
+const projects = [
+  {
+    name: "Singularity Engine",
+    tags: ["RUST", "LOCAL-FIRST", "AGENT INFRA"],
+    description:
+      "面向 Agent、Skill 与 Rule 资产的本地优先进化引擎，强调可追踪、可恢复和人工门禁。",
+    href: "https://github.com/abinzhao",
+  },
+  {
+    name: "Repo Compass",
+    tags: ["TYPESCRIPT", "OSS", "TOOLCHAIN"],
+    description:
+      "为开源仓库建立贡献者导航协议与新鲜度工具链，让协作上下文持续可用。",
+    href: "https://github.com/abinzhao",
+  },
+  {
+    name: "Code Analysis",
+    tags: ["JAVASCRIPT", "DEPENDENCY", "WEB"],
+    description:
+      "分析大型 Web 应用的代码调用与依赖关系，为治理与演进提供结构证据。",
+    href: withBase("/projects/code-analysis/"),
+  },
+];
 ---
 
 <BaseLayout jsonLd={personJsonLd} cosmicVariant="home">
-  <Hero />
-  <LatestBlog entries={posts} />
-  <VibeStream entries={vibes} />
-  <FeaturedProjects projects={projects} />
-  <PlaygroundPreview experiments={experiments} />
-  <SubscribeNote />
+  <div class="home-shell">
+    <section class="home-hero" aria-labelledby="home-title">
+      <div>
+        <p class="home-hero__eyebrow">ABINZHAO / FRONTEND × HARMONYOS × AI</p>
+        <h1 id="home-title">
+          <span class="home-hero__line">让模型能力，</span><br />
+          <span class="home-hero__gradient home-hero__gradient--zh">进入真实应用。</span>
+        </h1>
+        <p class="home-hero__lead">
+          我是阿斌，一名关注全场景应用的工程师。用前端的表达力、鸿蒙的设备能力和 AI
+          的推理能力，把技术从演示带到可运行、可验证的产品现场。
+        </p>
+        <div class="home-hero__actions">
+          <a class="cinematic-button cinematic-button--primary" href={withBase("/projects/")}>
+            查看代表项目 <span aria-hidden="true">→</span>
+          </a>
+          <a class="cinematic-button" href={withBase("/toolbox/")}>
+            打开工具箱 <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+        <div class="home-identity">
+          <strong>阿斌 / ABIN</strong>
+          <span>纯爱掌门人</span>
+          <span>HANGZHOU · CHINA</span>
+        </div>
+      </div>
+      <div class="signal-orbit" data-tilt aria-hidden="true"><span></span></div>
+    </section>
+
+    <section class="home-section" aria-labelledby="signals-title">
+      <div class="home-section__head">
+        <p class="home-section__index">01 / CURRENT SIGNALS</p>
+        <div>
+          <h2 id="signals-title">正在把判断，变成可运行的现场。</h2>
+          <p>公开成熟方向与可验证产物；尚未稳定的研究细节留在工作现场。</p>
+        </div>
+      </div>
+      <div class="signal-grid">
+        <article class="signal-card">
+          <small>FOCUS / ACTIVE</small>
+          <h3>AI 原生应用</h3>
+          <p>让模型能力进入真实产品流程，而不是停留在单次对话。</p>
+        </article>
+        <article class="signal-card">
+          <small>PLATFORM / ACTIVE</small>
+          <h3>HarmonyOS</h3>
+          <p>研究端侧能力、跨设备体验与前端工程方法的迁移边界。</p>
+        </article>
+        <article class="signal-card">
+          <small>SYSTEM / BUILDING</small>
+          <h3>Agent 工具链</h3>
+          <p>构建可组合、可回放、可持续演进的开发者基础设施。</p>
+        </article>
+        <article class="signal-card">
+          <small>PRINCIPLE / ALWAYS</small>
+          <h3>开放但克制</h3>
+          <p>发布可验证结果，对未成熟判断保持诚实。</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="home-section" aria-labelledby="projects-title">
+      <div class="home-section__head">
+        <p class="home-section__index">02 / ENGINEERING PROOF</p>
+        <div>
+          <h2 id="projects-title">代表项目不是陈列，而是工程判断的证据。</h2>
+          <p>从问题、约束到实现边界，记录每个系统为何这样构建。</p>
+        </div>
+      </div>
+      <div class="home-projects">
+        {
+          projects.map((project, index) => (
+            <a class="home-project" href={project.href} data-tilt>
+              <small>{String(index + 1).padStart(2, "0")}</small>
+              <div>
+                <h3>{project.name}</h3>
+                <div class="home-project__tags">
+                  {project.tags.map((tag) => <span>{tag}</span>)}
+                </div>
+              </div>
+              <p>{project.description}</p>
+              <span aria-hidden="true">↗</span>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="home-section" aria-labelledby="github-title">
+      <div class="home-section__head">
+        <p class="home-section__index">03 / PUBLIC TRACE</p>
+        <div>
+          <h2 id="github-title">公开运行轨迹，而不是提交噪音。</h2>
+          <p>构建时同步最近更新的公开仓库；网络失败时保留上次成功快照。</p>
+        </div>
+      </div>
+      <div class="github-trace">
+        {
+          githubSnapshot.repositories.slice(0, 6).map((repository) => (
+            <a href={repository.url} rel="noreferrer" target="_blank">
+              <small>{repository.pushedAt.slice(0, 10)}</small>
+              <strong>{repository.name}</strong>
+              <span>{repository.description || "Public repository"}</span>
+            </a>
+          ))
+        }
+      </div>
+      <p class="github-trace__updated">
+        SNAPSHOT / {githubSnapshot.updatedAt.slice(0, 10)}
+      </p>
+    </section>
+
+    <section class="home-section" aria-labelledby="writing-title">
+      <div class="home-section__head">
+        <p class="home-section__index">04 / WRITING</p>
+        <div>
+          <h2 id="writing-title">写下能复用的技术判断。</h2>
+          <p>文章保持原始语言，优先记录方法、边界和可验证的实现细节。</p>
+        </div>
+      </div>
+      <div class="home-content-grid">
+        {
+          posts.map((post, index) => (
+            <a class="home-content-card" href={withBase(`/blog/${post.data.slug}/`)} data-tilt>
+              <small>{index === 0 ? "FEATURED ARTICLE" : `ARTICLE / 0${index + 1}`}</small>
+              <div>
+                <h3>{post.data.title}</h3>
+                <p>{post.data.summary}</p>
+              </div>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="home-section" aria-labelledby="lab-title">
+      <div class="home-section__head">
+        <p class="home-section__index">05 / OPEN LAB</p>
+        <div>
+          <h2 id="lab-title">实验是可以运行的技术说明。</h2>
+          <p>每个实验同时展示原理、性能边界与降级方式；Three.js 只在详情页加载。</p>
+        </div>
+      </div>
+      <div class="home-content-grid">
+        {
+          experiments.map((experiment, index) => (
+            <a class="home-content-card" href={withBase(`/playground/${experiment.data.slug}/`)} data-tilt>
+              <small>LAB / {String(index + 1).padStart(2, "0")}</small>
+              <div>
+                <h3>{experiment.data.title}</h3>
+                <p>{experiment.data.description}</p>
+              </div>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="home-closing">
+      <div>
+        <p class="home-section__index">06 / ABOUT ABIN</p>
+        <h2>认真对待技术，也认真对待长期关系。</h2>
+        <p>
+          “纯爱掌门人”不是人设标签，而是对创作、生活和合作保持真诚的提醒。
+        </p>
+      </div>
+      <a class="cinematic-button cinematic-button--primary" href={withBase("/about/")}>
+        认识阿斌 <span aria-hidden="true">→</span>
+      </a>
+    </section>
+  </div>
 </BaseLayout>

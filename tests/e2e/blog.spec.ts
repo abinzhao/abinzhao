@@ -143,10 +143,9 @@ test("归档、标签、RSS 与旧写作路径来自真实公开文章", async (
     "data-page-variant",
     "article",
   );
-  await expect(page.getByRole("link", { name: "HarmonyOS 1 篇" })).toHaveAttribute(
-    "href",
-    "/abinzhao/tags/HarmonyOS/",
-  );
+  await expect(
+    page.locator('a[href="/abinzhao/tags/HarmonyOS/"]'),
+  ).toContainText("HarmonyOS");
 
   await page.goto("/abinzhao/tags/HarmonyOS/");
   await expect(page.locator("body")).toHaveAttribute(

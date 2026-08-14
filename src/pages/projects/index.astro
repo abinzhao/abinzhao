@@ -4,7 +4,7 @@ import ProjectCard from "@/components/projects/ProjectCard.astro";
 import ProjectFilters from "@/components/projects/ProjectFilters.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getProjectCategories, sortProjects } from "@/lib/content";
-import "@/styles/glass-content.css";
+import "@/styles/cinematic-content.css";
 
 const entries = await getCollection("projects", ({ data }) => !data.draft);
 const projects = sortProjects(
@@ -16,8 +16,8 @@ const otherProjects = projects.filter(({ data }) => !data.featured);
 ---
 
 <BaseLayout
-  title="项目｜ZJB.DEV"
-  description="赵建斌的公开项目与工程实践，涵盖 Web、后端和 HarmonyOS。"
+  title="项目｜abinzhao"
+  description="阿斌的公开项目与工程实践，涵盖 Web、后端和 HarmonyOS。"
   canonicalPath="/projects/"
   cosmicVariant="projects"
 >

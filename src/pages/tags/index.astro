@@ -2,7 +2,7 @@
 import { getCollection } from "astro:content";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { withBase } from "@/lib/site";
-import "@/styles/glass-content.css";
+import "@/styles/cinematic-content.css";
 
 const entries = await getCollection("blog", ({ data }) => !data.draft);
 const counts = new Map<string, number>();
@@ -17,8 +17,8 @@ const tags = [...counts.entries()].sort(([a], [b]) =>
 ---
 
 <BaseLayout
-  title="文章标签｜ZJB.DEV"
-  description="按标签浏览 ZJB.DEV 的公开文章。"
+  title="文章标签｜abinzhao"
+  description="按标签浏览 abinzhao 的公开文章。"
   canonicalPath="/tags/"
   cosmicVariant="article"
 >

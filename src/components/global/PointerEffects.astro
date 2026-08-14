@@ -1,0 +1,9 @@
+<div class="pointer-light" data-pointer-light aria-hidden="true"></div>
+<div class="pointer-ring" data-pointer-ring aria-hidden="true"></div>
+
+<script>
+  import { initPointerEffects } from "@/scripts/pointer-effects";
+
+  initPointerEffects();
+  document.addEventListener("astro:page-load", () => initPointerEffects());
+</script>

@@ -3,7 +3,8 @@ import type { CollectionEntry } from "astro:content";
 import ExperimentShell from "@/components/playground/ExperimentShell.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { withBase } from "@/lib/site";
-import "@/styles/glass-playground.css";
+import "@/styles/cinematic-content.css";
+import "@/styles/playground.css";
 
 interface Props {
   experiment: CollectionEntry<"playground">;
@@ -14,7 +15,7 @@ const { title, slug, description, tech, githubUrl } = experiment.data;
 ---
 
 <BaseLayout
-  title={`${title}｜Playground｜ZJB.DEV`}
+  title={`${title}｜实验室｜abinzhao`}
   description={description}
   canonicalPath={`/playground/${slug}/`}
   cosmicVariant="experiment"

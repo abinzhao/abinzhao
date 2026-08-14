@@ -1,0 +1,32 @@
+---
+import ToolShell from "@/components/toolbox/ToolShell.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getTool, toolboxTools } from "@/lib/toolbox/registry";
+import "@/styles/cinematic-toolbox.css";
+
+export function getStaticPaths() {
+  return toolboxTools.map((tool) => ({
+    params: { slug: tool.slug },
+    props: { slug: tool.slug },
+  }));
+}
+
+interface Props {
+  slug: string;
+}
+
+const { slug } = Astro.props;
+const tool = getTool(slug);
+if (!tool) {
+  throw new Error(`Unknown toolbox slug: ${slug}`);
+}
+---
+
+<BaseLayout
+  title={`${tool.title}｜abinzhao 工具箱`}
+  description={tool.description}
+  canonicalPath={`/toolbox/${tool.slug}/`}
+  cosmicVariant="toolbox"
+>
+  <ToolShell tool={tool} />
+</BaseLayout>

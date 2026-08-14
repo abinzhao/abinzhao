@@ -4,7 +4,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import { projectCategoryLabels } from "@/lib/content";
 import { buildProjectJsonLd } from "@/lib/seo";
 import { withBase } from "@/lib/site";
-import "@/styles/glass-content.css";
+import "@/styles/cinematic-content.css";
 
 export async function getStaticPaths() {
   const projects = await getCollection(
@@ -53,7 +53,7 @@ const jsonLd = buildProjectJsonLd({
 ---
 
 <BaseLayout
-  title={`${title}｜项目｜ZJB.DEV`}
+  title={`${title}｜项目｜abinzhao`}
   description={summary}
   canonicalPath={`/projects/${slug}/`}
   jsonLd={jsonLd}

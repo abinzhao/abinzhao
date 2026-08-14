@@ -3,7 +3,7 @@ import { getCollection } from "astro:content";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { groupBlogByMonth } from "@/lib/content";
 import { withBase } from "@/lib/site";
-import "@/styles/glass-content.css";
+import "@/styles/cinematic-content.css";
 
 const entries = await getCollection("blog", ({ data }) => !data.draft);
 const groups = groupBlogByMonth(entries);
@@ -15,8 +15,8 @@ function formatMonth(month: string): string {
 ---
 
 <BaseLayout
-  title="文章归档｜ZJB.DEV"
-  description="按年月浏览 ZJB.DEV 的公开文章。"
+  title="文章归档｜abinzhao"
+  description="按年月浏览 abinzhao 的公开文章。"
   canonicalPath="/blog/archive/"
   cosmicVariant="article"
 >

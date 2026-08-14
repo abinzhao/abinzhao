@@ -12,15 +12,15 @@ test("首页展示品牌、Slogan 与四个主入口", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/abinzhao/");
 
-  await expect(page).toHaveTitle("ZJB.DEV｜前端、鸿蒙与 AI 应用实践");
-  await expect(page.getByRole("link", { name: "ZJB.DEV 首页" })).toBeVisible();
+  await expect(page).toHaveTitle("abinzhao｜前端、鸿蒙与 AI 应用实践");
+  await expect(page.getByRole("link", { name: "abinzhao 首页" })).toBeVisible();
   await expect(
     page.getByRole("heading", {
-      name: "在鸿蒙上，用前端的方式，把 AI 变成应用。",
+      name: /让模型能力/,
     }),
   ).toBeVisible();
-  for (const role of ["前端工程师", "鸿蒙开发者", "AI 实践者"]) {
-    await expect(page.getByText(role)).toBeVisible();
+  for (const role of ["AI 原生应用", "HarmonyOS", "Agent 工具链"]) {
+    await expect(page.getByText(role, { exact: true })).toBeVisible();
   }
 });
 
@@ -48,7 +48,7 @@ test("favicon 资源可正常访问", async ({ request }) => {
 });
 
 test("全站核心页面在三档视口下无横向溢出", async ({ page }) => {
-  const routes = ["/abinzhao/", "/abinzhao/projects/", "/abinzhao/blog/", "/abinzhao/playground/", "/abinzhao/about/"];
+  const routes = ["/abinzhao/", "/abinzhao/projects/", "/abinzhao/blog/", "/abinzhao/playground/", "/abinzhao/toolbox/", "/abinzhao/about/", "/abinzhao/en/"];
   const viewports = [
     { width: 1440, height: 900 },
     { width: 900, height: 900 },
@@ -87,7 +87,7 @@ test("reduced-motion 首页保留完整内容且不创建 Three.js Canvas", asyn
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/abinzhao/");
 
-  await expect(page.getByRole("heading", { name: "最新文章" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "写下能复用的技术判断。" })).toBeVisible();
   await expect(page.locator("canvas")).toHaveCount(0);
 });
 

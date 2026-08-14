@@ -8,7 +8,7 @@ export async function GET() {
   );
 
   return rss({
-    title: "ZJB.DEV 博客",
+    title: "abinzhao 技术文章",
     description: site.description,
     site: site.url,
     items: posts.map((post) => ({

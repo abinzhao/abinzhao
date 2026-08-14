@@ -1,0 +1,57 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { withBase } from "@/lib/site";
+import "@/styles/cinematic-home.css";
+---
+
+<BaseLayout
+  title="abinzhao | Frontend, HarmonyOS and AI"
+  description="Abin's engineering work across frontend, HarmonyOS and AI-native applications."
+  canonicalPath="/en/"
+  cosmicVariant="home"
+  locale="en"
+>
+  <div class="home-shell">
+    <section class="home-hero" aria-labelledby="home-title">
+      <div>
+        <p class="home-hero__eyebrow">ABINZHAO / FRONTEND × HARMONYOS × AI</p>
+        <h1 id="home-title">Bring model capability<br /><span class="home-hero__gradient">into real applications.</span></h1>
+        <p class="home-hero__lead">
+          I am Abin, an engineer focused on all-scenario applications. I combine frontend expression,
+          HarmonyOS device capability, and AI reasoning to move technology from demos into products
+          that can run and be verified.
+        </p>
+        <div class="home-hero__actions">
+          <a class="cinematic-button cinematic-button--primary" href={withBase("/en/projects/")}>View projects →</a>
+          <a class="cinematic-button" href={withBase("/en/toolbox/")}>Open toolbox ↗</a>
+        </div>
+        <div class="home-identity">
+          <strong>ABIN / 阿斌</strong><span>纯爱掌门人</span><span>HANGZHOU · CHINA</span>
+        </div>
+      </div>
+      <div class="signal-orbit" data-tilt aria-hidden="true"><span></span></div>
+    </section>
+
+    <section class="home-section">
+      <div class="home-section__head">
+        <p class="home-section__index">01 / CURRENT SIGNALS</p>
+        <div><h2>Turning engineering judgment into running systems.</h2><p>AI-native applications, HarmonyOS, and composable agent tooling.</p></div>
+      </div>
+      <div class="signal-grid">
+        <article class="signal-card"><small>FOCUS / ACTIVE</small><h3>AI Applications</h3><p>Model capability inside real product workflows.</p></article>
+        <article class="signal-card"><small>PLATFORM / ACTIVE</small><h3>HarmonyOS</h3><p>On-device capability and cross-device experiences.</p></article>
+        <article class="signal-card"><small>SYSTEM / BUILDING</small><h3>Agent Tooling</h3><p>Composable, replayable developer infrastructure.</p></article>
+        <article class="signal-card"><small>PRINCIPLE / ALWAYS</small><h3>Open, with restraint</h3><p>Publish verifiable results and mark uncertainty.</p></article>
+      </div>
+    </section>
+
+    <section class="home-closing">
+      <div>
+        <p class="home-section__index">02 / EXPLORE</p>
+        <h2>Projects, writing, experiments, and practical tools.</h2>
+        <p>Each section is an independent page designed for focused reading and repeated use.</p>
+      </div>
+      <a class="cinematic-button cinematic-button--primary" href={withBase("/en/about/")}>About Abin →</a>
+    </section>
+  </div>
+</BaseLayout>
