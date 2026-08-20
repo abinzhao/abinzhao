@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZJB.DEV 宇宙场景系统</title>
+  <style>
+    :root{color-scheme:dark;--cyan:#75f5ff;--pink:#ff63d5;--text:#edfeff;--muted:#8299a2;font-family:"SFMono-Regular",Consolas,monospace}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;padding:24px;background:#020508;color:var(--text)}
+    .head,.world,.pages{max-width:1480px;margin-inline:auto}.head{display:flex;justify-content:space-between;align-items:end;margin-bottom:18px}
+    h1{margin:5px 0 0;font:650 clamp(28px,4vw,52px)/1 system-ui,sans-serif;letter-spacing:-.06em}.eyebrow{color:var(--cyan);font-size:10px;letter-spacing:.18em}
+    .head p{max-width:580px;margin:0;color:var(--muted);font:12px/1.65 system-ui,sans-serif}
+    .world{position:relative;overflow:hidden;min-height:710px;border:1px solid #7af5ff28;border-radius:20px;background:#02060a;box-shadow:0 30px 100px #000}
+    .space{position:absolute;inset:0;background:
+      radial-gradient(circle at 10% 18%,#fff 0 1px,transparent 1.5px),
+      radial-gradient(circle at 23% 65%,#a9faff 0 1px,transparent 1.5px),
+      radial-gradient(circle at 41% 32%,#fff 0 1px,transparent 1.5px),
+      radial-gradient(circle at 68% 14%,#ffb4ec 0 1px,transparent 1.5px),
+      radial-gradient(circle at 88% 72%,#fff 0 1px,transparent 1.5px),
+      radial-gradient(ellipse at 72% 43%,#3367a733,transparent 34%),
+      radial-gradient(ellipse at 79% 54%,#c32c9428,transparent 32%),
+      #02060a;background-size:83px 79px,97px 91px,121px 107px,151px 139px,187px 163px,auto,auto,auto}
+    .galaxy{position:absolute;width:1050px;height:390px;right:-250px;top:70px;border-radius:50%;transform:rotate(-18deg);background:
+      repeating-radial-gradient(ellipse at center,transparent 0 18px,#73f5ff0d 20px 21px,transparent 23px 37px),
+      radial-gradient(ellipse at center,#fff 0 1%,#71efff80 2%,#3762b655 8%,#a32d8440 20%,transparent 64%);
+      filter:blur(.2px) drop-shadow(0 0 28px #68ecff40);animation:drift 18s ease-in-out infinite alternate}
+    .galaxy::before{content:"";position:absolute;inset:15% 4%;border-radius:50%;background:conic-gradient(from 20deg,transparent,#75f5ff20,transparent 18%,#ff63d51b,transparent 44%,#75f5ff1b,transparent);filter:blur(12px);animation:spin 35s linear infinite}
+    nav{position:relative;z-index:5;display:flex;align-items:center;justify-content:space-between;height:64px;padding:0 26px;border-bottom:1px solid #7af5ff25;background:#041016a8;backdrop-filter:blur(18px)}
+    .logo{font-weight:900;letter-spacing:.13em;text-shadow:0 0 15px var(--cyan)}.links{color:#8ba0a8;font-size:9px;letter-spacing:.16em}
+    .hero{position:relative;z-index:3;display:grid;grid-template-columns:1fr .95fr;min-height:560px;align-items:center;padding:58px 50px}
+    .copy{position:relative;z-index:5}.signal{color:var(--cyan);font-size:9px;letter-spacing:.16em}.signal::before{content:"●";margin-right:9px;text-shadow:0 0 13px var(--cyan)}
+    h2{max-width:8ch;margin:18px 0;font:700 clamp(58px,7vw,105px)/.88 system-ui,sans-serif;letter-spacing:-.085em}
+    .intro{max-width:520px;color:var(--muted);font:15px/1.72 system-ui,sans-serif}.actions{display:flex;gap:10px;margin-top:27px}.actions span{padding:11px 15px;border:1px solid #7af5ff36;font-size:9px}.actions span:first-child{border-color:var(--cyan);box-shadow:inset 0 0 22px #59efff14}
+    .planet-wrap{position:relative;display:grid;place-items:center;min-height:430px;perspective:900px;transform:translate3d(var(--px,0),var(--py,0),0);transition:transform .18s ease-out}
+    .planet{position:relative;width:min(37vw,430px);aspect-ratio:1;border-radius:50%;background:
+      radial-gradient(circle at 64% 67%,#7af5ff 0 1px,transparent 2px),
+      radial-gradient(circle at 52% 56%,#d9faff 0 1px,transparent 2px),
+      radial-gradient(circle at 38% 74%,#9ef7ff 0 1px,transparent 2px),
+      radial-gradient(ellipse at 42% 35%,#3c8a73 0 7%,transparent 8%),
+      radial-gradient(ellipse at 58% 48%,#276b63 0 10%,transparent 11%),
+      radial-gradient(ellipse at 36% 65%,#183f43 0 8%,transparent 9%),
+      radial-gradient(circle at 34% 29%,#dffcff 0 1%,#83d9e7 2%,#13647c 18%,#082b3a 42%,#02070a 73%);
+      box-shadow:inset -78px -32px 95px #000,inset 24px 10px 35px #bffbff22,0 0 9px #d8ffff,0 0 42px #53eaff80,0 0 110px #197da955}
+    .planet::before{content:"";position:absolute;inset:-2%;border-radius:50%;background:repeating-linear-gradient(12deg,transparent 0 18px,#9cf9ff0b 19px 20px);mix-blend-mode:screen;animation:clouds 22s linear infinite}
+    .planet::after{content:"";position:absolute;inset:-7%;border:1px solid #79f4ff50;border-radius:50%;box-shadow:inset 0 0 24px #75f5ff33,0 0 22px #75f5ff22}
+    .orbit{position:absolute;width:118%;height:38%;border:1px solid #75f5ff88;border-radius:50%;transform:rotate(-14deg);box-shadow:0 0 14px #75f5ff55}.orbit::after{content:"";position:absolute;width:7px;height:7px;left:14%;top:25%;border-radius:50%;background:#fff;box-shadow:0 0 12px var(--cyan)}
+    .readout{position:absolute;right:-30px;top:12%;padding:12px 14px;border:1px solid #75f5ff35;background:#061116c4;color:#7e969e;font-size:8px;line-height:1.9;backdrop-filter:blur(14px)}.readout b{color:var(--cyan)}
+    .fluid-cards{position:absolute;z-index:6;right:28px;bottom:24px;left:28px;display:grid;grid-template-columns:1.15fr .9fr .9fr;gap:12px}
+    .card{--edge:var(--cyan);position:relative;overflow:hidden;min-height:100px;padding:17px;border:1px solid #75f5ff28;background:#071217d9;backdrop-filter:blur(15px)}.card:nth-child(2){--edge:var(--pink)}.card:nth-child(3){--edge:#9a8cff}
+    .card::before{content:"";position:absolute;inset:-1px;background:conic-gradient(from var(--a),transparent 0 72%,var(--edge) 81%,#fff 84%,transparent 90%);animation:edge 6s linear infinite;opacity:.65}.card::after{content:"";position:absolute;inset:1px;background:linear-gradient(140deg,#0a171df7,#061015f5)}
+    .card>*{position:relative;z-index:2}.card small{color:var(--edge);font-size:7px;letter-spacing:.15em}.card strong{display:block;margin-top:24px;font:600 17px system-ui,sans-serif}
+    .pages{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}.page{position:relative;overflow:hidden;min-height:190px;padding:16px;border:1px solid #75f5ff25;background:#071015}.page::before{content:"";position:absolute;right:-22%;bottom:-35%;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,#78f3ff55,transparent 62%)}.page b,.page p{position:relative;z-index:2}.page b{color:var(--cyan);font-size:9px;letter-spacing:.14em}.page h3{position:relative;z-index:2;margin:56px 0 8px;font:650 21px system-ui,sans-serif}.page p{margin:0;color:var(--muted);font:11px/1.55 system-ui,sans-serif}
+    .page:nth-child(2)::before{background:radial-gradient(ellipse,#9f4a9a45,transparent 65%);filter:blur(8px)}.page:nth-child(3)::before{background:radial-gradient(circle,#596b8a35,transparent 65%)}.page:nth-child(4)::before{background:conic-gradient(#60efff55,#ff66d744,#6756ff55,#60efff55);filter:blur(13px)}
+    @property --a{syntax:"<angle>";initial-value:0deg;inherits:false}@keyframes edge{to{--a:360deg}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes drift{to{transform:rotate(-14deg) translate3d(-24px,18px,0)}}@keyframes clouds{to{transform:rotate(360deg)}}
+    @media(max-width:850px){body{padding:12px}.head{display:block}.head p{margin-top:12px}.world{min-height:990px}.hero{grid-template-columns:1fr;padding:34px 18px}.planet-wrap{order:-1;min-height:330px}.planet{width:270px}.readout{display:none}.hero h2{font-size:55px}.fluid-cards{grid-template-columns:1fr;position:relative;right:auto;bottom:auto;left:auto;margin:0 12px 12px}.card{min-height:82px}.card strong{margin-top:14px}.pages{grid-template-columns:1fr 1fr}.links{display:none}}
+    @media(prefers-reduced-motion:reduce){.galaxy,.galaxy::before,.planet::before,.card::before{animation:none!important}}
+  </style>
+</head>
+<body>
+  <header class="head"><div><span class="eyebrow">COSMIC WORLD SYSTEM / REALISTIC PASS</span><h1>真实银河与类地数字星球</h1></div><p>这是视觉合同，不是最终 WebGL 渲染。实现时星球使用 Three.js 多材质与大气 Shader，银河使用 GPU 粒子旋臂、星云噪声与远景星场。</p></header>
+  <main class="world" id="world">
+    <div class="space"></div><div class="galaxy"></div>
+    <nav><span class="logo">⌁ ZJB.DEV</span><span class="links">HOME　PROJECTS　BLOG　PLAYGROUND　ABOUT</span></nav>
+    <section class="hero">
+      <div class="copy"><span class="signal">GALACTIC NODE / ONLINE</span><h2>把复杂，做得有意思。</h2><p class="intro">在真实感银河深处，项目、文章和实验成为可探索的数字坐标。鼠标移动影响星球视差、银河引力场与镜头偏移。</p><div class="actions"><span>探索项目 →</span><span>进入实验室</span></div></div>
+      <div class="planet-wrap" id="planet"><div class="planet"><div class="orbit"></div><div class="readout"><b>PLANET / ZJB-01</b><br>ATMOSPHERE　ACTIVE<br>NIGHT LIGHTS　ON<br>GRAVITY FIELD　LINKED<br>ORBIT　STABLE</div></div></div>
+    </section>
+    <section class="fluid-cards"><article class="card"><small>01 / SELECTED WORK</small><strong>轨道数据层</strong></article><article class="card"><small>02 / KNOWLEDGE LOG</small><strong>远星阅读层</strong></article><article class="card"><small>03 / LIVE LAB</small><strong>引力实验层</strong></article></section>
+  </main>
+  <section class="pages">
+    <article class="page"><b>PROJECTS / ORBITAL MAP</b><h3>项目：轨道节点</h3><p>项目卡片成为围绕核心星球的工程坐标，保留筛选与真实内容。</p></article>
+    <article class="page"><b>BLOG / DEEP SPACE LOG</b><h3>博客：低亮远星</h3><p>降低动画速度与对比，星云只承担阅读深度，不穿过正文。</p></article>
+    <article class="page"><b>ABOUT / PLANET PROFILE</b><h3>关于：行星档案</h3><p>技能与原则转化为扫描层和档案模块，不伪造履历指标。</p></article>
+    <article class="page"><b>LAB / GRAVITY FIELD</b><h3>实验室：高能区域</h3><p>允许更强粒子、色散和交互反馈，与三个现有实验形成联动。</p></article>
+  </section>
+  <script>
+    const world=document.querySelector('#world'),planet=document.querySelector('#planet');
+    world.addEventListener('pointermove',e=>{const r=world.getBoundingClientRect();const x=((e.clientX-r.left)/r.width-.5)*24;const y=((e.clientY-r.top)/r.height-.5)*18;planet.style.setProperty('--px',x+'px');planet.style.setProperty('--py',y+'px')});
+    world.addEventListener('pointerleave',()=>{planet.style.setProperty('--px','0px');planet.style.setProperty('--py','0px')});
+  </script>
+</body>
+</html>

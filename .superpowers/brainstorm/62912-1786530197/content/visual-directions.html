@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZJB.DEV 视觉方向</title>
+  <style>
+    :root { color-scheme: dark; font-family: "SFMono-Regular", Consolas, monospace; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 32px; background: #070a0f; color: #e8f8ff; }
+    header { max-width: 1440px; margin: 0 auto 24px; }
+    h1 { margin: 0 0 8px; font: 600 clamp(28px, 4vw, 54px)/1.05 system-ui, sans-serif; letter-spacing: -.04em; }
+    header p { max-width: 780px; color: #8da5ae; line-height: 1.7; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; max-width: 1440px; margin: auto; }
+    .option { position: relative; overflow: hidden; border: 1px solid #26343a; border-radius: 18px; background: #0b1115; cursor: pointer; transition: .25s ease; }
+    .option:hover, .option.selected { border-color: #83f5ff; transform: translateY(-4px); box-shadow: 0 0 40px #00d9ff18; }
+    .option.selected::after { content: "已选择"; position: absolute; z-index: 20; top: 12px; right: 12px; padding: 7px 10px; border: 1px solid #83f5ff; background: #071015d9; color: #83f5ff; font-size: 11px; letter-spacing: .14em; }
+    .preview { position: relative; height: 510px; overflow: hidden; background: #080d11; }
+    .preview::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(#70efff0a 1px, transparent 1px), linear-gradient(90deg, #70efff0a 1px, transparent 1px); background-size: 32px 32px; }
+    .nav { position: relative; z-index: 3; display: flex; align-items: center; justify-content: space-between; height: 48px; padding: 0 16px; border-bottom: 1px solid #9beeff22; background: #071015cc; font-size: 9px; letter-spacing: .16em; }
+    .logo { color: #c5fbff; font-size: 12px; font-weight: 800; text-shadow: 0 0 12px #58eaff; }
+    .hero { position: relative; z-index: 2; display: grid; min-height: 330px; grid-template-columns: 1.1fr .9fr; align-items: center; padding: 34px 22px; }
+    .kicker { color: #69f5ff; font-size: 8px; letter-spacing: .18em; }
+    h2 { margin: 13px 0; font: 650 34px/.96 system-ui, sans-serif; letter-spacing: -.06em; }
+    .desc { max-width: 30ch; color: #91a8b0; font: 10px/1.6 system-ui, sans-serif; }
+    .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 18px; }
+    .tag { padding: 5px 7px; border: 1px solid #72f5ff55; color: #bafaff; font-size: 7px; letter-spacing: .12em; }
+    .sphere { position: relative; width: 180px; aspect-ratio: 1; margin: auto; border-radius: 50%; background: radial-gradient(circle at 36% 32%, #fff 0 1%, #7ff9ff 3%, #156d80 18%, #08161d 54%, #020608 72%); box-shadow: inset -20px -14px 35px #000, 0 0 48px #43e8ff44; }
+    .sphere::before, .sphere::after { content: ""; position: absolute; border: 1px solid #72f5ff99; border-radius: 50%; inset: 34% -22%; transform: rotate(-12deg); box-shadow: 0 0 14px #72f5ff55; }
+    .sphere::after { inset: -11% 38%; transform: rotate(26deg); border-color: #ff7de7aa; }
+    .metrics { position: relative; z-index: 3; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; margin: 0 16px; background: #7cf4ff22; border: 1px solid #7cf4ff22; }
+    .metric { padding: 12px; background: #0a1318de; }
+    .metric b { display: block; color: #e9fdff; font: 600 13px system-ui, sans-serif; }
+    .metric span { color: #6c8993; font-size: 7px; letter-spacing: .12em; }
+    .body { padding: 18px; border-top: 1px solid #24343b; }
+    .body h3 { margin: 0 0 8px; font: 650 17px system-ui, sans-serif; }
+    .body p { margin: 0; color: #8499a0; font: 11px/1.6 system-ui, sans-serif; }
+    .mobile { position: absolute; z-index: 6; right: 12px; bottom: 12px; width: 88px; height: 174px; overflow: hidden; border: 1px solid #70838a; border-radius: 14px; background: #071015; box-shadow: 0 12px 30px #000a; }
+    .mobile .mnav { height: 20px; border-bottom: 1px solid #ffffff18; }
+    .mobile .msphere { width: 68px; height: 68px; margin: 16px auto 8px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #aefcff, #195f73 24%, #03080a 70%); box-shadow: 0 0 18px #4aefff55; }
+    .mobile .mlines { height: 44px; margin: 8px 9px; background: linear-gradient(#d7fbff 0 5px, transparent 5px 12px, #86a3ac 12px 15px, transparent 15px 22px, #86a3ac 22px 25px, transparent 25px); }
+    .b .preview { background: radial-gradient(circle at 76% 34%, #4fe5ff22, transparent 25%), radial-gradient(circle at 26% 68%, #ff50d522, transparent 28%), #05060b; }
+    .b .preview::before { background: linear-gradient(118deg, transparent 24%, #66f5ff0b 40%, #ff4fdd18 48%, transparent 58%); filter: blur(2px); }
+    .b .hero { grid-template-columns: 1fr; align-content: end; padding-bottom: 72px; }
+    .b h2 { max-width: 8ch; font-size: 44px; }
+    .b .sphere { position: absolute; right: -18px; top: 50px; width: 255px; opacity: .82; background: radial-gradient(circle at 36% 32%, #fff, #8ff8ff 2%, #2931a1 18%, #8c136d 42%, #060513 70%); box-shadow: 0 0 80px #8f43ff66; }
+    .b .metrics { border: 0; background: transparent; }
+    .b .metric { background: linear-gradient(90deg, #111a24cc, #111a2444); backdrop-filter: blur(12px); }
+    .c .preview { background: radial-gradient(circle at 70% 32%, #6af8ff18, transparent 28%), linear-gradient(135deg, #071115, #0b101a 56%, #170d1b); }
+    .c .hero { grid-template-columns: .92fr 1.08fr; }
+    .c h2 { font-size: 38px; }
+    .c .sphere { width: 205px; background: repeating-radial-gradient(circle at 50% 50%, transparent 0 9px, #5ff4ff22 10px 11px), radial-gradient(circle at 40% 34%, #d8ffff, #248ca0 7%, #09171c 43%, #030608 70%); }
+    .c .sphere::before { inset: -14%; border-style: dashed; animation: spin 12s linear infinite; }
+    .c .sphere::after { inset: 22% -30%; }
+    .c .metric:nth-child(2) { border-top: 1px solid #ff65dd; }
+    @keyframes spin { to { transform: rotate(348deg); } }
+    .hint { max-width: 1440px; margin: 20px auto 0; color: #6f858d; font-size: 11px; }
+    @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } .preview { height: 470px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="kicker">ZJB.DEV / GLOBAL REDESIGN / DIRECTION SELECT</div>
+    <h1>选择数字宇宙的主视觉语法</h1>
+    <p>三套方案都包含全站 Streamer Shader、交互式 3D 粒子球、深空/光昼双主题和移动端适配。区别在于内容秩序与沉浸表现的配比。</p>
+  </header>
+  <main class="grid">
+    <article class="option a" data-choice="a" onclick="toggleSelect(this)">
+      <div class="preview">
+        <div class="nav"><span class="logo">◉ ZJB.DEV</span><span>INDEX　PROJECTS　LOGS　LABS</span></div>
+        <section class="hero">
+          <div><span class="kicker">SYSTEM / CREATIVE ENGINEER</span><h2>构建复杂系统的数字操作台</h2><p class="desc">信息面板、技术指标与发光边界组成高密度未来界面。</p><div class="tags"><span class="tag">ASTRO</span><span class="tag">WEBGL</span><span class="tag">HARMONYOS</span></div></div>
+          <div class="sphere"></div>
+        </section>
+        <div class="metrics"><div class="metric"><b>05</b><span>PROJECTS</span></div><div class="metric"><b>03</b><span>LABS</span></div><div class="metric"><b>ONLINE</b><span>SYSTEM</span></div></div>
+        <div class="mobile"><div class="mnav"></div><div class="msphere"></div><div class="mlines"></div></div>
+      </div>
+      <div class="body"><h3>A. 轨道操作系统</h3><p>最接近参考图。系统面板、高密度指标、硬朗边框；专业技术感强，但长内容页面容易显得偏重。</p></div>
+    </article>
+    <article class="option b" data-choice="b" onclick="toggleSelect(this)">
+      <div class="preview">
+        <div class="nav"><span class="logo">ZJB.DEV</span><span>PROJECTS　WRITING　LAB</span></div>
+        <section class="hero">
+          <div><span class="kicker">IMMERSIVE DIGITAL SPACE</span><h2>把复杂，做得有意思。</h2><p class="desc">流光像介质一样穿过页面，内容悬浮在深邃数字空间中。</p></div>
+          <div class="sphere"></div>
+        </section>
+        <div class="metrics"><div class="metric"><b>探索</b><span>PROJECTS</span></div><div class="metric"><b>阅读</b><span>ARCHIVE</span></div><div class="metric"><b>进入</b><span>LABS</span></div></div>
+        <div class="mobile"><div class="mnav"></div><div class="msphere"></div><div class="mlines"></div></div>
+      </div>
+      <div class="body"><h3>B. 流光电影空间</h3><p>视觉情绪最强，大标题与粒子球成为主角；惊艳但信息密度较低，项目与技术细节需要下滚后展开。</p></div>
+    </article>
+    <article class="option c" data-choice="c" onclick="toggleSelect(this)">
+      <div class="preview">
+        <div class="nav"><span class="logo">⌁ ZJB.DEV</span><span>HOME　PROJECTS　BLOG　PLAYGROUND</span></div>
+        <section class="hero">
+          <div><span class="kicker">SIGNAL 01 / ONLINE</span><h2>智能星图界面</h2><p class="desc">以编辑排版承载内容，以系统刻度和可解释的动态信号构建数字宇宙。</p><div class="tags"><span class="tag">BUILD</span><span class="tag">BREAK</span><span class="tag">LEARN</span></div></div>
+          <div class="sphere"></div>
+        </section>
+        <div class="metrics"><div class="metric"><b>PROJECTS</b><span>SELECTED WORK</span></div><div class="metric"><b>ARTICLE</b><span>KNOWLEDGE LOG</span></div><div class="metric"><b>LAB</b><span>LIVE SIGNAL</span></div></div>
+        <div class="mobile"><div class="mnav"></div><div class="msphere"></div><div class="mlines"></div></div>
+      </div>
+      <div class="body"><h3>C. 智能星图界面</h3><p>推荐方向。融合参考图的系统语言与电影空间的深度，同时保留博客和项目的编辑可读性，三类受众更均衡。</p></div>
+    </article>
+  </main>
+  <p class="hint">点击卡片选择。选择关注主视觉语法，不代表最终颜色和细节完全锁定。</p>
+  <script>
+    function toggleSelect(element) {
+      document.querySelectorAll('.option').forEach((item) => item.classList.remove('selected'));
+      element.classList.add('selected');
+      fetch('/__event', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({type:'click', choice:element.dataset.choice, text:element.querySelector('h3').textContent}) });
+    }
+  </script>
+</body>
+</html>

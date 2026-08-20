@@ -1,0 +1,38 @@
+<style>
+  .density-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:24px}.density-card{overflow:hidden;border:1px solid var(--border);border-radius:14px;background:rgba(15,18,25,.88);cursor:pointer;transition:transform 180ms ease,border-color 180ms ease}.density-card:hover{transform:translateY(-3px);border-color:#66d9c7}.density-card.selected{border-color:#66d9c7;box-shadow:0 0 0 2px rgba(102,217,199,.16)}.mini-browser{min-height:390px;padding:12px;background:radial-gradient(circle at 78% 12%,rgba(35,147,132,.18),transparent 32%),#090b10}.mini-nav{display:flex;height:34px;align-items:center;justify-content:space-between;padding:0 10px;border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#9ea7b6;font-size:9px}.mini-title{display:grid;grid-template-columns:1fr 1fr;align-items:end;gap:14px;border-bottom:1px solid rgba(255,255,255,.12)}.mini-title strong{display:block;color:#f4f1e9;font-family:Georgia,serif;line-height:.96}.mini-title small{color:#66d9c7;font:7px monospace}.mini-title p{margin:0;color:#8992a0;font-size:8px;line-height:1.5}.mini-filters{display:flex;align-items:center;gap:5px;padding:7px;border:1px solid rgba(255,255,255,.1);border-radius:9px;background:rgba(255,255,255,.035)}.mini-filters i{display:block;width:38px;height:17px;border-radius:999px;background:rgba(255,255,255,.08)}.mini-cards{display:grid;grid-template-columns:1fr 1fr;gap:7px}.mini-item{min-height:88px;padding:9px;border:1px solid rgba(255,255,255,.1);border-radius:9px;background:rgba(255,255,255,.035)}.mini-item b{color:#e8e5dd;font:11px Georgia,serif}.mini-item span{display:block;width:70%;height:4px;margin-top:10px;border-radius:9px;background:rgba(255,255,255,.12)}.density-a .mini-title{padding:27px 4px 13px}.density-a .mini-title strong{margin-top:5px;font-size:28px}.density-a .mini-filters{margin:10px 0}.density-b .mini-title{padding:18px 4px 9px}.density-b .mini-title strong{margin-top:3px;font-size:23px}.density-b .mini-filters{margin:7px 0}.density-b .mini-item{min-height:72px}.density-c .mini-title{padding:39px 4px 18px}.density-c .mini-title strong{margin-top:7px;font-size:32px}.density-c .mini-filters{margin:14px 0}.density-c .mini-item{min-height:102px}.density-copy{padding:16px}.density-copy h3{margin:0 0 7px}.density-copy p{margin:0;color:var(--muted);font-size:13px}.recommend{display:inline-flex;margin-bottom:9px;padding:3px 7px;border-radius:999px;background:rgba(102,217,199,.12);color:#66d9c7;font:10px monospace}@media(max-width:900px){.density-grid{grid-template-columns:1fr}.mini-browser{min-height:330px}}
+</style>
+
+<h2>紧凑型内页：首屏密度确认</h2>
+<p class="subtitle">三种方案保持同一电影式深色语言，只改变标题栏、筛选区和内容露出的密度。点击卡片选择。</p>
+
+<div class="density-grid">
+  <div class="density-card density-a" data-choice="a-balanced" onclick="toggleSelect(this)">
+    <div class="mini-browser">
+      <div class="mini-nav"><span>ABINZHAO</span><span>PROJECTS · BLOG · TOOLBOX · ABOUT</span></div>
+      <div class="mini-title"><div><small>PROJECT ARCHIVE</small><strong>项目</strong></div><p>公开项目与工程实践，共 12 项。所有描述均来自可核对的公开内容。</p></div>
+      <div class="mini-filters"><i></i><i></i><i></i><i></i></div>
+      <div class="mini-cards"><div class="mini-item"><b>HarmonyOS AI Lab</b><span></span><span></span></div><div class="mini-item"><b>Frontend Toolkit</b><span></span><span></span></div><div class="mini-item"><b>Agent Workflow</b><span></span></div><div class="mini-item"><b>Design System</b><span></span></div></div>
+    </div>
+    <div class="density-copy"><span class="recommend">RECOMMENDED · CURRENT</span><h3>A. 平衡型紧凑归档</h3><p>标题仍有品牌识别度，筛选紧随其后；1440×900 可稳定露出两张项目卡。</p></div>
+  </div>
+
+  <div class="density-card density-b" data-choice="b-dense" onclick="toggleSelect(this)">
+    <div class="mini-browser">
+      <div class="mini-nav"><span>ABINZHAO</span><span>PROJECTS · BLOG · TOOLBOX · ABOUT</span></div>
+      <div class="mini-title"><div><small>PROJECT ARCHIVE</small><strong>项目</strong></div><p>12 项公开项目与工程实践。</p></div>
+      <div class="mini-filters"><i></i><i></i><i></i><i></i></div>
+      <div class="mini-cards"><div class="mini-item"><b>HarmonyOS AI Lab</b><span></span></div><div class="mini-item"><b>Frontend Toolkit</b><span></span></div><div class="mini-item"><b>Agent Workflow</b><span></span></div><div class="mini-item"><b>Design System</b><span></span></div><div class="mini-item"><b>CLI Experiments</b><span></span></div><div class="mini-item"><b>Open Source Notes</b><span></span></div></div>
+    </div>
+    <div class="density-copy"><h3>B. 高密度工作台</h3><p>首屏内容最多，但标题气质和卡片叙事空间明显减弱，更接近后台目录。</p></div>
+  </div>
+
+  <div class="density-card density-c" data-choice="c-relaxed" onclick="toggleSelect(this)">
+    <div class="mini-browser">
+      <div class="mini-nav"><span>ABINZHAO</span><span>PROJECTS · BLOG · TOOLBOX · ABOUT</span></div>
+      <div class="mini-title"><div><small>PROJECT ARCHIVE</small><strong>项目</strong></div><p>从真实问题出发，把方案做成作品。收录公开项目、工程工具与技术实践。</p></div>
+      <div class="mini-filters"><i></i><i></i><i></i></div>
+      <div class="mini-cards"><div class="mini-item"><b>HarmonyOS AI Lab</b><span></span><span></span></div><div class="mini-item"><b>Frontend Toolkit</b><span></span><span></span></div></div>
+    </div>
+    <div class="density-copy"><h3>C. 保守型轻量 Hero</h3><p>品牌表达最强，但首屏内容露出最少，接近本次要移除的大型说明 Hero。</p></div>
+  </div>
+</div>

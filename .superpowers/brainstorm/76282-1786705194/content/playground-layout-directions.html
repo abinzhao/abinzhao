@@ -1,0 +1,74 @@
+<style>
+  .directions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:24px}.direction{overflow:hidden;border:1px solid var(--border);border-radius:14px;background:#0a0d13;cursor:pointer;transition:transform .18s,border-color .18s}.direction:hover{transform:translateY(-3px);border-color:#4fd6c5}.direction.selected{border-color:#4fd6c5;box-shadow:0 0 0 2px rgba(79,214,197,.15)}.preview{padding:10px;background:radial-gradient(circle at 20% 0,rgba(54,185,205,.17),transparent 40%),#080b10;color:#e9edf2}.bar{display:flex;justify-content:space-between;align-items:center;height:26px;padding:0 8px;border:1px solid #27303a;border-radius:8px;font:7px monospace;color:#9ca8b6}.label{color:#45c9e8;font:7px monospace}.title{font:600 19px Georgia,serif}.sub{font-size:7px;color:#8793a0}.index,.detail{margin-top:8px}.index-head{display:flex;align-items:end;justify-content:space-between;padding:10px 2px 7px;border-bottom:1px solid #28313c}.cards{display:grid;gap:6px;margin-top:7px}.card{position:relative;overflow:hidden;min-height:78px;border:1px solid #27313d;border-radius:8px;background:rgba(255,255,255,.035)}.visual{background:radial-gradient(ellipse at center,rgba(108,94,255,.5),transparent 57%),#05070c}.visual:after{position:absolute;inset:42% 18%;border:1px solid rgba(255,255,255,.35);border-radius:50%;content:"";transform:rotate(-12deg)}.copy{padding:8px}.copy b{display:block;font:11px Georgia,serif}.copy span{display:block;margin-top:5px;color:#8793a0;font-size:6px}.detail-head{display:flex;justify-content:space-between;gap:10px;padding:8px 2px}.runtime{overflow:hidden;border:1px solid #293440;border-radius:9px;background:#05070c}.runtime-top{display:flex;align-items:center;justify-content:space-between;padding:6px 7px;border-bottom:1px solid #293440;font:6px monospace;color:#7fdacb}.runtime-canvas{position:relative;min-height:125px;background:radial-gradient(ellipse at 52% 54%,rgba(105,92,255,.5),transparent 55%),#03050a}.runtime-canvas:after{position:absolute;inset:40% 18%;border:1px solid rgba(255,255,255,.35);border-radius:50%;content:"";transform:rotate(-13deg)}.controls{display:flex;gap:4px;padding:6px;border-top:1px solid #293440}.controls i{width:30px;height:13px;border:1px solid #33404d;border-radius:99px}.notes{padding:7px;border:1px solid #293440;border-radius:8px;background:rgba(255,255,255,.035)}.notes i{display:block;width:80%;height:3px;margin:5px 0;background:#34404b}.a .cards{grid-template-columns:1.35fr .65fr}.a .card:first-child{grid-row:span 2;min-height:162px}.a .card:first-child .visual{height:102px}.a .detail-grid{display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:6px}.a .runtime-canvas{min-height:155px}.a .notes{font-size:7px}.b .cards{grid-template-columns:repeat(3,1fr)}.b .card{min-height:116px}.b .visual{height:66px}.b .detail-grid{display:grid;grid-template-columns:1fr;gap:6px}.b .notes{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.b .runtime-canvas{min-height:165px}.c .cards{grid-template-columns:1fr}.c .card{display:grid;grid-template-columns:100px 1fr;min-height:66px}.c .visual{height:100%}.c .detail-grid{display:grid;grid-template-columns:110px 1fr;gap:6px}.c .runtime-canvas{min-height:145px}.body{padding:14px}.body h3{margin:0 0 6px}.body p{margin:0;color:var(--muted);font-size:12px;line-height:1.5}.rec{display:inline-flex;margin-bottom:7px;padding:3px 7px;border-radius:999px;background:rgba(79,214,197,.12);color:#4fd6c5;font:9px monospace}@media(max-width:900px){.directions{grid-template-columns:1fr}}
+</style>
+
+<h2>实验页面布局方向</h2>
+<p class="subtitle">每个方案上半部分是实验索引，下半部分是详情运行区。点击整张方案卡选择。</p>
+
+<div class="directions">
+  <div class="direction a" data-choice="a-canvas-workbench" onclick="toggleSelect(this)">
+    <div class="preview">
+      <div class="bar"><b>abinzhao</b><span>PROJECTS · WRITING · LAB · TOOLBOX</span></div>
+      <section class="index">
+        <div class="index-head"><div><span class="label">OPEN LAB / 03</span><div class="title">实验室</div></div><span class="sub">运行中的图形、物理与交互系统</span></div>
+        <div class="cards">
+          <div class="card"><div class="visual"></div><div class="copy"><b>粒子银河</b><span>THREE.JS · WEBGL</span></div></div>
+          <div class="card"><div class="copy"><b>着色器艺术</b><span>GLSL · WEBGL</span></div></div>
+          <div class="card"><div class="copy"><b>物理沙盒</b><span>CANVAS · VERLET</span></div></div>
+        </div>
+      </section>
+      <section class="detail">
+        <div class="detail-head"><div><span class="label">PLAYGROUND / PARTICLE GALAXY</span><div class="title">粒子银河</div></div><span class="sub">返回实验列表 ↗</span></div>
+        <div class="detail-grid">
+          <div class="runtime"><div class="runtime-top"><span>LIVE · 60 FPS</span><span>拖动旋转 / 滚轮缩放</span></div><div class="runtime-canvas"></div><div class="controls"><i></i><i></i><i></i></div></div>
+          <div class="notes"><b>实验说明</b><i></i><i></i><i></i><br><b>性能边界</b><i></i><i></i></div>
+        </div>
+      </section>
+    </div>
+    <div class="body"><span class="rec">RECOMMENDED</span><h3>A. 画布优先实验工作台</h3><p>索引用一个主实验带动两个次实验；详情让画布占主位，说明成为紧凑侧栏。最能突出“可运行实验”的产品属性。</p></div>
+  </div>
+
+  <div class="direction b" data-choice="b-gallery-stage" onclick="toggleSelect(this)">
+    <div class="preview">
+      <div class="bar"><b>abinzhao</b><span>PROJECTS · WRITING · LAB · TOOLBOX</span></div>
+      <section class="index">
+        <div class="index-head"><div><span class="label">OPEN LAB / 03</span><div class="title">实验展台</div></div><span class="sub">三个同等权重的实时作品</span></div>
+        <div class="cards">
+          <div class="card"><div class="visual"></div><div class="copy"><b>粒子银河</b><span>THREE.JS</span></div></div>
+          <div class="card"><div class="visual"></div><div class="copy"><b>着色器艺术</b><span>GLSL</span></div></div>
+          <div class="card"><div class="visual"></div><div class="copy"><b>物理沙盒</b><span>CANVAS</span></div></div>
+        </div>
+      </section>
+      <section class="detail">
+        <div class="detail-head"><div><span class="label">LIVE EXPERIMENT</span><div class="title">粒子银河</div></div><span class="sub">THREE.JS · WEBGL</span></div>
+        <div class="detail-grid">
+          <div class="runtime"><div class="runtime-top"><span>RUNNING</span><span>控制台</span></div><div class="runtime-canvas"></div><div class="controls"><i></i><i></i><i></i></div></div>
+          <div class="notes"><span><b>目标</b><i></i></span><span><b>交互</b><i></i></span><span><b>性能</b><i></i></span></div>
+        </div>
+      </section>
+    </div>
+    <div class="body"><h3>B. 沉浸式展览舞台</h3><p>索引三张等权视觉卡；详情采用全宽舞台，说明横向排列在画布下方。视觉冲击强，但长文说明的可读性较弱。</p></div>
+  </div>
+
+  <div class="direction c" data-choice="c-research-console" onclick="toggleSelect(this)">
+    <div class="preview">
+      <div class="bar"><b>abinzhao</b><span>PROJECTS · WRITING · LAB · TOOLBOX</span></div>
+      <section class="index">
+        <div class="index-head"><div><span class="label">RESEARCH LOG</span><div class="title">实验目录</div></div><span class="sub">按机制扫描实验记录</span></div>
+        <div class="cards">
+          <div class="card"><div class="visual"></div><div class="copy"><b>01 / 粒子银河</b><span>GPU 点精灵与触摸力场</span></div></div>
+          <div class="card"><div class="visual"></div><div class="copy"><b>02 / 着色器艺术</b><span>距离场与分形噪声</span></div></div>
+          <div class="card"><div class="visual"></div><div class="copy"><b>03 / 物理沙盒</b><span>Verlet 约束求解</span></div></div>
+        </div>
+      </section>
+      <section class="detail">
+        <div class="detail-head"><div><span class="label">RESEARCH CONSOLE</span><div class="title">粒子银河</div></div><span class="sub">STATUS · READY</span></div>
+        <div class="detail-grid">
+          <div class="notes"><b>目录</b><i></i><i></i><i></i><br><b>参数</b><i></i><i></i></div>
+          <div class="runtime"><div class="runtime-top"><span>CANVAS</span><span>60 FPS</span></div><div class="runtime-canvas"></div><div class="controls"><i></i><i></i><i></i></div></div>
+        </div>
+      </section>
+    </div>
+    <div class="body"><h3>C. 研究控制台</h3><p>索引是高密度实验日志；详情把说明与参数放在左侧控制栏。扫描效率高，但更像开发工具，弱化作品展示感。</p></div>
+  </div>
+</div>

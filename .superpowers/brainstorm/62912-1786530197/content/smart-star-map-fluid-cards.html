@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZJB.DEV 流光卡片精修</title>
+  <style>
+    :root{color-scheme:dark;--bg:#04090c;--panel:#081116df;--text:#eaffff;--muted:#79919a;--line:#73efff30;--cyan:#76f5ff;--pink:#ff6fd8;font-family:"SFMono-Regular",Consolas,monospace}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;padding:28px;background:var(--bg);color:var(--text);overflow-x:hidden}
+    body::before{content:"";position:fixed;inset:-25%;pointer-events:none;background:
+      radial-gradient(ellipse at 18% 24%,#19dfff12,transparent 31%),
+      radial-gradient(ellipse at 78% 74%,#ff4fc913,transparent 28%),
+      conic-gradient(from 210deg at 55% 48%,transparent,#25eaff0d,#ff5fd00c,transparent 35%);
+      filter:blur(30px);animation:water-field 16s ease-in-out infinite alternate}
+    header,.shell,.legend{position:relative;z-index:2;max-width:1420px;margin-inline:auto}
+    header{display:flex;justify-content:space-between;align-items:end;margin-bottom:20px}h1{margin:6px 0 0;font:650 clamp(28px,4vw,50px)/1 system-ui,sans-serif;letter-spacing:-.055em}
+    .eyebrow{color:var(--cyan);font-size:10px;letter-spacing:.18em}.hint{max-width:520px;color:var(--muted);font:12px/1.6 system-ui,sans-serif;text-align:right}
+    .shell{overflow:hidden;min-height:760px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,#081217e8,#050b0fe8);box-shadow:0 36px 100px #0008}
+    .shell::before{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(#000,transparent 92%)}
+    .water{position:absolute;z-index:1;width:90%;height:150%;right:-24%;top:-32%;border-radius:44%;background:
+      repeating-radial-gradient(ellipse at 50% 50%,transparent 0 34px,#70f4ff12 36px 37px,transparent 39px 62px),
+      conic-gradient(from 50deg,transparent,#58efff12,#ff66d911,transparent 43%);
+      filter:blur(1px) drop-shadow(0 0 22px #53eaff33);animation:water-turn 19s linear infinite}
+    nav{position:relative;z-index:4;display:flex;align-items:center;justify-content:space-between;height:64px;padding:0 26px;border-bottom:1px solid var(--line);background:#061015b5;backdrop-filter:blur(18px)}
+    .logo{font-weight:900;letter-spacing:.14em;text-shadow:0 0 16px var(--cyan)}.links{color:var(--muted);font-size:9px;letter-spacing:.16em}
+    .hero{position:relative;z-index:3;display:grid;grid-template-columns:1fr .86fr;min-height:400px;align-items:center;padding:48px}
+    .signal{color:var(--cyan);font-size:9px;letter-spacing:.16em}.signal::before{content:"●";margin-right:8px;text-shadow:0 0 12px var(--cyan)}
+    h2{max-width:8ch;margin:18px 0;font:700 clamp(52px,6.8vw,96px)/.9 system-ui,sans-serif;letter-spacing:-.08em}
+    .intro{max-width:520px;color:var(--muted);font:15px/1.7 system-ui,sans-serif}
+    .orb{position:relative;width:min(30vw,340px);aspect-ratio:1;margin:auto;border-radius:50%;background:
+      repeating-radial-gradient(circle,transparent 0 15px,#8af9ff16 16px 17px),
+      radial-gradient(circle at 38% 31%,#fff 0 1%,#9affff 2%,#1b7285 13%,#07171c 44%,#010405 73%);
+      box-shadow:inset -32px -20px 55px #000,0 0 95px #3cefff48}
+    .orb::before,.orb::after{content:"";position:absolute;border:1px solid var(--cyan);border-radius:50%;inset:34% -25%;transform:rotate(-13deg);box-shadow:0 0 15px #5df5ff}
+    .orb::after{inset:-13% 38%;border-color:var(--pink);transform:rotate(28deg);box-shadow:0 0 12px #ff66d8}
+    .cards{position:relative;z-index:4;display:grid;grid-template-columns:1.15fr .9fr .9fr;gap:14px;padding:0 26px 26px}
+    .card{--edge:var(--cyan);position:relative;overflow:hidden;min-height:170px;padding:24px;border:1px solid var(--line);background:linear-gradient(135deg,#0b171dda,#071015b8);backdrop-filter:blur(14px);isolation:isolate;transition:transform .35s ease,border-color .35s ease}
+    .card:nth-child(2){--edge:var(--pink)}.card:nth-child(3){--edge:#9e8cff}
+    .card::before{content:"";position:absolute;z-index:-1;inset:-1px;background:conic-gradient(from var(--angle),transparent 0 68%,var(--edge) 78%,#fff 81%,transparent 87%);animation:edge-flow 6s linear infinite;opacity:.72}
+    .card::after{content:"";position:absolute;z-index:-1;inset:1px;background:
+      radial-gradient(ellipse at var(--mx,20%) var(--my,20%),color-mix(in srgb,var(--edge) 18%,transparent),transparent 32%),
+      linear-gradient(145deg,#0b171df7,#071015f5);transition:.35s}
+    .card:hover{transform:translateY(-6px);border-color:color-mix(in srgb,var(--edge) 70%,transparent)}
+    .card:hover::before{animation-duration:2.8s;opacity:1}.card:hover::after{background:
+      repeating-radial-gradient(ellipse at 65% 120%,transparent 0 17px,color-mix(in srgb,var(--edge) 7%,transparent) 18px 19px,transparent 20px 30px),
+      radial-gradient(ellipse at 30% 20%,color-mix(in srgb,var(--edge) 23%,transparent),transparent 38%),#081318f4}
+    .card small{color:var(--edge);font-size:8px;letter-spacing:.16em}.card h3{margin:42px 0 10px;font:650 24px system-ui,sans-serif;letter-spacing:-.035em}.card p{margin:0;color:var(--muted);font:12px/1.6 system-ui,sans-serif}
+    .card .bar{position:absolute;right:20px;top:20px;width:52px;height:3px;background:linear-gradient(90deg,transparent,var(--edge));box-shadow:0 0 12px var(--edge);animation:pulse 2.4s ease-in-out infinite}
+    .legend{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}.legend div{padding:14px;border-top:1px solid var(--line);color:var(--muted);font:11px/1.6 system-ui,sans-serif}.legend b{display:block;color:var(--text);font-size:10px;letter-spacing:.12em}
+    @property --angle{syntax:"<angle>";initial-value:0deg;inherits:false}
+    @keyframes edge-flow{to{--angle:360deg}}@keyframes water-turn{to{transform:rotate(360deg) scale(1.06)}}@keyframes water-field{to{transform:translate3d(4%,-3%,0) rotate(7deg)}}@keyframes pulse{50%{opacity:.35;transform:scaleX(.5);transform-origin:right}}
+    @media(max-width:760px){body{padding:14px}header{display:block}.hint{text-align:left}.shell{min-height:950px}.hero{grid-template-columns:1fr;padding:34px 20px}.hero h2{font-size:54px}.orb{width:240px;order:-1}.cards{grid-template-columns:1fr;padding:0 14px 14px}.card{min-height:138px}.card h3{margin-top:26px}.links{display:none}.legend{grid-template-columns:1fr}}
+    @media(prefers-reduced-motion:reduce){body::before,.water,.card::before,.bar{animation:none!important}.card:hover{transform:none}}
+  </style>
+</head>
+<body>
+  <header><div><span class="eyebrow">CONCEPT C / FLUID LIGHT PASS</span><h1>智能星图 × 动态水流光</h1></div><p class="hint">移动鼠标悬停卡片，查看边缘流光加速、内部水纹折射和指标脉冲。默认状态保持低亮度，避免全屏持续争夺注意力。</p></header>
+  <main class="shell">
+    <div class="water"></div>
+    <nav><span class="logo">⌁ ZJB.DEV</span><span class="links">HOME　PROJECTS　BLOG　PLAYGROUND　ABOUT</span></nav>
+    <section class="hero">
+      <div><span class="signal">SIGNAL 01 / FLUID SYSTEM ONLINE</span><h2>把复杂，做得有意思。</h2><p class="intro">流光不只是背景，而是连接项目、文章与实验的数字水系。每一张卡片都是一个被激活的信号节点。</p></div>
+      <div class="orb"></div>
+    </section>
+    <section class="cards">
+      <article class="card"><span class="bar"></span><small>01 / SELECTED WORK</small><h3>从真实问题开始</h3><p>边缘高光沿卡片轮廓游走，悬停后水纹折射响应指针。</p></article>
+      <article class="card"><span class="bar"></span><small>02 / KNOWLEDGE LOG</small><h3>记录判断与取舍</h3><p>文章卡片使用更低亮度、更慢流速，优先保证阅读秩序。</p></article>
+      <article class="card"><span class="bar"></span><small>03 / LIVE LAB</small><h3>运行中的想法</h3><p>实验卡片允许更强色散与更快的局部流光反馈。</p></article>
+    </section>
+  </main>
+  <section class="legend"><div><b>背景水流</b>低频、大尺度、连续流动，负责空间深度。</div><div><b>卡片流光</b>沿边界定向游走，悬停或聚焦时增强。</div><div><b>降级策略</b>reduced-motion 固定在漂亮静态帧；正文页降低至 20% 强度。</div></section>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>ZJB.DEV Three.js 宇宙 V2</title>
+  <style>
+    :root{color-scheme:dark;--cyan:#7ceeff;--pink:#db6dca;--text:#edf9fa;--muted:#879ba2;--line:#7ceeff29;font-family:"SFMono-Regular",Consolas,monospace}
+    *{box-sizing:border-box}body{margin:0;padding:18px;background:#010305;color:var(--text)}
+    header,.stage,.notes{max-width:1500px;margin-inline:auto}header{display:flex;justify-content:space-between;align-items:end;margin-bottom:14px}
+    h1{margin:5px 0 0;font:650 clamp(28px,4vw,50px)/1 system-ui,sans-serif;letter-spacing:-.055em}.eyebrow,.status{color:var(--cyan);font-size:9px;letter-spacing:.17em}header p{max-width:590px;margin:0;color:var(--muted);font:12px/1.65 system-ui,sans-serif}
+    .stage{position:relative;overflow:hidden;min-height:790px;border:1px solid var(--line);border-radius:20px;background:#010407;box-shadow:0 34px 120px #000}
+    canvas{position:absolute;inset:0;width:100%;height:100%;display:block}.veil{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,#010407d9 0,#0104075c 43%,transparent 72%),radial-gradient(circle at 68% 46%,transparent 0 26%,#01040735 72%,#0104079c 100%)}
+    nav{position:relative;z-index:5;display:flex;align-items:center;justify-content:space-between;height:64px;padding:0 26px;border-bottom:1px solid var(--line);background:#020a0ec2;backdrop-filter:blur(17px)}.logo{font-weight:900;letter-spacing:.14em;text-shadow:0 0 15px var(--cyan)}.links{color:#8aa0a7;font-size:9px;letter-spacing:.15em}
+    .hero{position:relative;z-index:4;display:flex;min-height:535px;align-items:center;padding:58px 50px;pointer-events:none}.copy{width:50%;pointer-events:auto}
+    h2{margin:17px 0;font:700 clamp(60px,6vw,94px)/.88 system-ui,sans-serif;letter-spacing:-.085em;text-shadow:0 8px 45px #000}h2 span{display:block;white-space:nowrap}.intro{max-width:520px;color:#9aadb3;font:15px/1.7 system-ui,sans-serif}.actions{display:flex;gap:10px;margin-top:28px}.actions a{padding:12px 16px;border:1px solid var(--line);background:#031015a8;color:var(--text);font-size:9px;text-decoration:none;backdrop-filter:blur(12px)}.actions a:first-child{border-color:var(--cyan);box-shadow:inset 0 0 24px #66efff12}
+    .hud{position:absolute;z-index:6;right:3.5%;top:20%;width:168px;padding:13px;border:1px solid #79efff38;background:#031015b8;color:#81989f;font-size:8px;line-height:1.9;backdrop-filter:blur(15px)}.hud b{color:var(--cyan)}.hud::before{content:"";position:absolute;top:-1px;left:-1px;width:55%;height:1px;background:linear-gradient(90deg,var(--cyan),transparent);box-shadow:0 0 12px var(--cyan)}
+    .cards{position:absolute;z-index:6;right:26px;bottom:26px;left:26px;display:grid;grid-template-columns:1.15fr .9fr .9fr;gap:13px}.card{--edge:var(--cyan);position:relative;overflow:hidden;min-height:120px;padding:20px;border:1px solid var(--line);background:#041015d9;backdrop-filter:blur(16px);isolation:isolate;transition:transform .3s,border-color .3s}.card:nth-child(2){--edge:var(--pink)}.card:nth-child(3){--edge:#9a8fff}
+    .card::before{content:"";position:absolute;z-index:-2;inset:-1px;background:conic-gradient(from var(--a),transparent 0 70%,var(--edge) 79%,#fff 82%,transparent 89%);animation:edge 6s linear infinite;opacity:.72}.card::after{content:"";position:absolute;z-index:-1;inset:1px;background:repeating-radial-gradient(ellipse at 70% 130%,transparent 0 19px,color-mix(in srgb,var(--edge) 6%,transparent) 20px 21px,transparent 22px 34px),linear-gradient(140deg,#07151bf7,#031015f5)}.card:hover{transform:translateY(-5px);border-color:var(--edge)}.card:hover::before{animation-duration:2.5s;opacity:1}.card small{color:var(--edge);font-size:7px;letter-spacing:.16em}.card strong{display:block;margin-top:30px;font:600 19px system-ui,sans-serif}.card p{margin:7px 0 0;color:var(--muted);font:10px/1.5 system-ui,sans-serif}
+    .notes{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:13px}.note{padding:12px;border-top:1px solid var(--line);color:var(--muted);font:11px/1.6 system-ui,sans-serif}.note b{display:block;color:var(--text);font:9px "SFMono-Regular",monospace;letter-spacing:.13em}
+    @property --a{syntax:"<angle>";initial-value:0deg;inherits:false}@keyframes edge{to{--a:360deg}}
+    @media(max-width:800px){body{padding:9px}header{display:block}header p{margin-top:10px}.stage{min-height:1040px}.hero{align-items:flex-end;padding:400px 18px 230px}.copy{width:100%}h2{font-size:49px}.links{display:none}.hud{top:12%;right:12px}.cards{grid-template-columns:1fr;right:12px;bottom:12px;left:12px}.card{min-height:87px;padding:14px}.card strong{margin-top:14px}.notes{grid-template-columns:1fr 1fr}}
+    @media(prefers-reduced-motion:reduce){.card::before{animation:none}.card:hover{transform:none}}
+  </style>
+</head>
+<body>
+  <header><div><span class="eyebrow">THREE.JS / COSMIC SYSTEM V2</span><h1>NASA 深空质感 × 全息交互</h1></div><p>真实地球纹理与程序化银河共同渲染。科幻效果集中在体积星云、流光介质、指针扰动和信息层，不改变星体本身的物理结构。</p></header>
+  <main class="stage" id="stage">
+    <canvas id="cosmos" aria-hidden="true"></canvas><div class="veil"></div>
+    <nav><span class="logo">⌁ ZJB.DEV</span><span class="links">HOME　PROJECTS　BLOG　PLAYGROUND　ABOUT</span></nav>
+    <section class="hero"><div class="copy"><span class="status" id="status">THREE.JS / LOADING ASSETS</span><h2><span>把复杂，</span><span>做得有意思。</span></h2><p class="intro">在可交互的真实宇宙中，项目是轨道节点，文章是深空记录，实验是持续变化的引力场。</p><div class="actions"><a href="#">探索项目 →</a><a href="#">进入实验室</a></div></div></section>
+    <aside class="hud"><b>EARTH / ZJB-01</b><br>SURFACE　2K MAP<br>NORMAL　ACTIVE<br>CLOUDS　SEPARATE<br>NIGHT LIGHTS　ON<br>GALAXY　62K PT<br>STREAMER　ACTIVE</aside>
+    <section class="cards"><article class="card"><small>01 / SELECTED WORK</small><strong>轨道工程节点</strong><p>真实内容映射到可探索坐标</p></article><article class="card"><small>02 / KNOWLEDGE LOG</small><strong>深空知识记录</strong><p>低亮流光保护长文阅读</p></article><article class="card"><small>03 / LIVE LAB</small><strong>高能实验区域</strong><p>粒子与 Shader 响应交互</p></article></section>
+  </main>
+  <section class="notes"><div class="note"><b>REAL SURFACE</b>公开真实地貌、法线、高光、云层与夜光纹理，最终本地化并记录来源。</div><div class="note"><b>GALAXY STRUCTURE</b>对数螺旋臂、中央核球、薄盘、暗尘与远景恒星分层生成。</div><div class="note"><b>CINEMATIC LIGHT</b>暖白核心、青色大气、克制洋红星云，不使用均匀霓虹粗点。</div><div class="note"><b>HOLOGRAPHIC UI</b>扫描与流光只响应交互状态，内容阅读层保持稳定。</div></section>
+  <script type="module">
+    import * as THREE from "https://unpkg.com/three@0.185.0/build/three.module.js";
+    const stage=document.querySelector("#stage"),canvas=document.querySelector("#cosmos"),status=document.querySelector("#status");
+    const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:"high-performance"});
+    renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;renderer.setClearColor(0x010305);
+    const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(43,1,.1,100);camera.position.set(0,0,9);
+    const pointer=new THREE.Vector2(),target=new THREE.Vector2(),reduce=matchMedia("(prefers-reduced-motion: reduce)").matches,startTime=performance.now();
+    const streamScene=new THREE.Scene(),streamCamera=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+    const stream=new THREE.ShaderMaterial({depthWrite:false,depthTest:false,uniforms:{t:{value:0},p:{value:new THREE.Vector2()}},vertexShader:`void main(){gl_Position=vec4(position,1.);}`,fragmentShader:`
+      precision highp float;uniform float t;uniform vec2 p;float h(vec2 v){return fract(sin(dot(v,vec2(127.1,311.7)))*43758.5453);}
+      float n(vec2 v){vec2 i=floor(v),f=fract(v);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+1.),f.x),f.y);}
+      float f(vec2 v){float q=0.,a=.5;for(int i=0;i<5;i++){q+=a*n(v);v=mat2(1.7,1.2,-1.2,1.7)*v;a*=.5;}return q;}
+      void main(){vec2 uv=gl_FragCoord.xy/vec2(max(float(${innerWidth}),1.),max(float(${innerHeight}),1.));vec2 q=(uv-.5)*vec2(1.8,1.);q+=p*.06;
+      float a=f(q*2.1+vec2(t*.025,-t*.012));float b=f(q*3.-vec2(t*.014,t*.009));float r=smoothstep(.62,.88,a+sin((q.x+q.y)*4.-t*.08)*.11);
+      vec3 c=vec3(.002,.007,.012)+vec3(.02,.18,.23)*r*.52+vec3(.18,.015,.13)*smoothstep(.8,.97,b)*.24;gl_FragColor=vec4(c,1.);}`});
+    streamScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),stream));
+    const makeStarMaterial=(size,opacity)=>new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,vertexColors:true,uniforms:{size:{value:size},time:{value:0},pointer:{value:new THREE.Vector2()}},vertexShader:`uniform float size,time;uniform vec2 pointer;attribute float scale;varying vec3 c;void main(){c=color;vec3 q=position;q.y+=sin(time*.18+length(q.xz))*0.012;q.x+=pointer.x*.08;q.y+=pointer.y*.05;vec4 v=modelViewMatrix*vec4(q,1.);gl_PointSize=scale*size*(48./max(1.,-v.z));gl_Position=projectionMatrix*v;}`,fragmentShader:`varying vec3 c;void main(){float d=length(gl_PointCoord-.5);float a=smoothstep(.5,.04,d);a*=a;gl_FragColor=vec4(c,a*${opacity.toFixed(2)});}`});
+    function points(count,builder,material){const g=new THREE.BufferGeometry(),p=new Float32Array(count*3),c=new Float32Array(count*3),s=new Float32Array(count);for(let i=0;i<count;i++)builder(i,p,c,s);g.setAttribute("position",new THREE.BufferAttribute(p,3));g.setAttribute("color",new THREE.BufferAttribute(c,3));g.setAttribute("scale",new THREE.BufferAttribute(s,1));return new THREE.Points(g,material)}
+    const galaxy=new THREE.Group(),armMat=makeStarMaterial(1.2,.82),coreMat=makeStarMaterial(1.7,.9),farMat=makeStarMaterial(.72,.58);
+    const cyan=new THREE.Color("#9edbe2"),warm=new THREE.Color("#ffe2b0"),pink=new THREE.Color("#c985bd");
+    galaxy.add(points(42000,(i,p,c,s)=>{const arm=i%5,r=.28+Math.pow(Math.random(),.72)*6.3,theta=arm*Math.PI*.4+Math.log(r+1)*2.18+(Math.random()-.5)*(.18+r*.045),spread=(Math.random()-.5)*(.09+r*.025),j=i*3;p[j]=Math.cos(theta)*(r+spread);p[j+1]=(Math.random()-.5)*(.08+r*.026);p[j+2]=Math.sin(theta)*(r+spread);const x=(i%13===0?pink:cyan).clone().lerp(warm,Math.max(0,1-r/4)*.72);c[j]=x.r;c[j+1]=x.g;c[j+2]=x.b;s[i]=.4+Math.random()*1.45},armMat));
+    galaxy.add(points(10000,(i,p,c,s)=>{const r=Math.pow(Math.random(),2.25)*2.2,a=Math.random()*Math.PI*2,j=i*3;p[j]=Math.cos(a)*r;p[j+1]=(Math.random()-.5)*(.18+r*.09);p[j+2]=Math.sin(a)*r;const x=warm.clone().lerp(cyan,r/2.5);c[j]=x.r;c[j+1]=x.g;c[j+2]=x.b;s[i]=.65+Math.random()*1.65},coreMat));
+    scene.add(galaxy);
+    scene.add(points(10000,(i,p,c,s)=>{const j=i*3;p[j]=(Math.random()-.5)*32;p[j+1]=(Math.random()-.5)*19;p[j+2]=-5-Math.random()*18;const x=Math.random()>.93?warm:cyan;c[j]=x.r;c[j+1]=x.g;c[j+2]=x.b;s[i]=.35+Math.random()*.8},farMat));
+    function glowTexture(color){const cv=document.createElement("canvas");cv.width=cv.height=256;const x=cv.getContext("2d"),g=x.createRadialGradient(128,128,0,128,128,128);g.addColorStop(0,color);g.addColorStop(.18,color+"99");g.addColorStop(.52,color+"24");g.addColorStop(1,"transparent");x.fillStyle=g;x.fillRect(0,0,256,256);return new THREE.CanvasTexture(cv)}
+    [["#fff1c7",4.8,.9],["#55cfe8",7.5,.2],["#b2439d",6.5,.13]].forEach(([color,size,opacity],i)=>{const m=new THREE.SpriteMaterial({map:glowTexture(color),transparent:true,opacity,blending:THREE.AdditiveBlending,depthWrite:false}),sp=new THREE.Sprite(m);sp.scale.set(size,size,1);sp.position.set(0,(i-1)*.05,-.15-i*.05);galaxy.add(sp)});
+    galaxy.rotation.set(.86,0,-.12);galaxy.position.set(2.35,.55,-4.6);galaxy.scale.setScalar(.78);
+    const loader=new THREE.TextureLoader(),base="https://threejs.org/examples/textures/planets/";
+    const [earthMap,normalMap,specMap,cloudMap,lightsMap]=await Promise.all(["earth_atmos_2048.jpg","earth_normal_2048.jpg","earth_specular_2048.jpg","earth_clouds_1024.png","earth_lights_2048.png"].map(n=>loader.loadAsync(base+n)));
+    [earthMap,cloudMap,lightsMap].forEach(t=>t.colorSpace=THREE.SRGBColorSpace);
+    const planetGroup=new THREE.Group();planetGroup.position.set(2.72,.1,.1);scene.add(planetGroup);
+    const geo=new THREE.SphereGeometry(1.52,128,96),earth=new THREE.Mesh(geo,new THREE.MeshPhongMaterial({map:earthMap,normalMap,normalScale:new THREE.Vector2(.85,.85),specularMap:specMap,specular:new THREE.Color("#4f89a2"),shininess:22}));earth.rotation.z=-.23;planetGroup.add(earth);
+    const clouds=new THREE.Mesh(new THREE.SphereGeometry(1.535,128,96),new THREE.MeshPhongMaterial({map:cloudMap,transparent:true,opacity:.52,depthWrite:false,blending:THREE.NormalBlending}));clouds.rotation.z=-.23;planetGroup.add(clouds);
+    const night=new THREE.Mesh(new THREE.SphereGeometry(1.526,128,96),new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,uniforms:{map:{value:lightsMap},sun:{value:new THREE.Vector3(-1.6,1.1,2).normalize()}},vertexShader:`varying vec2 uvv;varying vec3 wn;void main(){uvv=uv;wn=normalize(mat3(modelMatrix)*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,fragmentShader:`uniform sampler2D map;uniform vec3 sun;varying vec2 uvv;varying vec3 wn;void main(){float dark=1.-smoothstep(-.12,.38,dot(normalize(wn),sun));vec3 l=texture2D(map,uvv).rgb;gl_FragColor=vec4(l*vec3(1.,.62,.24)*2.1,dark*max(l.r,max(l.g,l.b))*.9);}`}));night.rotation.z=-.23;planetGroup.add(night);
+    const atmosphere=new THREE.Mesh(new THREE.SphereGeometry(1.61,96,64),new THREE.ShaderMaterial({transparent:true,side:THREE.BackSide,blending:THREE.AdditiveBlending,depthWrite:false,vertexShader:`varying vec3 n;void main(){n=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,fragmentShader:`varying vec3 n;void main(){float i=pow(max(.72-dot(n,vec3(0,0,1)),0.),2.7);gl_FragColor=vec4(.12,.62,.86,i*.58);}`}));planetGroup.add(atmosphere);
+    scene.add(new THREE.AmbientLight(0x183647,.34));const sun=new THREE.DirectionalLight(0xfff2d8,3.6);sun.position.set(-4,3,5);scene.add(sun);
+    const resize=()=>{const r=stage.getBoundingClientRect(),mobile=r.width<800;renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1.25:1.6));renderer.setSize(r.width,r.height,false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix();galaxy.position.set(mobile?.3:2.35,mobile?1.7:.55,-4.6);galaxy.scale.setScalar(mobile?.52:.78);planetGroup.position.set(mobile?1.15:2.72,mobile?1.42:.1,mobile?-.45:.1);planetGroup.scale.setScalar(mobile?.7:1)};new ResizeObserver(resize).observe(stage);resize();
+    stage.addEventListener("pointermove",e=>{const r=stage.getBoundingClientRect();target.set((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height*2-1))});stage.addEventListener("pointerleave",()=>target.set(0,0));
+    let active=true;new IntersectionObserver(([e])=>active=e.isIntersecting).observe(stage);status.textContent="THREE.JS / COSMOS LIVE";
+    function frame(now=performance.now()){requestAnimationFrame(frame);if(!active||document.hidden)return;const t=reduce?0:(now-startTime)/1000;pointer.lerp(target,.045);stream.uniforms.t.value=t;stream.uniforms.p.value.copy(pointer);[armMat,coreMat,farMat].forEach(m=>{m.uniforms.time.value=t;m.uniforms.pointer.value.copy(pointer)});
+      if(!reduce){galaxy.rotation.z=-.12+t*.004;earth.rotation.y=t*.025;clouds.rotation.y=t*.033;night.rotation.y=t*.025;planetGroup.rotation.x=pointer.y*.09;planetGroup.rotation.y=pointer.x*.13}camera.position.x=pointer.x*.22;camera.position.y=pointer.y*.14;camera.lookAt(0,0,0);
+      renderer.autoClear=true;renderer.render(streamScene,streamCamera);renderer.autoClear=false;renderer.clearDepth();renderer.render(scene,camera)}frame();
+  </script>
+</body>
+</html>
