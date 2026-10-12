@@ -1,29 +1,23 @@
-import js from "@eslint/js";
-import { defineConfig, globalIgnores } from "eslint/config";
+import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
 
-export default defineConfig(
-  globalIgnores([
-    "dist/**",
-    ".astro/**",
-    ".superpowers/**",
-    "out/**",
-    "build/**",
-  ]),
-  js.configs.recommended,
-  tseslint.configs.recommended,
+export default tseslint.config(
   {
-    files: ["scripts/**/*.mjs"],
-    languageOptions: {
-      globals: {
-        AbortController: "readonly",
-        URL: "readonly",
-        clearTimeout: "readonly",
-        console: "readonly",
-        fetch: "readonly",
-        process: "readonly",
-        setTimeout: "readonly",
-      },
+    ignores: [
+      "node_modules/**",
+      "docs/.vitepress/cache/**",
+      "docs/.vitepress/dist/**",
+      "test-results/**",
+      "playwright-report/**",
+    ],
+  },
+  eslint.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
+    files: ["**/*.ts"],
+    rules: {
+      "@typescript-eslint/consistent-type-imports": "error",
+      "@typescript-eslint/no-explicit-any": "error",
     },
   },
 );

@@ -1,0 +1,254 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light;
+  scroll-padding-top: calc(var(--site-nav-height) + 24px);
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  min-width: 320px;
+  overflow-x: hidden;
+  letter-spacing: 0;
+  background-color: var(--site-bg);
+  background-image:
+    linear-gradient(
+      116deg,
+      transparent 0,
+      transparent 43%,
+      color-mix(in srgb, var(--site-cyan) 5%, transparent) 50%,
+      transparent 57%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--site-bg-soft) 32%, transparent),
+      transparent 28rem
+    );
+  transition:
+    background-color 240ms var(--site-ease),
+    color 240ms var(--site-ease);
+}
+
+body,
+button,
+input,
+textarea,
+select {
+  font-family: var(--vp-font-family-base);
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a,
+button,
+input,
+textarea,
+select {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--site-focus) !important;
+  outline-offset: 3px;
+}
+
+::selection {
+  color: var(--site-text);
+  background: color-mix(in srgb, var(--site-cyan) 28%, transparent);
+}
+
+.VPNav {
+  border-bottom: 1px solid transparent;
+}
+
+.VPNavBar {
+  height: var(--site-nav-height);
+  border-bottom-color: var(--site-line);
+  background: var(--site-glass);
+  backdrop-filter: saturate(150%) blur(14px);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--site-cyan) 12%, transparent),
+    0 8px 30px color-mix(in srgb, var(--site-cyan) 3%, transparent);
+  transition:
+    background-color 240ms var(--site-ease),
+    border-color 240ms var(--site-ease);
+}
+
+.VPNavBar .container {
+  max-width: var(--site-content-wide);
+  margin: 0 auto;
+}
+
+.VPNavBarTitle .title {
+  border-bottom: 0;
+  font-size: 20px;
+  font-weight: 760;
+  letter-spacing: 0;
+}
+
+.VPNavBarMenuLink {
+  min-height: 44px;
+  padding: 0 14px;
+  color: var(--site-text-soft);
+  font-size: 14px;
+  font-weight: 620;
+  letter-spacing: 0;
+  transition:
+    color 180ms ease,
+    background-color 180ms ease;
+}
+
+.VPNavBarMenuLink:hover,
+.VPNavBarMenuLink.active {
+  color: var(--site-text);
+}
+
+.VPNavBarMenuLink.active {
+  box-shadow: inset 0 -2px 0 var(--site-cyan);
+}
+
+.VPNavBarSearch,
+.VPNavBarAppearance,
+.VPSocialLinks,
+.VPNavBarExtra {
+  min-height: 44px;
+}
+
+.DocSearch-Button,
+.VPNavBarSearch button,
+.VPSwitchAppearance {
+  border-radius: var(--site-radius-control) !important;
+}
+
+.VPLocalNav {
+  border-bottom-color: var(--site-line);
+}
+
+.VPNavScreen {
+  background: var(--site-bg);
+}
+
+.VPNavScreenMenuLink {
+  min-height: 48px;
+  border-bottom: 1px solid var(--site-line);
+  font-size: 18px;
+  letter-spacing: 0;
+}
+
+.site-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--site-line-strong);
+  border-radius: var(--site-radius-content);
+  color: var(--site-text);
+  background: color-mix(in srgb, var(--site-surface) 76%, transparent);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none !important;
+  transition:
+    transform 180ms var(--site-ease),
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.site-button:hover {
+  border-color: var(--site-cyan);
+  transform: translateY(-2px);
+}
+
+.site-button--primary {
+  border-color: var(--site-cyan);
+  color: #ffffff;
+  background: var(--site-cyan);
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--site-cyan) 20%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 25%);
+}
+
+.dark .site-button--primary {
+  color: #061116;
+}
+
+.VPSwitchAppearance,
+.VPSocialLink,
+.VPNavBarHamburger,
+.VPNavBarExtra .button {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.VPSwitchAppearance {
+  background: color-mix(in srgb, var(--site-surface) 80%, transparent);
+}
+
+.VPSwitchAppearance .check {
+  top: 12px;
+  left: 12px;
+  box-shadow: none;
+  background: transparent;
+}
+
+.dark .VPSwitchAppearance .check {
+  transform: none !important;
+}
+
+.VPSidebarItem .item {
+  min-height: 44px;
+}
+
+.VPSidebarItem .caret {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.VPLocalSearchBox {
+  --vp-local-search-bg: var(--site-surface);
+}
+
+@supports not (backdrop-filter: blur(14px)) {
+  .VPNavBar {
+    background: var(--site-surface);
+  }
+}
+
+.VPFooter {
+  border-top-color: var(--site-line);
+  background: transparent;
+}
+
+.VPFooter .message,
+.VPFooter .copyright {
+  color: var(--site-text-soft);
+}
+
+@media (max-width: 767px) {
+  .VPNavBar {
+    padding: 0 16px;
+  }
+
+  .VPNavBar.has-sidebar .title {
+    border-bottom: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
