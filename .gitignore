@@ -1,0 +1,8 @@
+node_modules/
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+.trae-html-share-packages/
+personal-site-concept-*/
+.DS_Store
+coverage/
+*.log
