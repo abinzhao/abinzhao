@@ -41,14 +41,21 @@ const series = computed(() =>
   getSeriesNavigation(content.columns, contentHref.value),
 );
 const globalIndex = computed(() =>
-  content.articles.findIndex(
+  content.blogArticles.findIndex(
     (item) => normalizeContentHref(item.href) === contentHref.value,
   ),
 );
-const adjacentArticles = computed(() => ({
-  next: content.articles[globalIndex.value - 1],
-  previous: content.articles[globalIndex.value + 1],
-}));
+const isSeriesArticle = computed(() => Boolean(series.value.column));
+const adjacentArticles = computed(() => {
+  if (globalIndex.value < 0) {
+    return { next: undefined, previous: undefined };
+  }
+
+  return {
+    next: content.blogArticles[globalIndex.value - 1],
+    previous: content.blogArticles[globalIndex.value + 1],
+  };
+});
 const pagination = computed(() =>
   resolveArticlePagination(series.value, adjacentArticles.value),
 );
@@ -75,12 +82,17 @@ onContentUpdated(() => {
 </script>
 
 <template>
-  <div class="site-shell reading-page">
+  <div
+    :class="{ 'reading-page--series': isSeriesArticle }"
+    class="site-shell reading-page"
+  >
     <SiteHeader />
 
     <main class="site-container reading-page__main">
       <nav class="reading-breadcrumb" aria-label="面包屑导航">
-        <a :href="withBase('/blog/')">博客</a>
+        <a :href="withBase(isSeriesArticle ? '/columns/' : '/blog/')">
+          {{ isSeriesArticle ? '专题教程' : '博客' }}
+        </a>
         <ChevronRight :size="14" aria-hidden="true" />
         <a v-if="series.column" :href="withBase(series.column.href)">{{ series.column.title }}</a>
         <template v-if="series.column">
@@ -98,7 +110,9 @@ onContentUpdated(() => {
           </time>
           <span v-if="series.column"><BookOpen :size="14" aria-hidden="true" /> 系列文章</span>
         </div>
-        <p class="technical-label">MARKDOWN / READING MODE</p>
+        <p class="technical-label">
+          {{ isSeriesArticle ? 'COURSE CHAPTER / GUIDED LEARNING' : 'INDEPENDENT NOTE / READING MODE' }}
+        </p>
         <h1>{{ frontmatter.title }}</h1>
         <p v-if="frontmatter.description" class="reading-header__description">
           {{ frontmatter.description }}

@@ -26,10 +26,10 @@ export interface Column {
 }
 
 export interface ContentIndex {
-  articles: Article[];
-  categories: string[];
+  blogArticles: Article[];
+  blogCategories: string[];
+  blogTags: string[];
   columns: Column[];
-  tags: string[];
 }
 
 type Frontmatter = Record<string, unknown>;
@@ -170,20 +170,18 @@ export async function createContentIndex(contentRoot: string): Promise<ContentIn
     )
   ).filter((column): column is Column => column !== undefined);
 
-  const articles = [...blogArticles, ...columns.flatMap((column) => column.articles)].sort(
-    sortByPublishedDate,
-  );
-  const tags = [...new Set(articles.flatMap((article) => article.tags))].sort();
-  const categories = [
+  const sortedBlogArticles = blogArticles.sort(sortByPublishedDate);
+  const blogTags = [...new Set(sortedBlogArticles.flatMap((article) => article.tags))].sort();
+  const blogCategories = [
     ...new Set(
-      articles.flatMap((article) => (article.category ? [article.category] : [])),
+      sortedBlogArticles.flatMap((article) => (article.category ? [article.category] : [])),
     ),
   ].sort();
 
   return {
-    articles,
-    categories,
+    blogArticles: sortedBlogArticles,
+    blogCategories,
+    blogTags,
     columns: columns.sort((left, right) => left.title.localeCompare(right.title)),
-    tags,
   };
 }

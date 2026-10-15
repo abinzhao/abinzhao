@@ -80,13 +80,11 @@ describe('content index', () => {
 
   afterAll(() => rm(fixtureRoot, { force: true, recursive: true }));
 
-  test('indexes published articles and orders column articles by series order', async () => {
+  test('keeps blog articles separate and orders column articles by series order', async () => {
     const index = await createContentIndex(fixtureRoot);
 
-    expect(index.articles.map((article) => article.href)).toEqual([
+    expect(index.blogArticles.map((article) => article.href)).toEqual([
       '/blog/static-site.html',
-      '/columns/web-performance/rendering.html',
-      '/columns/web-performance/metrics.html',
     ]);
     expect(index.columns).toEqual([
       expect.objectContaining({
@@ -98,7 +96,7 @@ describe('content index', () => {
         ],
       }),
     ]);
-    expect(index.tags).toEqual(['GitHub Pages', 'Rendering', 'VitePress', 'Web Vitals']);
-    expect(index.categories).toEqual(['工程化']);
+    expect(index.blogTags).toEqual(['GitHub Pages', 'VitePress']);
+    expect(index.blogCategories).toEqual(['工程化']);
   });
 });

@@ -1,8 +1,26 @@
 <script setup lang="ts">
-import { ArrowRight, BookMarked, Layers3, ListOrdered } from '@lucide/vue';
+import {
+  ArrowRight,
+  BookMarked,
+  FileText,
+  Layers3,
+  ListOrdered,
+} from '@lucide/vue';
+import { computed } from 'vue';
 import { withBase } from 'vitepress';
 import { data as content } from '../../data/content.data';
 import SiteHeader from '../components/SiteHeader.vue';
+
+const columns = computed(() =>
+  [...content.columns].sort(
+    (left, right) =>
+      right.articles.length - left.articles.length ||
+      left.title.localeCompare(right.title),
+  ),
+);
+const totalChapters = computed(() =>
+  content.columns.reduce((total, column) => total + column.articles.length, 0),
+);
 </script>
 
 <template>
@@ -12,18 +30,40 @@ import SiteHeader from '../components/SiteHeader.vue';
     <main class="site-container listing-page__main">
       <header class="listing-header">
         <div>
-          <p class="technical-label">LONG-FORM SERIES / LEARNING PATH</p>
-          <h1>技术专栏</h1>
-          <p>以连续章节整理一个问题域，从概念、实践到可复用的工程判断。</p>
+          <p class="technical-label">STRUCTURED COURSES / LEARNING PATHS</p>
+          <h1>专题教程</h1>
+          <p>按章节推进的系统学习路径，从基础概念走到完整项目。</p>
+          <a class="listing-header__context-link" :href="withBase('/blog/')">
+            <FileText :size="16" aria-hidden="true" />
+            随笔与实践复盘请前往博客
+            <ArrowRight :size="15" aria-hidden="true" />
+          </a>
         </div>
-        <span>{{ content.columns.length }} 个持续更新</span>
+        <dl class="listing-header__stats">
+          <div>
+            <dt>专题</dt>
+            <dd>{{ content.columns.length }}</dd>
+          </div>
+          <div>
+            <dt>章节</dt>
+            <dd>{{ totalChapters }}</dd>
+          </div>
+        </dl>
       </header>
 
       <section class="column-grid" aria-label="专栏列表">
-        <article v-for="column in content.columns" :key="column.slug" class="column-card">
+        <article
+          v-for="(column, index) in columns"
+          :key="column.slug"
+          :class="{ 'column-card--primary': index === 0 }"
+          class="column-card"
+        >
           <header>
-            <span class="column-card__icon" aria-hidden="true">
-              <BookMarked :size="21" />
+            <span class="column-card__identity">
+              <span class="column-card__icon" aria-hidden="true">
+                <BookMarked :size="21" />
+              </span>
+              学习路径 {{ String(index + 1).padStart(2, '0') }}
             </span>
             <span class="column-card__status">{{ column.status ?? 'ARCHIVED' }}</span>
           </header>
@@ -36,15 +76,20 @@ import SiteHeader from '../components/SiteHeader.vue';
             <span><ListOrdered :size="15" aria-hidden="true" /> 按阅读顺序编排</span>
           </div>
 
+          <p class="column-card__chapters-label">从这里开始</p>
           <ol class="column-card__chapters">
-            <li v-for="article in column.articles" :key="article.href">
+            <li v-for="article in column.articles.slice(0, 4)" :key="article.href">
               <span>{{ String(article.seriesOrder ?? 0).padStart(2, '0') }}</span>
               <a :href="withBase(article.href)">{{ article.title }}</a>
+            </li>
+            <li v-if="column.articles.length > 4" class="column-card__chapters-more">
+              <span>··</span>
+              另有 {{ column.articles.length - 4 }} 篇章节
             </li>
           </ol>
 
           <a class="column-card__link" :href="withBase(column.href)">
-            阅读专栏 <ArrowRight :size="17" />
+            查看完整学习路径 <ArrowRight :size="17" aria-hidden="true" />
           </a>
         </article>
       </section>
