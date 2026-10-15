@@ -9,6 +9,7 @@ import {
 import { computed } from 'vue';
 import { withBase } from 'vitepress';
 import { data as content } from '../../data/content.data';
+import AmbientField from '../components/AmbientField.vue';
 import SiteHeader from '../components/SiteHeader.vue';
 
 const columns = computed(() =>
@@ -25,6 +26,7 @@ const totalChapters = computed(() =>
 
 <template>
   <div class="site-shell listing-page columns-page">
+    <AmbientField />
     <SiteHeader />
 
     <main class="site-container listing-page__main">

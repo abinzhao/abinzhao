@@ -12,6 +12,7 @@ import {
 } from '@lucide/vue';
 import { withBase } from 'vitepress';
 import { data as home } from '../../data/home.data';
+import AmbientField from '../components/AmbientField.vue';
 import SiteHeader from '../components/SiteHeader.vue';
 
 const moduleIcons = {
@@ -24,6 +25,7 @@ const moduleIcons = {
 
 <template>
   <div class="site-shell home-page">
+    <AmbientField />
     <SiteHeader />
 
     <main class="site-container">

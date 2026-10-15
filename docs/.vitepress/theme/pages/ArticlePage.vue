@@ -8,7 +8,7 @@ import {
   List,
   Tag,
 } from '@lucide/vue';
-import { computed, nextTick, onMounted, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import {
   Content,
   onContentUpdated,
@@ -27,6 +27,10 @@ import {
   createArticleOutline,
   type ArticleOutlineItem,
 } from '../composables/article-outline';
+import {
+  calculateReadingProgress,
+  selectActiveHeading,
+} from '../composables/visual-effects';
 
 const route = useRoute();
 const { frontmatter } = useData();
@@ -37,6 +41,10 @@ const tags = computed(() =>
     : [],
 );
 const headings = ref<ArticleOutlineItem[]>([]);
+const readingProse = ref<HTMLElement>();
+const readingProgress = ref(0);
+const activeHeading = ref('');
+let readingFrame = 0;
 const series = computed(() =>
   getSeriesNavigation(content.columns, contentHref.value),
 );
@@ -72,12 +80,55 @@ function refreshOutline(): void {
   );
 }
 
+function updateReadingState(): void {
+  if (!readingProse.value) {
+    return;
+  }
+
+  const articleBounds = readingProse.value.getBoundingClientRect();
+  const articleTop = articleBounds.top + window.scrollY;
+  readingProgress.value = calculateReadingProgress(
+    window.scrollY,
+    articleTop,
+    readingProse.value.offsetHeight,
+    window.innerHeight,
+  );
+  activeHeading.value = selectActiveHeading(
+    Array.from(
+      readingProse.value.querySelectorAll<HTMLElement>('h2[id], h3[id]'),
+    ).map((heading) => ({
+      id: heading.id,
+      top: heading.getBoundingClientRect().top,
+    })),
+    156,
+  );
+}
+
+function scheduleReadingStateUpdate(): void {
+  window.cancelAnimationFrame(readingFrame);
+  readingFrame = window.requestAnimationFrame(updateReadingState);
+}
+
 onMounted(() => {
-  void nextTick(refreshOutline);
+  void nextTick(() => {
+    refreshOutline();
+    scheduleReadingStateUpdate();
+  });
+  document.addEventListener('scroll', scheduleReadingStateUpdate, { passive: true });
+  window.addEventListener('resize', scheduleReadingStateUpdate, { passive: true });
 });
 
 onContentUpdated(() => {
-  void nextTick(refreshOutline);
+  void nextTick(() => {
+    refreshOutline();
+    scheduleReadingStateUpdate();
+  });
+});
+
+onBeforeUnmount(() => {
+  window.cancelAnimationFrame(readingFrame);
+  document.removeEventListener('scroll', scheduleReadingStateUpdate);
+  window.removeEventListener('resize', scheduleReadingStateUpdate);
 });
 </script>
 
@@ -86,6 +137,9 @@ onContentUpdated(() => {
     :class="{ 'reading-page--series': isSeriesArticle }"
     class="site-shell reading-page"
   >
+    <div class="reading-progress" aria-hidden="true">
+      <span :style="{ transform: `scaleX(${readingProgress})` }" />
+    </div>
     <SiteHeader />
 
     <main class="site-container reading-page__main">
@@ -96,9 +150,13 @@ onContentUpdated(() => {
         <ChevronRight :size="14" aria-hidden="true" />
         <a v-if="series.column" :href="withBase(series.column.href)">{{ series.column.title }}</a>
         <template v-if="series.column">
-          <ChevronRight :size="14" aria-hidden="true" />
+          <ChevronRight
+            class="reading-breadcrumb__current-separator"
+            :size="14"
+            aria-hidden="true"
+          />
         </template>
-        <span>{{ frontmatter.title }}</span>
+        <span class="reading-breadcrumb__current">{{ frontmatter.title }}</span>
       </nav>
 
       <header class="reading-header">
@@ -123,7 +181,7 @@ onContentUpdated(() => {
       </header>
 
       <div class="reading-layout">
-        <article class="reading-prose vp-doc">
+        <article ref="readingProse" class="reading-prose vp-doc">
           <Content />
         </article>
 
@@ -134,7 +192,10 @@ onContentUpdated(() => {
               <a
                 v-for="heading in headings"
                 :key="heading.link"
-                :class="{ 'reading-aside__subitem': heading.level > 2 }"
+                :class="{
+                  'reading-aside__active': activeHeading === heading.link.slice(1),
+                  'reading-aside__subitem': heading.level > 2,
+                }"
                 :href="heading.link"
               >
                 {{ heading.title }}

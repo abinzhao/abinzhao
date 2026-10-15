@@ -3,6 +3,7 @@ import { ArrowRight, BookOpen, CalendarDays, Search, Tag } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { withBase } from 'vitepress';
 import { data as content } from '../../data/content.data';
+import AmbientField from '../components/AmbientField.vue';
 import SiteHeader from '../components/SiteHeader.vue';
 import { filterArticles } from '../composables/article-filter';
 
@@ -23,6 +24,7 @@ function formatIndex(index: number): string {
 
 <template>
   <div class="site-shell listing-page blog-listing-page">
+    <AmbientField />
     <SiteHeader />
 
     <main class="site-container listing-page__main">

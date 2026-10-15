@@ -6,6 +6,7 @@ body,
 
 html {
   background: var(--site-bg);
+  scroll-behavior: smooth;
 }
 
 body {
@@ -53,6 +54,11 @@ body {
   outline-offset: 2px;
 }
 
+:where(a, button, input):focus-visible {
+  outline: 2px solid var(--site-accent);
+  outline-offset: 3px;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   html,
   body,
@@ -62,5 +68,11 @@ body {
       background-color 160ms ease,
       border-color 160ms ease,
       color 160ms ease;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
 }

@@ -11,6 +11,10 @@
   --site-accent: #78c7ff;
   --site-accent-strong: #4eade9;
   --site-success: #6ae0b5;
+  --site-signal: #65e6c4;
+  --site-warm: #f4b36c;
+  --site-glow: rgba(94, 190, 255, 0.22);
+  --site-grid: rgba(120, 199, 255, 0.055);
   --site-code-bg: #091526;
 
   --vp-c-bg: var(--site-bg);
@@ -51,6 +55,10 @@
   --site-accent: #0d71b4;
   --site-accent-strong: #075c99;
   --site-success: #0f8062;
+  --site-signal: #087d68;
+  --site-warm: #a95716;
+  --site-glow: rgba(13, 113, 180, 0.14);
+  --site-grid: rgba(35, 67, 104, 0.055);
   --site-code-bg: #eaf1f7;
 
   --vp-c-bg: var(--site-bg);

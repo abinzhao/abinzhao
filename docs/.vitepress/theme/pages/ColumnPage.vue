@@ -9,6 +9,7 @@ import {
 import { computed } from 'vue';
 import { Content, useRoute, withBase } from 'vitepress';
 import { data as content } from '../../data/content.data';
+import AmbientField from '../components/AmbientField.vue';
 import SiteHeader from '../components/SiteHeader.vue';
 import { normalizeContentHref } from '../composables/article-context';
 
@@ -21,6 +22,7 @@ const column = computed(() =>
 
 <template>
   <div class="site-shell column-reading-page">
+    <AmbientField />
     <SiteHeader />
 
     <main v-if="column" class="site-container column-reading-page__main">

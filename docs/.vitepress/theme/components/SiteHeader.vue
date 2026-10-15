@@ -78,17 +78,19 @@ function closeMobileMenu(): void {
       </div>
     </div>
 
-    <nav v-if="mobileMenuOpen" class="site-mobile-nav" aria-label="移动端主导航">
-      <a
-        v-for="item in navigation"
-        :key="item.link"
-        :class="{ 'site-mobile-nav__link--active': isActive(item.link) }"
-        class="site-mobile-nav__link"
-        :href="withBase(item.link)"
-        @click="closeMobileMenu"
-      >
-        {{ item.text }}
-      </a>
-    </nav>
+    <Transition name="mobile-nav">
+      <nav v-if="mobileMenuOpen" class="site-mobile-nav" aria-label="移动端主导航">
+        <a
+          v-for="item in navigation"
+          :key="item.link"
+          :class="{ 'site-mobile-nav__link--active': isActive(item.link) }"
+          class="site-mobile-nav__link"
+          :href="withBase(item.link)"
+          @click="closeMobileMenu"
+        >
+          {{ item.text }}
+        </a>
+      </nav>
+    </Transition>
   </header>
 </template>

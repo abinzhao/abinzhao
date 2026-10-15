@@ -8,6 +8,7 @@ import {
 } from '@lucide/vue';
 import { withBase } from 'vitepress';
 import { data as about } from '../../data/about.data';
+import AmbientField from '../components/AmbientField.vue';
 import SiteHeader from '../components/SiteHeader.vue';
 
 const actionIcons = {
@@ -18,6 +19,7 @@ const actionIcons = {
 
 <template>
   <div class="site-shell about-page">
+    <AmbientField />
     <SiteHeader />
 
     <main class="site-container">
