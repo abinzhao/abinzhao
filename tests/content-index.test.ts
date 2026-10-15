@@ -84,9 +84,9 @@ describe('content index', () => {
     const index = await createContentIndex(fixtureRoot);
 
     expect(index.articles.map((article) => article.href)).toEqual([
-      '/blog/static-site/',
-      '/columns/web-performance/rendering/',
-      '/columns/web-performance/metrics/',
+      '/blog/static-site.html',
+      '/columns/web-performance/rendering.html',
+      '/columns/web-performance/metrics.html',
     ]);
     expect(index.columns).toEqual([
       expect.objectContaining({

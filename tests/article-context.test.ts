@@ -8,8 +8,8 @@ import {
 const columns = [
   {
     articles: [
-      { href: '/columns/harmonyos/first/', title: '第一章' },
-      { href: '/columns/harmonyos/second/', title: '第二章' },
+      { href: '/columns/harmonyos/first.html', title: '第一章' },
+      { href: '/columns/harmonyos/second.html', title: '第二章' },
     ],
     href: '/columns/harmonyos/',
     slug: 'harmonyos',

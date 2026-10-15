@@ -41,7 +41,9 @@ const series = computed(() =>
   getSeriesNavigation(content.columns, contentHref.value),
 );
 const globalIndex = computed(() =>
-  content.articles.findIndex((item) => item.href === contentHref.value),
+  content.articles.findIndex(
+    (item) => normalizeContentHref(item.href) === contentHref.value,
+  ),
 );
 const adjacentArticles = computed(() => ({
   next: content.articles[globalIndex.value - 1],
@@ -131,7 +133,10 @@ onContentUpdated(() => {
             <ol class="series-list">
               <li v-for="item in series.column.articles" :key="item.href">
                 <a
-                  :class="{ 'series-list__current': item.href === contentHref }"
+                  :class="{
+                    'series-list__current':
+                      normalizeContentHref(item.href) === contentHref,
+                  }"
                   :href="withBase(item.href)"
                 >
                   <span>{{ String(item.seriesOrder ?? 0).padStart(2, '0') }}</span>

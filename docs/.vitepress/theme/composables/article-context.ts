@@ -27,15 +27,20 @@ export function getSeriesNavigation<TColumn extends SeriesColumn>(
   next: TColumn['articles'][number] | undefined;
   previous: TColumn['articles'][number] | undefined;
 } {
+  const normalizedHref = normalizeContentHref(href);
   const column = columns.find((item) =>
-    item.articles.some((article) => article.href === href),
+    item.articles.some(
+      (article) => normalizeContentHref(article.href) === normalizedHref,
+    ),
   );
 
   if (!column) {
     return { column: undefined, next: undefined, previous: undefined };
   }
 
-  const index = column.articles.findIndex((article) => article.href === href);
+  const index = column.articles.findIndex(
+    (article) => normalizeContentHref(article.href) === normalizedHref,
+  );
 
   return {
     column,
