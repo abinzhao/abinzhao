@@ -117,7 +117,7 @@ export async function createContentIndex(contentRoot: string): Promise<ContentIn
   const blogArticles = (
     await Promise.all(
       blogFiles.map((filePath) =>
-        readArticle(filePath, `/blog/${basename(filePath, '.md')}/`),
+        readArticle(filePath, `/blog/${basename(filePath, '.md')}.html`),
       ),
     )
   ).filter((article): article is Article => article !== undefined);
@@ -148,7 +148,7 @@ export async function createContentIndex(contentRoot: string): Promise<ContentIn
               articleFiles.map((filePath) =>
                 readArticle(
                   filePath,
-                  `/columns/${slug}/${basename(filePath, '.md')}/`,
+                  `/columns/${slug}/${basename(filePath, '.md')}.html`,
                   slug,
                 ),
               ),
