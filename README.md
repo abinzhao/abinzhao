@@ -8,7 +8,7 @@
 
 [![Profile Views](https://komarev.com/ghpvc/?username=abinzhao&style=for-the-badge&color=0e75b6)](https://github.com/abinzhao)
 [![GitHub](https://img.shields.io/badge/GitHub-abinzhao-181717?style=for-the-badge&logo=github)](https://github.com/abinzhao)
-[![Blog](https://img.shields.io/badge/Blog-abinzhao.github.io-58A6FF?style=for-the-badge&logo=githubpages&logoColor=white)](https://abinzhao.github.io)
+[![Blog](https://img.shields.io/badge/Blog-abinzhao.github.io%2Fabinzhao-58A6FF?style=for-the-badge&logo=githubpages&logoColor=white)](https://abinzhao.github.io/abinzhao/)
 
 </div>
 
@@ -60,7 +60,7 @@
 
 ## `$ connect`
 
-- Blog: [abinzhao.github.io](https://abinzhao.github.io)
+- Blog: [abinzhao.github.io/abinzhao](https://abinzhao.github.io/abinzhao/)
 - GitHub: [github.com/abinzhao](https://github.com/abinzhao)
 
 <div align="center">

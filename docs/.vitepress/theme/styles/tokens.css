@@ -1,0 +1,76 @@
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --site-bg: #07111f;
+  --site-bg-soft: #0d1b2e;
+  --site-surface: #111e32;
+  --site-surface-raised: #172842;
+  --site-border: rgba(151, 192, 234, 0.16);
+  --site-text: #e7eefb;
+  --site-text-muted: #a6b4ca;
+  --site-accent: #78c7ff;
+  --site-accent-strong: #4eade9;
+  --site-success: #6ae0b5;
+  --site-code-bg: #091526;
+
+  --vp-c-bg: var(--site-bg);
+  --vp-c-bg-alt: var(--site-bg-soft);
+  --vp-c-bg-elv: var(--site-surface);
+  --vp-c-bg-soft: var(--site-surface);
+  --vp-c-border: var(--site-border);
+  --vp-c-divider: var(--site-border);
+  --vp-c-text-1: var(--site-text);
+  --vp-c-text-2: var(--site-text-muted);
+  --vp-c-text-3: #8191aa;
+  --vp-c-brand-1: var(--site-accent);
+  --vp-c-brand-2: #a5dcff;
+  --vp-c-brand-3: var(--site-accent-strong);
+  --vp-c-brand-soft: rgba(120, 199, 255, 0.16);
+  --vp-button-brand-bg: var(--site-accent-strong);
+  --vp-button-brand-hover-bg: var(--site-accent);
+  --vp-button-brand-text: #04101e;
+  --vp-code-block-bg: var(--site-code-bg);
+  --vp-code-copy-code-hover-bg: var(--site-surface-raised);
+  --vp-home-hero-name-color: var(--site-text);
+  --vp-home-hero-text-color: var(--site-accent);
+  --vp-home-hero-image-background-image: none;
+  --vp-home-hero-image-filter: none;
+  --vp-font-family-base: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --vp-font-family-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --site-bg: #f5f8fc;
+  --site-bg-soft: #edf3f9;
+  --site-surface: #ffffff;
+  --site-surface-raised: #e6eff8;
+  --site-border: rgba(35, 67, 104, 0.18);
+  --site-text: #102039;
+  --site-text-muted: #52627b;
+  --site-accent: #0d71b4;
+  --site-accent-strong: #075c99;
+  --site-success: #0f8062;
+  --site-code-bg: #eaf1f7;
+
+  --vp-c-bg: var(--site-bg);
+  --vp-c-bg-alt: var(--site-bg-soft);
+  --vp-c-bg-elv: var(--site-surface);
+  --vp-c-bg-soft: var(--site-surface);
+  --vp-c-border: var(--site-border);
+  --vp-c-divider: var(--site-border);
+  --vp-c-text-1: var(--site-text);
+  --vp-c-text-2: var(--site-text-muted);
+  --vp-c-text-3: #6d7c93;
+  --vp-c-brand-1: var(--site-accent);
+  --vp-c-brand-2: #0b8ad6;
+  --vp-c-brand-3: var(--site-accent-strong);
+  --vp-c-brand-soft: rgba(13, 113, 180, 0.12);
+  --vp-button-brand-bg: var(--site-accent-strong);
+  --vp-button-brand-hover-bg: var(--site-accent);
+  --vp-button-brand-text: #ffffff;
+  --vp-code-block-bg: var(--site-code-bg);
+  --vp-code-copy-code-hover-bg: var(--site-surface-raised);
+  --vp-home-hero-name-color: var(--site-text);
+  --vp-home-hero-text-color: var(--site-accent);
+}

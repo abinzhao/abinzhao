@@ -1,0 +1,61 @@
+identity:
+  name: ABIN Zhao
+  handle: "@abinzhao"
+  role: HarmonyOS Engineer / Frontend Tool Builder / AI Agent Explorer
+  location: 中国 · 杭州
+  avatar: https://copilot-cn.bytedance.net/api/ide/v1/tool_text_to_image?prompt=Website%20profile%20avatar%3A%20an%20anonymous%20Asian%20software%20engineer%20in%20a%20dark%20studio%2C%20side%20profile%20at%20a%20computer%20showing%20code%2C%20editorial%20photography%2C%20teal%20monitor%20light%2C%20deep%20navy%20background%2C%20square%20professional%20avatar%2C%20no%20text%2C%20not%20a%20recognizable%20person&image_size=square_hd
+  status: 正在构建 HarmonyOS、前端工具与 AI Agent 产品
+  bio: 关注可靠的跨端体验、开发者效率与本地优先的智能工作流。通过博客和开源项目持续记录可复用的方法、失败与取舍。
+actions:
+  - label: GitHub
+    link: https://github.com/abinzhao
+    kind: github
+  - label: 查看项目
+    link: /projects/
+    kind: project
+stats:
+  - value: 5
+    label: GITHUB REPOS
+    detail: 公开项目与工具
+  - value: 12
+    label: PRACTICE NOTES
+    detail: 工程实践记录
+  - value: "LOCAL"
+    label: DATA DEFAULT
+    detail: 本地优先工作流
+  - value: "∞"
+    label: ITERATIONS
+    detail: 持续学习与构建
+principles:
+  - index: "01"
+    title: 可维护性优先
+    subtitle: Maintainability first
+    description: 选择边界清晰、依赖克制且可长期演进的实现。功能的完成不是终点，下一次修改仍然清晰才是。
+    tags: [Clear Boundaries, Local First, Small Steps]
+  - index: "02"
+    title: 用工具消除重复
+    subtitle: Tools over repetition
+    description: 将高频、可验证的动作沉淀为工具与工作流，把注意力留给设计判断、问题拆解和真正重要的体验。
+    tags: [ArkTS, TypeScript, CLI]
+skills:
+  - group: 核心语言与跨端
+    label: CORE
+    items:
+      - { name: ArkTS / ArkUI, value: 92, detail: HarmonyOS 原生体验 }
+      - { name: TypeScript, value: 95, detail: 工程化与组件边界 }
+      - { name: React / Vue, value: 88, detail: Web 体验与工具界面 }
+      - { name: Node.js, value: 84, detail: CLI 与构建自动化 }
+  - group: 工程工具与效率
+    label: TOOLING
+    items:
+      - { name: PNPM / Monorepo, value: 92, detail: 多包管理与约束 }
+      - { name: Vite / VitePress, value: 90, detail: 静态站点与构建速度 }
+      - { name: GitHub Actions, value: 82, detail: 持续集成与发布 }
+      - { name: Testing, value: 80, detail: Jest、Vitest 与回归验证 }
+  - group: AI 与独立开发
+    label: AGENT
+    items:
+      - { name: AI Agent Workflows, value: 90, detail: 工具调用与任务编排 }
+      - { name: Local-first Design, value: 86, detail: 隐私与可控数据边界 }
+      - { name: Product Prototyping, value: 84, detail: 从需求到可验证界面 }
+      - { name: Open Source, value: 88, detail: 公开构建与知识沉淀 }

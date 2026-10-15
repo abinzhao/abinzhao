@@ -1,0 +1,74 @@
+profile:
+  name: ABIN
+  nameEn: ABIN Zhao
+  handle: "@abinzhao"
+  role: HarmonyOS Engineer / Frontend Tool Builder / AI Agent Explorer
+  location: 中国 · 杭州
+  avatar: https://copilot-cn.bytedance.net/api/ide/v1/tool_text_to_image?prompt=Website%20profile%20avatar%3A%20an%20anonymous%20Asian%20software%20engineer%20in%20a%20dark%20studio%2C%20side%20profile%20at%20a%20computer%20showing%20code%2C%20editorial%20photography%2C%20teal%20monitor%20light%2C%20deep%20navy%20background%2C%20square%20professional%20avatar%2C%20no%20text%2C%20not%20a%20recognizable%20person&image_size=square_hd
+  status: 探索 HarmonyOS、前端工程与 AI Agent 开发工作流
+  intro: 独立开发者，写博客、做开源、探索技术边界
+  description: 坚持纯静态、去中心化理念与现代前端极客美学，专注于构建可靠的开发者工具、可维护的跨端体验与 AI 驱动的工程工作流。
+  metrics:
+    - value: "12+"
+      label: 实践项目
+    - value: "5"
+      label: 开源仓库
+    - value: "100%"
+      label: 静态部署
+actions:
+  primary:
+    label: 阅读博客
+    link: /blog/
+  secondary:
+    label: 查看项目
+    link: /projects/
+terminal:
+  label: abin-runtime - node v22.22.0
+  lines:
+    - "// Initialize a deliberate developer workflow"
+    - "import { HarmonyOS, Agent } from '@abin/lab';"
+    - "const focus = ['ArkTS', 'TypeScript', 'Tooling'];"
+    - "const builder = new Agent({"
+    - "  author: 'ABIN Zhao',"
+    - "  mode: 'ship_small',"
+    - "  privacy: 'local_first'"
+    - "});"
+    - "console.log('Keep building.');"
+  footer: Ready. Local-first. Zero tracking.
+modules:
+  - icon: book
+    title: 技术博客
+    description: HarmonyOS、工程化与工具实践
+    meta: 持续更新
+    link: /blog/
+  - icon: graduation
+    title: 系列专栏
+    description: 以问题为线索的长期知识沉淀
+    meta: 深度写作
+    link: /columns/
+  - icon: rocket
+    title: 开源项目
+    description: 从 CLI 到跨端应用的公开实验
+    meta: GitHub 公开
+    link: /projects/
+  - icon: fingerprint
+    title: 数字花园
+    description: 工作方法、笔记与独立开发日志
+    meta: 关于我
+    link: /about/
+articles:
+  - category: HarmonyOS
+    title: 构建可维护的 ArkTS 页面架构
+    readTime: 8 min
+    description: 从状态组织、组件边界到工程约束的一次实践复盘。
+    link: /blog/
+  - category: Tooling
+    title: Monorepo 中的工具链选择与边界
+    readTime: 11 min
+    description: 面向个人开发者的轻量工程化方案与取舍。
+    link: /blog/
+  - category: AI Agent
+    title: Local-first 的开发者工作流
+    readTime: 6 min
+    description: 用更少的依赖构建可控、可迭代的智能工具。
+    link: /blog/
