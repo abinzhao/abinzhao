@@ -3,7 +3,7 @@ title: "第 26 章：Baseline、Browserslist 与特性检测"
 description: "建立浏览器兼容策略，区分 Baseline、构建目标、特性检测、渐进增强与 polyfill。"
 date: "2026-10-15"
 category: 浏览器 API
-tags: [Baseline, Browserslist, Progressive Enhancement]
+tags: [Baseline, Browserslist, 渐进增强]
 series:
   order: 27
 ---

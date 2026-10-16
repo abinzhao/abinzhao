@@ -1,11 +1,11 @@
 ---
-title: 全栈开发：Web 基础与 React 工程化
+title: 全栈开发：网页基础与 React 工程化
 description: 从 HTML、CSS 和浏览器原理出发，逐步掌握 JavaScript、TypeScript、React 19，并完成可部署的博客 v2。
 status: 持续更新
 featured: true
 ---
 
-# 全栈开发：Web 基础与 React 工程化
+# 全栈开发：网页基础与 React 工程化
 
 这套专题面向零基础读者，目标不是背诵 API，而是建立一条可以反复实践、逐步验证的完整开发路径：
 
@@ -19,7 +19,7 @@ featured: true
 
 ## 阶段路线
 
-### 阶段 1：Web 基础 + 博客 v1
+### 阶段 1：网页基础与博客第一版
 
 - **第 0–1 章**：网页运行原理、HTML 语义、表单与可访问性。
 - **第 2–5 章**：CSS 层叠、布局、视觉样式和工程化。
@@ -27,17 +27,17 @@ featured: true
 - **第 11–12 章**：Chrome DevTools 与浏览器渲染流程。
 - **第 13–19 章**：原生 HTML、CSS、JavaScript 静态博客 v1。
 
-### 阶段 2：JavaScript + TypeScript + React + 博客 v2
+### 阶段 2：JavaScript、TypeScript、React 与博客第二版
 
 阶段 2 建议用 5 周完成，每周都要运行代码并保留验证结果：
 
 | 周次 | 章节 | 学习与交付 |
 |---|---|---|
 | 第 1 周 | 第 20–22 章 | 变量、作用域、闭包、原型、类、ESM、错误处理、Promise 与事件循环 |
-| 第 2 周 | 第 23–26 章 | DOM、事件、Observer、网络与存储、图形与文件、实时通信、兼容策略 |
+| 第 2 周 | 第 23–26 章 | DOM、事件、观察器、网络与存储、图形与文件、实时通信、兼容策略 |
 | 第 3 周 | 第 27–29 章 | TypeScript 基础、类型组合、泛型、收窄、工具类型与严格模式 |
-| 第 4 周 | 第 30–33 章 | React 19 组件与 Hooks、Actions、路由、Zustand、Zod |
-| 第 5 周 | 第 34–36 章 | React + TS 博客 v2、状态与表单、性能监控、Biome 与部署 |
+| 第 4 周 | 第 30–33 章 | React 19 组件与钩子、动作、路由、Zustand、Zod |
+| 第 5 周 | 第 34–36 章 | React 与 TypeScript 博客第二版、状态与表单、性能监控、Biome 与部署 |
 
 ## 阅读方式
 

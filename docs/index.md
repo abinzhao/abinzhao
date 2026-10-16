@@ -1,8 +1,8 @@
 ---
 layout: home
-title: ABIN Lab
+title: 阿斌实验室
 ---
 
-# ABIN Lab
+# 阿斌实验室
 
-HarmonyOS Engineer / Frontend Tool Builder / AI Agent Explorer
+鸿蒙开发者 / 前端工具构建者 / 智能体探索者

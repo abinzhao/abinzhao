@@ -20,6 +20,6 @@ export function loadSiteConfig(): SiteConfig {
   return {
     description: parsed.site?.description ?? '',
     githubUrl: parsed.site?.githubUrl ?? '',
-    title: parsed.site?.title ?? 'ABIN Lab',
+    title: parsed.site?.title ?? '阿斌实验室',
   };
 }

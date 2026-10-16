@@ -2,8 +2,8 @@
 title: "第 10 章：动画性能"
 description: "从 Layout、Paint、Composite 出发诊断卡顿并控制合成层成本。"
 date: "2026-10-15"
-category: Web 性能
-tags: [Performance, Rendering, DevTools]
+category: 网页性能
+tags: [性能, 渲染, 开发者工具]
 series:
   order: 11
 ---

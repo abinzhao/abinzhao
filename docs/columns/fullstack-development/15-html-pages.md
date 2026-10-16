@@ -3,7 +3,7 @@ title: "第 15 章：静态博客 HTML 页面"
 description: "完成首页、文章页与关于页的语义结构、元数据和表单。"
 date: "2026-10-15"
 category: 项目实战
-tags: [HTML5, SEO, Accessibility]
+tags: [HTML5, 搜索引擎优化, 无障碍]
 series:
   order: 16
 ---

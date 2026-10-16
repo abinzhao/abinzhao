@@ -1,34 +1,53 @@
 <script setup lang="ts">
-import DefaultTheme from 'vitepress/theme';
 import { computed } from 'vue';
-import { useData, useRoute } from 'vitepress';
+import { Content, useData, useRoute, withBase } from 'vitepress';
 import AboutPage from './pages/AboutPage.vue';
 import ArticlePage from './pages/ArticlePage.vue';
 import BlogIndexPage from './pages/BlogIndexPage.vue';
 import ColumnPage from './pages/ColumnPage.vue';
 import ColumnsIndexPage from './pages/ColumnsIndexPage.vue';
 import HomePage from './pages/HomePage.vue';
-import ThemeToggle from './components/ThemeToggle.vue';
+import ProjectsPage from './pages/ProjectsPage.vue';
+import ChatPage from './pages/ChatPage.vue';
+import SiteHeader from './components/SiteHeader.vue';
+import SiteFooter from './components/SiteFooter.vue';
+import AiLauncher from './components/AiLauncher.vue';
+import AmbientField from './components/AmbientField.vue';
 import { getCustomPageKind } from './composables/page-kind';
 
-const DefaultLayout = DefaultTheme.Layout;
 const route = useRoute();
-const { frontmatter } = useData();
+const { frontmatter, page } = useData();
 const pageKind = computed(() =>
   getCustomPageKind(route.path, frontmatter.value.layout, frontmatter.value),
 );
 </script>
 
 <template>
-  <HomePage v-if="pageKind === 'home'" />
-  <AboutPage v-else-if="pageKind === 'about'" />
-  <ArticlePage v-else-if="pageKind === 'article'" />
-  <BlogIndexPage v-else-if="pageKind === 'blog'" />
-  <ColumnPage v-else-if="pageKind === 'column'" />
-  <ColumnsIndexPage v-else-if="pageKind === 'columns'" />
-  <DefaultLayout v-else>
-    <template #nav-bar-content-after>
-      <ThemeToggle />
-    </template>
-  </DefaultLayout>
+  <div class="site-shell" :class="{ 'site-shell--reading': pageKind === 'article' }">
+    <a class="skip-link" href="#page-content">跳到主要内容</a>
+    <AmbientField />
+    <SiteHeader />
+    <div id="page-content" class="page-stage" tabindex="-1">
+      <Transition name="page" mode="out-in">
+        <div :key="route.path" class="page-view">
+          <HomePage v-if="pageKind === 'home'" />
+          <AboutPage v-else-if="pageKind === 'about'" />
+          <ArticlePage v-else-if="pageKind === 'article'" />
+          <BlogIndexPage v-else-if="pageKind === 'blog'" />
+          <ColumnPage v-else-if="pageKind === 'column'" />
+          <ColumnsIndexPage v-else-if="pageKind === 'columns'" />
+          <ProjectsPage v-else-if="pageKind === 'projects'" />
+          <ChatPage v-else-if="pageKind === 'chat'" />
+          <main v-else-if="page.isNotFound" class="site-container not-found">
+            <p class="technical-label">页面未找到</p><h1>这里还没有内容</h1>
+            <p>链接可能已失效，回到首页继续探索。</p>
+            <a class="button button--primary" :href="withBase('/')">返回首页</a>
+          </main>
+          <main v-else class="site-container reading-prose vp-doc"><Content /></main>
+        </div>
+      </Transition>
+    </div>
+    <SiteFooter />
+    <AiLauncher />
+  </div>
 </template>

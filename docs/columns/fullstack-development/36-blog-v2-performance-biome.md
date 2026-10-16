@@ -3,7 +3,7 @@ title: "第 36 章：博客 v2 性能监控与 Biome 检查"
 description: "加入 Web Vitals、路由性能记录、按需加载、Biome 质量门禁和静态部署验证。"
 date: "2026-10-15"
 category: 项目实战
-tags: [Web Vitals, Biome, Performance, Deployment]
+tags: [Web Vitals, Biome, 性能, 部署]
 series:
   order: 37
 ---

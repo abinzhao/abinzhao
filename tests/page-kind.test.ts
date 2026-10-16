@@ -19,6 +19,8 @@ describe('custom page routing', () => {
     expect(getCustomPageKind('/runtime-page', 'about')).toBe('about');
     expect(getCustomPageKind('/runtime-page', 'blog')).toBe('blog');
     expect(getCustomPageKind('/runtime-page', 'columns')).toBe('columns');
+    expect(getCustomPageKind('/runtime-page', 'projects')).toBe('projects');
+    expect(getCustomPageKind('/runtime-page', 'chat')).toBe('chat');
   });
 
   test('recognizes published articles and column home pages from frontmatter', () => {

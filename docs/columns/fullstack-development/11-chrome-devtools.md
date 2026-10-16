@@ -3,7 +3,7 @@ title: "第 11 章：Chrome DevTools 调试"
 description: "系统使用 Elements、Console、Sources、Network、Application、Performance 和 Lighthouse。"
 date: "2026-10-15"
 category: 浏览器调试
-tags: [Chrome DevTools, Debugging, Lighthouse]
+tags: [Chrome DevTools, 调试, Lighthouse]
 series:
   order: 12
 ---

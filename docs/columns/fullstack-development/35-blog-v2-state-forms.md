@@ -3,7 +3,7 @@ title: "第 35 章：博客 v2 状态管理与表单校验"
 description: "为博客加入收藏、搜索筛选和文章反馈表单，并用 Zustand 与 Zod 管理边界。"
 date: "2026-10-15"
 category: 项目实战
-tags: [Zustand, Zod, Forms, State Management]
+tags: [Zustand, Zod, 表单, 状态管理]
 series:
   order: 36
 ---

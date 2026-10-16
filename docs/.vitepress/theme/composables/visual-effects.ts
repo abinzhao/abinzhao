@@ -20,7 +20,8 @@ export function getAmbientParticleCount(
     return 18;
   }
 
-  return viewportWidth <= 1024 ? 32 : 52;
+  if (viewportWidth <= 1024) return 48;
+  return viewportWidth >= 1800 ? 180 : 128;
 }
 
 export function createParticleField(

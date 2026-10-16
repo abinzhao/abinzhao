@@ -3,7 +3,7 @@ title: "第 21 章：原型、类、ESM 与错误处理"
 description: "理解 JavaScript 的原型委托、class 语法、ESM 模块边界和可恢复的错误处理。"
 date: "2026-10-15"
 category: JavaScript 核心
-tags: [Prototype, Class, ESM, Error Handling]
+tags: [原型, 类, ESM, 错误处理]
 series:
   order: 22
 ---

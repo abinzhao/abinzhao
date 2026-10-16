@@ -17,7 +17,6 @@ import {
   withBase,
 } from 'vitepress';
 import { data as content } from '../../data/content.data';
-import SiteHeader from '../components/SiteHeader.vue';
 import {
   getSeriesNavigation,
   normalizeContentHref,
@@ -135,12 +134,11 @@ onBeforeUnmount(() => {
 <template>
   <div
     :class="{ 'reading-page--series': isSeriesArticle }"
-    class="site-shell reading-page"
+    class="reading-page"
   >
     <div class="reading-progress" aria-hidden="true">
       <span :style="{ transform: `scaleX(${readingProgress})` }" />
     </div>
-    <SiteHeader />
 
     <main class="site-container reading-page__main">
       <nav class="reading-breadcrumb" aria-label="面包屑导航">
@@ -169,7 +167,7 @@ onBeforeUnmount(() => {
           <span v-if="series.column"><BookOpen :size="14" aria-hidden="true" /> 系列文章</span>
         </div>
         <p class="technical-label">
-          {{ isSeriesArticle ? 'COURSE CHAPTER / GUIDED LEARNING' : 'INDEPENDENT NOTE / READING MODE' }}
+          {{ isSeriesArticle ? '课程章节 · 循序学习' : '独立笔记 · 阅读模式' }}
         </p>
         <h1>{{ frontmatter.title }}</h1>
         <p v-if="frontmatter.description" class="reading-header__description">

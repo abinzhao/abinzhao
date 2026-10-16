@@ -1,68 +1,57 @@
-<div align="center">
+# 阿斌实验室
 
-<img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=700&size=30&pause=1000&color=58A6FF&center=true&vCenter=true&width=680&lines=%24+whoami;ABIN_+%7C+HarmonyOS+Engineer;Frontend+Tool+Builder;AI+Agent+Explorer" alt="Typing introduction" />
+记录鸿蒙开发、前端工程与智能体实践的个人博客。基于 VitePress 和 Vue 构建，可部署为静态站点。
 
-### HarmonyOS Engineer / Frontend Tool Builder / AI Agent Explorer
+## 页面
 
-构建可靠的 HarmonyOS 应用、前端工程工具与 AI 驱动的开发者产品。
+- 首页：个人介绍、快速入口与最新博客。
+- 博客：响应式瀑布流、分类筛选与关键词搜索。
+- 专题教程：按章节组织的完整学习路径，支持文章目录和前后篇导航。
+- 开源项目：整张卡片直接打开对应 GitHub 仓库。
+- 智能问答：站内知识检索与可配置的模型对话。
+- 关于：工程方法、技术能力与实践方向。
 
-[![Profile Views](https://komarev.com/ghpvc/?username=abinzhao&style=for-the-badge&color=0e75b6)](https://github.com/abinzhao)
-[![GitHub](https://img.shields.io/badge/GitHub-abinzhao-181717?style=for-the-badge&logo=github)](https://github.com/abinzhao)
-[![Blog](https://img.shields.io/badge/Blog-abinzhao.github.io%2Fabinzhao-58A6FF?style=for-the-badge&logo=githubpages&logoColor=white)](https://abinzhao.github.io/abinzhao/)
+全站共享导航、页脚和悬浮问答入口，支持浅色、深色主题与键盘导航。
 
-</div>
+## 本地开发
 
-## `$ focus`
+使用 Node.js 22 及以上版本、pnpm 10。
 
-- HarmonyOS 原生应用与 ArkTS / ArkUI 工程实践
-- TypeScript、React、Node.js 前端工程化
-- CLI、Monorepo 与开发者效率工具
-- AI Agent 产品化与智能开发工作流
+```sh
+pnpm install
+pnpm dev
+pnpm check
+pnpm test
+pnpm build
+pnpm preview
+```
 
-## `$ stack --core`
+默认站点前缀为 `/abinzhao/`。部署到根路径时，通过 `VITEPRESS_BASE=/` 构建。
 
-<p>
-  <img src="https://img.shields.io/badge/HarmonyOS-000000?style=for-the-badge&logo=huawei&logoColor=white" alt="HarmonyOS" />
-  <img src="https://img.shields.io/badge/ArkTS-6C5CE7?style=for-the-badge" alt="ArkTS" />
-  <img src="https://img.shields.io/badge/ArkUI-0984E3?style=for-the-badge" alt="ArkUI" />
-  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
-  <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js" />
-  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=000000" alt="JavaScript" />
-  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
-  <img src="https://img.shields.io/badge/AI_Agent-111827?style=for-the-badge&logo=openai&logoColor=58A6FF" alt="AI Agent" />
-</p>
+## 智能问答
 
-## `$ ls selected-work`
+站内检索直接在浏览器内匹配博客和专题的标题、摘要与标签，返回实际文章链接。检索结果有明确标识，不会假装成模型生成的回答。
 
-| Project | What it delivers | Focus |
-| --- | --- | --- |
-| [harmony-next-blog](https://github.com/abinzhao/harmony-next-blog) | HarmonyOS Next 学习笔记与实践教程 | HarmonyOS · ArkTS |
-| [cps](https://github.com/abinzhao/cps) | 基于 Node.js 的命令行图片压缩工具 | TypeScript · CLI |
-| [scio-design](https://github.com/abinzhao/scio-design) | 多包管理、工程规范与效能组件实践 | Monorepo · Tooling |
-| [scioPro](https://github.com/abinzhao/scioPro) | React 组件、Hooks 和工具函数多包仓库 | React · Libraries |
-| [code-cnalysis](https://github.com/abinzhao/code-cnalysis) | 面向代码理解与分析场景的工具实践 | JavaScript · Analysis |
+在“模型设置”中填写 OpenAI 兼容接口地址、模型名称及可选访问密钥，然后切换到“模型对话”。支持流式回答、多轮对话、停止生成、失败重试、回答复制和会话导出。
 
-## `$ github --signal`
+本机 Ollama 的兼容接口地址为 `http://localhost:11434/v1`，模型名称填写本机已安装的模型。远程服务须使用 HTTPS，并允许站点来源的浏览器跨域请求。本机服务也需要允许站点来源访问；浏览器可能另行要求本地网络访问权限。静态站点不提供模型服务或跨域代理。
 
-<div align="center">
-  <img height="165" src="https://github-readme-stats-sigma-five.vercel.app/api?username=abinzhao&show_icons=true&theme=github_dark&hide_border=true&rank_icon=github" alt="GitHub stats" />
-  <img height="165" src="https://github-readme-stats-sigma-five.vercel.app/api/top-langs/?username=abinzhao&layout=compact&theme=github_dark&hide_border=true" alt="Top languages" />
-</div>
+会话记录只保存在当前浏览器，最多保留 30 段会话。访问密钥只保留在问答页内存中，离开或刷新问答页后需重新填写。模型模式会将问题和最近的会话上下文发送到用户选择的服务，站内检索不会发送网络请求。
 
-<div align="center">
-  <img src="https://streak-stats.demolab.com?user=abinzhao&theme=github-dark-blue&hide_border=true" alt="GitHub contribution streak" />
-</div>
+## 视觉与性能
 
-<div align="center">
-  <img src="https://github-readme-activity-graph.vercel.app/graph?username=abinzhao&theme=github-compact&hide_border=true&area=true" alt="GitHub activity graph" />
-</div>
+视觉变量集中于 `docs/.vitepress/theme/styles/tokens.css`。使用透明玻璃面板、流动渐变背景、粒子连线、平滑光标光晕和邻近吸附反馈。
 
-## `$ connect`
+桌面粒子密度随屏宽提高；触屏保留轻量粒子。画布、光标与吸附共用一个动画循环，粒子使用缓存光点和空间分桶连线；页面进入后台时暂停。系统启用“减少动态效果”后，关闭连续动画和吸附。
 
-- Blog: [abinzhao.github.io/abinzhao](https://abinzhao.github.io/abinzhao/)
-- GitHub: [github.com/abinzhao](https://github.com/abinzhao)
+## 精选仓库
 
-<div align="center">
-  <sub>Build deliberately. Document clearly. Ship continuously.</sub>
-</div>
+| 项目 | 内容 |
+| --- | --- |
+| [鸿蒙学习笔记](https://github.com/abinzhao/harmony-next-blog) | 鸿蒙应用学习笔记与实践教程 |
+| [命令行图片压缩](https://github.com/abinzhao/cps) | 基于 Node.js 的图片压缩工具 |
+| [前端工程实践](https://github.com/abinzhao/scio-design) | 多包管理、工程规范与效能组件 |
+| [组件与工具库](https://github.com/abinzhao/scioPro) | React 组件、自定义钩子与工具函数 |
+| [代码分析工具](https://github.com/abinzhao/code-cnalysis) | 面向代码理解与分析的工具实践 |
+
+[访问博客](https://abinzhao.github.io/abinzhao/) · [GitHub](https://github.com/abinzhao)

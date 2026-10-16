@@ -3,7 +3,7 @@ title: 面向个人开发者的静态站点
 description: 用 VitePress、Markdown 与 GitHub Pages 组织可长期维护的内容站点。
 date: "2026-10-10"
 category: 工程化
-tags: [VitePress, GitHub Pages, Tooling]
+tags: [VitePress, GitHub Pages, 工具链]
 featured: true
 ---
 

@@ -16,6 +16,12 @@
   --site-glow: rgba(94, 190, 255, 0.22);
   --site-grid: rgba(120, 199, 255, 0.055);
   --site-code-bg: #091526;
+  --site-glass: rgba(14, 29, 48, 0.68);
+  --site-glass-raised: rgba(26, 49, 72, 0.76);
+  --site-shadow: 0 16px 48px rgba(0, 6, 18, 0.22);
+  --radius-card: 18px;
+  --radius-panel: 22px;
+  --site-ease: cubic-bezier(0.22, 0.8, 0.24, 1);
 
   --vp-c-bg: var(--site-bg);
   --vp-c-bg-alt: var(--site-bg-soft);
@@ -39,7 +45,7 @@
   --vp-home-hero-text-color: var(--site-accent);
   --vp-home-hero-image-background-image: none;
   --vp-home-hero-image-filter: none;
-  --vp-font-family-base: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --vp-font-family-base: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
   --vp-font-family-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
 }
 
@@ -60,6 +66,9 @@
   --site-glow: rgba(13, 113, 180, 0.14);
   --site-grid: rgba(35, 67, 104, 0.055);
   --site-code-bg: #eaf1f7;
+  --site-glass: rgba(255, 255, 255, 0.74);
+  --site-glass-raised: rgba(234, 246, 254, 0.88);
+  --site-shadow: 0 16px 48px rgba(25, 71, 104, 0.09);
 
   --vp-c-bg: var(--site-bg);
   --vp-c-bg-alt: var(--site-bg-soft);

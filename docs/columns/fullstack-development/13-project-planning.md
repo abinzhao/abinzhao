@@ -3,7 +3,7 @@ title: "第 13 章：静态博客项目规划"
 description: "明确个人博客的交付目标、文件边界、开发顺序和验收标准。"
 date: "2026-10-15"
 category: 项目实战
-tags: [Static Site, Project Planning, Frontend]
+tags: [静态站点, 项目规划, 前端]
 series:
   order: 14
 ---

@@ -3,7 +3,7 @@ title: "第 25 章：图形、文件、定位与实时通信"
 description: "掌握 Canvas、SVG、URL、File、拖放、Geolocation 与 WebSocket 的使用边界。"
 date: "2026-10-15"
 category: 浏览器 API
-tags: [Canvas, SVG, File API, WebSocket]
+tags: [Canvas, SVG, 文件接口, WebSocket]
 series:
   order: 26
 ---

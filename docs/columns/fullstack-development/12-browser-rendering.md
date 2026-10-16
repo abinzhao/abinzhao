@@ -3,7 +3,7 @@ title: "第 12 章：浏览器渲染流程"
 description: "理解解析、样式计算、布局、绘制、合成以及页面生命周期。"
 date: "2026-10-15"
 category: 浏览器原理
-tags: [Rendering, Performance, Browser]
+tags: [渲染, 性能, 浏览器]
 series:
   order: 13
 ---

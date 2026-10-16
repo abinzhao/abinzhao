@@ -3,7 +3,7 @@ title: "第 17 章：Markdown 文章管理"
 description: "建立文章元数据、Markdown 内容目录和本地预览写作流程。"
 date: "2026-10-15"
 category: 项目实战
-tags: [Markdown, Content Management, Static Site]
+tags: [Markdown, 内容管理, 静态站点]
 series:
   order: 18
 ---

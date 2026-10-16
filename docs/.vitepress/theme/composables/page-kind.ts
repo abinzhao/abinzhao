@@ -4,7 +4,9 @@ export type CustomPageKind =
   | 'blog'
   | 'column'
   | 'columns'
-  | 'home';
+  | 'home'
+  | 'projects'
+  | 'chat';
 
 export interface PageMetadata {
   date?: unknown;
@@ -20,7 +22,9 @@ export function getCustomPageKind(
     layout === 'home' ||
     layout === 'about' ||
     layout === 'blog' ||
-    layout === 'columns'
+    layout === 'columns' ||
+    layout === 'projects' ||
+    layout === 'chat'
   ) {
     return layout;
   }

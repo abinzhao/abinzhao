@@ -3,7 +3,7 @@ title: "第 27 章：TypeScript 基础类型、接口与类型别名"
 description: "配置严格模式，掌握类型推断、基础类型、函数、对象、interface 与 type。"
 date: "2026-10-15"
 category: TypeScript
-tags: [TypeScript, Interface, Type Alias]
+tags: [TypeScript, 接口, 类型别名]
 series:
   order: 28
 ---

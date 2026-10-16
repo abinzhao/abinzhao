@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {
   ArrowRight,
-  BookOpen,
   CheckCircle2,
   Layers3,
   ListOrdered,
@@ -9,8 +8,6 @@ import {
 import { computed } from 'vue';
 import { Content, useRoute, withBase } from 'vitepress';
 import { data as content } from '../../data/content.data';
-import AmbientField from '../components/AmbientField.vue';
-import SiteHeader from '../components/SiteHeader.vue';
 import { normalizeContentHref } from '../composables/article-context';
 
 const route = useRoute();
@@ -21,14 +18,11 @@ const column = computed(() =>
 </script>
 
 <template>
-  <div class="site-shell column-reading-page">
-    <AmbientField />
-    <SiteHeader />
-
+  <div class="column-reading-page">
     <main v-if="column" class="site-container column-reading-page__main">
       <header class="column-reading-hero">
-        <p class="technical-label">SERIES / LONG-FORM LEARNING PATH</p>
-        <span class="column-reading-hero__status">{{ column.status ?? 'ONGOING' }}</span>
+        <p class="technical-label">专题教程 · 完整学习路径</p>
+        <span class="column-reading-hero__status">{{ column.status === 'ongoing' ? '持续更新' : column.status === 'completed' ? '已完结' : column.status === 'archived' ? '已归档' : column.status ?? '持续更新' }}</span>
         <h1>{{ column.title }}</h1>
         <p>{{ column.description }}</p>
         <div class="column-reading-hero__stats">
@@ -46,7 +40,7 @@ const column = computed(() =>
         <section class="column-reading-chapters" aria-labelledby="chapters-title">
           <header>
             <div>
-              <p class="technical-label">CHAPTER INDEX</p>
+              <p class="technical-label">按顺序学习</p>
               <h2 id="chapters-title">章节目录</h2>
             </div>
             <span>{{ column.articles.length }} / {{ column.articles.length }}</span>

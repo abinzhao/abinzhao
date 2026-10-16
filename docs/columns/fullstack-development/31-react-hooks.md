@@ -1,13 +1,13 @@
 ---
-title: "第 31 章：React Hooks 与状态建模"
+title: "第 31 章：React 钩子与状态建模"
 description: "掌握 useState、useEffect、useContext、useRef、useMemo、useCallback 与 useReducer。"
 date: "2026-10-15"
 category: React
-tags: [React Hooks, State, Effects]
+tags: [React 钩子, 状态, 副作用]
 series:
   order: 32
 ---
-## 第 31 章 Hooks
+## 第 31 章 React 钩子
 
 Hooks 让函数组件使用状态、上下文、引用和副作用。关键不是记住 API，而是分清“渲染计算”“用户事件”和“外部系统同步”三个边界。
 
@@ -20,7 +20,7 @@ Hooks 让函数组件使用状态、上下文、引用和副作用。关键不�
 - 判断何时需要 `useMemo` 与 `useCallback`。
 - 用 `useReducer` 管理事件驱动的复杂状态。
 
-### 31.2 Hook 规则
+### 31.2 钩子的使用规则
 
 Hooks 必须：
 

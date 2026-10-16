@@ -3,7 +3,7 @@ title: "第 16 章：静态博客 JavaScript 交互"
 description: "实现主题切换、文章加载、Markdown 渲染、表单验证和通用交互。"
 date: "2026-10-15"
 category: 项目实战
-tags: [JavaScript, DOM, Web Storage]
+tags: [JavaScript, DOM, 网页存储]
 series:
   order: 17
 ---

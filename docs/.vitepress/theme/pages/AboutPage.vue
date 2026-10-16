@@ -8,8 +8,6 @@ import {
 } from '@lucide/vue';
 import { withBase } from 'vitepress';
 import { data as about } from '../../data/about.data';
-import AmbientField from '../components/AmbientField.vue';
-import SiteHeader from '../components/SiteHeader.vue';
 
 const actionIcons = {
   github: Code2,
@@ -18,21 +16,18 @@ const actionIcons = {
 </script>
 
 <template>
-  <div class="site-shell about-page">
-    <AmbientField />
-    <SiteHeader />
-
+  <div class="about-page">
     <main class="site-container">
       <section class="about-profile" aria-labelledby="about-title">
         <div class="about-profile__identity">
           <div class="about-profile__avatar">
-            <span class="profile-avatar-art profile-avatar-art--large" aria-label="ABIN 代码身份头像">
+            <span class="profile-avatar-art profile-avatar-art--large" aria-label="阿斌代码身份头像">
               <Code2 :size="42" aria-hidden="true" />
             </span>
             <span aria-label="在线" />
           </div>
           <div>
-            <p class="technical-label">PROFILE / OPEN BUILDING</p>
+            <p class="technical-label">关于我 · 公开构建</p>
             <h1 id="about-title">
               {{ about.identity.name }} <span>{{ about.identity.handle }}</span>
             </h1>
@@ -78,7 +73,7 @@ const actionIcons = {
       <section class="about-section" aria-labelledby="principles-title">
         <div class="section-heading">
           <div>
-            <p class="technical-label">MANIFESTO & PHILOSOPHY</p>
+            <p class="technical-label">做事的方法</p>
             <h2 id="principles-title">工程准则与数字哲学</h2>
           </div>
           <p class="section-heading__copy">用更少的依赖建立更长久的工程能力。</p>
@@ -102,7 +97,7 @@ const actionIcons = {
       <section class="about-section about-section--skills" aria-labelledby="skills-title">
         <div class="section-heading">
           <div>
-            <p class="technical-label">TECHNICAL RADAR & MASTERY</p>
+            <p class="technical-label">技术能力与实践方向</p>
             <h2 id="skills-title">工程雷达与技术拓扑</h2>
           </div>
           <p class="section-heading__copy">持续打磨底层能力，把技术选择落到真实产品体验。</p>

@@ -1,9 +1,9 @@
 ---
-title: "第 32 章：React 19 的 use、Actions 与乐观更新"
-description: "掌握 use()、表单 Actions、useActionState、useOptimistic 与 useFormStatus。"
+title: "第 32 章：React 19 的 use、动作与乐观更新"
+description: "掌握 use()、表单动作、useActionState、useOptimistic 与 useFormStatus。"
 date: "2026-10-15"
 category: React
-tags: [React 19, Actions, Suspense]
+tags: [React 19, 动作, Suspense]
 series:
   order: 33
 ---
@@ -20,7 +20,7 @@ React 19 把异步操作更深地集成进渲染和表单：`use()` 可以读取
 - 用 `useOptimistic` 实现可回滚的即时反馈。
 - 在表单子组件中用 `useFormStatus` 展示提交状态。
 
-### 32.2 `use()` 读取 Context
+### 32.2 `use()` 读取上下文
 
 React 19 的 `use()` 可以读取 Context，而且允许写在条件分支中：
 
@@ -123,7 +123,7 @@ export function getPostPromise(slug: string): Promise<Post> {
 
 缓存还要考虑失效、错误重试和内存上限。真实项目优先使用路由或数据请求库提供的方案，不要随意创建永久全局缓存。
 
-### 32.4 Actions
+### 32.4 表单动作
 
 在 React 19 中，异步更新函数可以作为 Action 使用。表单的 `action` 属性可以直接接收函数：
 

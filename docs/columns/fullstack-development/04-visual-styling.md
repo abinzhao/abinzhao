@@ -3,7 +3,7 @@ title: "第 4 章：文字、颜色与视觉样式"
 description: "使用排版、颜色、背景、边框、阴影与滤镜构建清晰的视觉层级。"
 date: "2026-10-15"
 category: CSS3
-tags: [CSS3, Typography, Visual Design]
+tags: [CSS3, 排版, 视觉设计]
 series:
   order: 5
 ---

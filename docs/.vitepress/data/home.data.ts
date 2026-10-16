@@ -8,13 +8,6 @@ export interface HomeData {
     primary: { label: string; link: string };
     secondary: { label: string; link: string };
   };
-  articles: Array<{
-    category: string;
-    description: string;
-    link: string;
-    readTime: string;
-    title: string;
-  }>;
   modules: Array<{
     description: string;
     icon: 'book' | 'fingerprint' | 'graduation' | 'rocket';
@@ -30,7 +23,6 @@ export interface HomeData {
     location: string;
     metrics: Array<{ label: string; value: string }>;
     name: string;
-    nameEn: string;
     role: string;
     status: string;
   };

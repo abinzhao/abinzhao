@@ -4,16 +4,16 @@ import {
   BookOpen,
   CheckCircle2,
   Code2,
-  Copy,
   Fingerprint,
   GraduationCap,
-  MapPin,
   Rocket,
 } from '@lucide/vue';
 import { withBase } from 'vitepress';
+import { computed } from 'vue';
 import { data as home } from '../../data/home.data';
-import AmbientField from '../components/AmbientField.vue';
-import SiteHeader from '../components/SiteHeader.vue';
+import { data as content } from '../../data/content.data';
+
+const articles = computed(() => content.blogArticles.slice(0, 3));
 
 const moduleIcons = {
   book: BookOpen,
@@ -24,10 +24,7 @@ const moduleIcons = {
 </script>
 
 <template>
-  <div class="site-shell home-page">
-    <AmbientField />
-    <SiteHeader />
-
+  <div class="home-page">
     <main class="site-container">
       <section class="home-hero" aria-labelledby="home-title">
         <div class="home-hero__content">
@@ -38,13 +35,13 @@ const moduleIcons = {
 
           <div class="profile-intro">
             <div class="profile-intro__avatar">
-              <span class="profile-avatar-art" aria-label="ABIN 代码身份头像">
+              <span class="profile-avatar-art" aria-label="阿斌代码身份头像">
                 <Code2 :size="34" aria-hidden="true" />
               </span>
               <span class="profile-intro__online" aria-label="在线" />
             </div>
             <div>
-              <p class="technical-label">ARCH · DEV · OPEN SOURCE</p>
+              <p class="technical-label">工程实践 · 独立开发 · 开源</p>
               <h1 id="home-title">你好，我是 <span>{{ home.profile.name }}</span></h1>
               <p class="profile-intro__meta">
                 {{ home.profile.handle }} · {{ home.profile.location }}
@@ -69,8 +66,8 @@ const moduleIcons = {
               target="_blank"
               rel="noreferrer"
             >
-              <span>$ pnpm create abin-lab</span>
-              <Copy :size="15" aria-hidden="true" />
+              <span>在 GitHub 关注我</span>
+              <ArrowRight :size="15" aria-hidden="true" />
             </a>
           </div>
 
@@ -88,7 +85,7 @@ const moduleIcons = {
               <i /><i /><i />
             </span>
             <span>{{ home.terminal.label }}</span>
-            <small>WASM ACTIVE</small>
+            <small>持续构建</small>
           </div>
           <pre class="terminal-window__code"><code><span
             v-for="line in home.terminal.lines"
@@ -101,8 +98,8 @@ const moduleIcons = {
             {{ home.terminal.footer }}
           </p>
           <div class="terminal-window__footer">
-            <span>● Branch: main</span>
-            <span>UTF-8 · LF</span>
+            <span>● 本地优先</span>
+            <span>开放 · 可控 · 可复用</span>
           </div>
         </aside>
       </section>
@@ -110,10 +107,10 @@ const moduleIcons = {
       <section class="home-section home-section--modules" aria-labelledby="modules-title">
         <div class="section-heading section-heading--compact">
           <div>
-            <p class="technical-label">MODULE INDEX</p>
+            <p class="technical-label">探索入口</p>
             <h2 id="modules-title">模块索引</h2>
           </div>
-          <span>FAST NAVIGATION / 01-04</span>
+          <span>从记录到实践</span>
         </div>
 
         <div class="module-grid">
@@ -137,19 +134,19 @@ const moduleIcons = {
       <section class="home-section home-section--articles" aria-labelledby="articles-title">
         <div class="section-heading">
           <div>
-            <p class="technical-label">WRITING LOG</p>
+            <p class="technical-label">最近更新</p>
             <h2 id="articles-title">最新文章精选</h2>
           </div>
           <a :href="withBase('/blog/')">浏览全部文章 <ArrowRight :size="17" /></a>
         </div>
 
         <div class="article-grid">
-          <article v-for="article in home.articles" :key="article.title" class="article-card">
+          <article v-for="article in articles" :key="article.title" class="article-card">
             <header>
               <span>{{ article.category }}</span>
-              <time>{{ article.readTime }}</time>
+              <time>{{ article.date }}</time>
             </header>
-            <h3><a :href="withBase(article.link)">{{ article.title }}</a></h3>
+            <h3><a :href="withBase(article.href)">{{ article.title }}</a></h3>
             <p>{{ article.description }}</p>
           </article>
         </div>

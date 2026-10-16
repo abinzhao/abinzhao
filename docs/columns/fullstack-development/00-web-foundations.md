@@ -2,7 +2,7 @@
 title: "第 0 章：网页运行原理与开发起步"
 description: "从浏览器渲染链路、最小目录和页面骨架开始建立 Web 开发心智模型。"
 date: "2026-10-15"
-category: Web 基础
+category: 网页基础
 tags: [HTML5, 浏览器, 开发环境]
 series:
   order: 1

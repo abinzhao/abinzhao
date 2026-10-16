@@ -1,7 +1,7 @@
 ---
 title: 开发者工具的最小系统
-description: 从 CLI 到内容发布，把可重复动作沉淀为可靠工具链。
-status: ongoing
+description: 从命令行工具到内容发布，把可重复动作沉淀为可靠工具链。
+status: 持续更新
 featured: true
 ---
 

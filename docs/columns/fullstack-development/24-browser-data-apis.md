@@ -3,7 +3,7 @@ title: "第 24 章：网络、存储与常用浏览器 API"
 description: "使用 Fetch、AbortController、Web Storage、Clipboard、Web Share、structuredClone、Performance 与 Page Visibility。"
 date: "2026-10-15"
 category: 浏览器 API
-tags: [Fetch, Storage, Performance]
+tags: [Fetch, 存储, 性能]
 series:
   order: 25
 ---

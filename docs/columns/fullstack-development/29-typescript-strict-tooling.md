@@ -3,7 +3,7 @@ title: "第 29 章：工具类型、类型守卫与严格模式"
 description: "使用工具类型派生模型，控制类型断言，并在严格模式下验证未知数据。"
 date: "2026-10-15"
 category: TypeScript
-tags: [Utility Types, Type Guard, Strict Mode]
+tags: [工具类型, 类型守卫, 严格模式]
 series:
   order: 30
 ---

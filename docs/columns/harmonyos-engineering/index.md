@@ -1,11 +1,11 @@
 ---
-title: HarmonyOS 工程化实践
+title: 鸿蒙工程化实践
 description: 从 ArkTS 页面组织到原生体验细节的一组连续实践文章。
-status: ongoing
+status: 持续更新
 featured: true
 ---
 
-# HarmonyOS 工程化实践
+# 鸿蒙工程化实践
 
 这一专栏记录将 ArkTS 页面从“能运行”推进到“可持续维护”的过程：状态如何归属、交互如何稳定、工程约束如何帮助团队协作。
 

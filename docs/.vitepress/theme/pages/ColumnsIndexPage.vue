@@ -9,8 +9,6 @@ import {
 import { computed } from 'vue';
 import { withBase } from 'vitepress';
 import { data as content } from '../../data/content.data';
-import AmbientField from '../components/AmbientField.vue';
-import SiteHeader from '../components/SiteHeader.vue';
 
 const columns = computed(() =>
   [...content.columns].sort(
@@ -25,14 +23,11 @@ const totalChapters = computed(() =>
 </script>
 
 <template>
-  <div class="site-shell listing-page columns-page">
-    <AmbientField />
-    <SiteHeader />
-
+  <div class="listing-page columns-page">
     <main class="site-container listing-page__main">
       <header class="listing-header">
         <div>
-          <p class="technical-label">STRUCTURED COURSES / LEARNING PATHS</p>
+          <p class="technical-label">系统学习 · 逐章实践</p>
           <h1>专题教程</h1>
           <p>按章节推进的系统学习路径，从基础概念走到完整项目。</p>
           <a class="listing-header__context-link" :href="withBase('/blog/')">
@@ -67,7 +62,7 @@ const totalChapters = computed(() =>
               </span>
               学习路径 {{ String(index + 1).padStart(2, '0') }}
             </span>
-            <span class="column-card__status">{{ column.status ?? 'ARCHIVED' }}</span>
+            <span class="column-card__status">{{ column.status === 'ongoing' ? '持续更新' : column.status === 'completed' ? '已完结' : column.status === 'archived' ? '已归档' : column.status ?? '已归档' }}</span>
           </header>
 
           <h2><a :href="withBase(column.href)">{{ column.title }}</a></h2>

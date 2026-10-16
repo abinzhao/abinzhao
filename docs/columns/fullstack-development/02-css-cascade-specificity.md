@@ -3,7 +3,7 @@ title: "第 2 章：CSS 选择器、层叠与优先级"
 description: "理解样式如何匹配、竞争并形成最终计算值，建立可预测的层叠规则。"
 date: "2026-10-15"
 category: CSS3
-tags: [CSS3, Cascade, Selectors]
+tags: [CSS3, 层叠, 选择器]
 series:
   order: 3
 ---

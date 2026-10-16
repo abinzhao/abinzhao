@@ -3,7 +3,7 @@ title: "第 14 章：静态博客 CSS 架构"
 description: "从设计令牌、重置、布局、组件和动画分层搭建完整样式系统。"
 date: "2026-10-15"
 category: 项目实战
-tags: [CSS Architecture, Design Tokens, Responsive Design]
+tags: [CSS 架构, 设计变量, 响应式设计]
 series:
   order: 15
 ---

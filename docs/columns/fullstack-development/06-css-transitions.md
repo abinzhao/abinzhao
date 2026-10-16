@@ -1,9 +1,9 @@
 ---
-title: "第 6 章：Transition 过渡"
+title: "第 6 章：CSS 过渡"
 description: "掌握过渡属性、缓动函数及兼顾性能和可访问性的交互动效。"
 date: "2026-10-15"
 category: CSS 动画
-tags: [CSS3, Transition, Motion]
+tags: [CSS3, 过渡, 动效]
 series:
   order: 7
 ---

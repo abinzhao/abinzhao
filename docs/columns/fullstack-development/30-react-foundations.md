@@ -1,9 +1,9 @@
 ---
-title: "第 30 章：React 19 组件、Props 与 JSX"
-description: "创建 React 19 + TypeScript 项目，掌握函数组件、Props、JSX、条件与列表渲染。"
+title: "第 30 章：React 19 组件、属性与 JSX"
+description: "创建 React 19 与 TypeScript 项目，掌握函数组件、属性、JSX、条件与列表渲染。"
 date: "2026-10-15"
 category: React
-tags: [React 19, JSX, Props]
+tags: [React 19, JSX, 属性]
 series:
   order: 31
 ---
@@ -122,7 +122,7 @@ export function PostMeta() {
 
 业务样式优先写在 CSS 文件中，动态数值才用 `style`。
 
-### 30.5 Props
+### 30.5 组件属性
 
 Props 是父组件传给子组件的只读输入：
 

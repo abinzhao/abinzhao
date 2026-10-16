@@ -3,7 +3,7 @@ title: "第 23 章：DOM、事件系统与观察器"
 description: "操作 DOM，掌握捕获、冒泡、事件委托，并使用三类 Observer 响应页面变化。"
 date: "2026-10-15"
 category: 浏览器 API
-tags: [DOM, Events, Observer]
+tags: [DOM, 事件, 观察器]
 series:
   order: 24
 ---

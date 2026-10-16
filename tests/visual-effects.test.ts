@@ -7,10 +7,11 @@ import {
 } from '../docs/.vitepress/theme/composables/visual-effects';
 
 describe('future lab visual effects', () => {
-  test('keeps the ambient particle field restrained across viewports', () => {
+  test('enables a dense desktop field while keeping touch devices lightweight', () => {
     expect(getAmbientParticleCount(390, false)).toBe(18);
-    expect(getAmbientParticleCount(768, false)).toBe(32);
-    expect(getAmbientParticleCount(1440, false)).toBe(52);
+    expect(getAmbientParticleCount(768, false)).toBe(48);
+    expect(getAmbientParticleCount(1440, false)).toBe(128);
+    expect(getAmbientParticleCount(1920, false)).toBe(180);
     expect(getAmbientParticleCount(1440, true)).toBe(18);
   });
 

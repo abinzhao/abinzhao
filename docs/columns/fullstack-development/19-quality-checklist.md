@@ -3,7 +3,7 @@ title: "第 19 章：上线验收与故障排查"
 description: "用 HTML、CSS、JavaScript、性能、无障碍和部署清单完成上线验收。"
 date: "2026-10-15"
 category: 质量保障
-tags: [Quality Assurance, Accessibility, Performance]
+tags: [质量保障, 无障碍, 性能]
 series:
   order: 20
 ---

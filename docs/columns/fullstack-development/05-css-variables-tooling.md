@@ -3,7 +3,7 @@ title: "第 5 章：CSS 变量与工程化"
 description: "用自定义属性、原生嵌套和预处理工具组织可维护的样式代码。"
 date: "2026-10-15"
 category: CSS3
-tags: [CSS3, Custom Properties, PostCSS]
+tags: [CSS3, 自定义属性, PostCSS]
 series:
   order: 6
 ---
@@ -157,7 +157,7 @@ getComputedStyle(document.documentElement).getPropertyValue('--color-primary');
 
 **嵌套深度控制在 3 层以内**。原生嵌套不会像 Sass 那样输出展开后的选择器，但过深仍会导致优先级失控、覆盖困难。
 
-### 5.3 PostCSS vs Sass
+### 5.3 PostCSS 与 Sass 的选择
 
 | | PostCSS | Sass |
 |---|---|---|

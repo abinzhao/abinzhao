@@ -3,7 +3,7 @@ title: "第 34 章：博客 v2 的 React + TypeScript 重构"
 description: "把静态博客重构为 Vite、React 19、TypeScript、路由和组件驱动的应用。"
 date: "2026-10-15"
 category: 项目实战
-tags: [React, TypeScript, Vite, Blog]
+tags: [React, TypeScript, Vite, 博客]
 series:
   order: 35
 ---

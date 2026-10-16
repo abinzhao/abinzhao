@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Atom, Code2, Menu, X } from '@lucide/vue';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useData, useRoute, withBase } from 'vitepress';
 import ThemeToggle from './ThemeToggle.vue';
 
@@ -18,14 +18,17 @@ const navigation = computed(
 
 function isActive(link: string): boolean {
   const normalizedLink = link.replace(/\/$/, '') || '/';
-  const normalizedPath = route.path.replace(/\/$/, '') || '/';
-
-  return normalizedLink === normalizedPath;
+  const base = site.value.base;
+  const path = route.path.startsWith(base) ? `/${route.path.slice(base.length)}` : route.path;
+  const normalizedPath = path.replace(/(?:\.html|\/index)?\/?$/, '') || '/';
+  return normalizedLink === '/' ? normalizedPath === '/' : normalizedPath === normalizedLink || normalizedPath.startsWith(`${normalizedLink}/`);
 }
 
 function closeMobileMenu(): void {
   mobileMenuOpen.value = false;
 }
+
+watch(() => route.path, closeMobileMenu);
 </script>
 
 <template>
@@ -35,10 +38,7 @@ function closeMobileMenu(): void {
         <span class="site-brand__mark" aria-hidden="true">
           <Atom :size="22" />
         </span>
-        <span class="site-brand__name">ABIN Lab</span>
-        <span class="site-brand__divider">/</span>
-        <span class="site-brand__subtitle">ABIN Dev</span>
-        <span class="site-brand__version">v2.4-stable</span>
+        <span class="site-brand__name">阿斌实验室</span>
       </a>
 
       <nav class="site-nav" aria-label="主导航">
@@ -48,6 +48,7 @@ function closeMobileMenu(): void {
           :class="{ 'site-nav__link--active': isActive(item.link) }"
           class="site-nav__link"
           :href="withBase(item.link)"
+          :aria-current="isActive(item.link) ? 'page' : undefined"
         >
           {{ item.text }}
         </a>
@@ -62,7 +63,6 @@ function closeMobileMenu(): void {
         >
           <Code2 :size="16" aria-hidden="true" />
           <span>GitHub</span>
-          <small>5 repos</small>
         </a>
         <ThemeToggle />
         <button
@@ -71,6 +71,7 @@ function closeMobileMenu(): void {
           :aria-expanded="mobileMenuOpen"
           aria-label="切换导航菜单"
           @click="mobileMenuOpen = !mobileMenuOpen"
+          @keydown.esc="closeMobileMenu"
         >
           <X v-if="mobileMenuOpen" :size="20" aria-hidden="true" />
           <Menu v-else :size="20" aria-hidden="true" />
@@ -86,6 +87,7 @@ function closeMobileMenu(): void {
           :class="{ 'site-mobile-nav__link--active': isActive(item.link) }"
           class="site-mobile-nav__link"
           :href="withBase(item.link)"
+          :aria-current="isActive(item.link) ? 'page' : undefined"
           @click="closeMobileMenu"
         >
           {{ item.text }}

@@ -3,7 +3,7 @@ title: "第 1 章：HTML5 语义、表单与浏览器 API"
 description: "掌握语义化结构、表格表单、多媒体、图形、无障碍和常用浏览器 API。"
 date: "2026-10-15"
 category: HTML5
-tags: [HTML5, 语义化, Accessibility]
+tags: [HTML5, 语义化, 无障碍]
 series:
   order: 2
 ---

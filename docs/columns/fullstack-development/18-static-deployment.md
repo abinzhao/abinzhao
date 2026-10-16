@@ -3,7 +3,7 @@ title: "第 18 章：静态站点部署"
 description: "将静态博客部署到 GitHub Pages 或 Vercel，并正确处理路径和缓存。"
 date: "2026-10-15"
 category: 部署发布
-tags: [GitHub Pages, Vercel, Deployment]
+tags: [GitHub Pages, Vercel, 部署]
 series:
   order: 19
 ---

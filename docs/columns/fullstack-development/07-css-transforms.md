@@ -1,9 +1,9 @@
 ---
-title: "第 7 章：Transform 变换"
+title: "第 7 章：CSS 变换"
 description: "理解二维与三维变换、透视、变换原点和合成层动画。"
 date: "2026-10-15"
 category: CSS 动画
-tags: [CSS3, Transform, 3D]
+tags: [CSS3, 变换, 三维]
 series:
   order: 8
 ---

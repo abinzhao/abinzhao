@@ -2,8 +2,8 @@
 title: 构建可维护的 ArkTS 页面架构
 description: 从状态组织、组件边界到工程约束的一次实践复盘。
 date: "2026-10-15"
-category: HarmonyOS
-tags: [ArkTS, ArkUI, Architecture]
+category: 鸿蒙开发
+tags: [ArkTS, ArkUI, 架构]
 featured: true
 ---
 

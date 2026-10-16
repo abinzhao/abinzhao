@@ -3,7 +3,7 @@ title: "第 28 章：联合、交叉、泛型与类型收窄"
 description: "用联合类型表达状态，用交叉类型组合能力，用泛型保留输入输出关系。"
 date: "2026-10-15"
 category: TypeScript
-tags: [Union Types, Generics, Type Narrowing]
+tags: [联合类型, 泛型, 类型收窄]
 series:
   order: 29
 ---

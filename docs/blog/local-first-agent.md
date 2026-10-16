@@ -1,12 +1,12 @@
 ---
-title: Agent 工具的本地边界
-description: 为 AI 工作流保留用户控制权、可审计路径与可替换的模型入口。
+title: 智能体工具的本地边界
+description: 为智能工作流保留用户控制权、可审计路径与可替换的模型入口。
 date: "2026-10-06"
-category: AI Agent
-tags: [AI Agent, Local-first, Privacy]
+category: 智能体
+tags: [智能体, 本地优先, 隐私]
 ---
 
-# Agent 工具的本地边界
+# 智能体工具的本地边界
 
 开发者工具不应该用便利性交换失去控制的数据路径。
 

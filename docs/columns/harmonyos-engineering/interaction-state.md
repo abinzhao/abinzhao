@@ -2,8 +2,8 @@
 title: 第二章：交互状态保持可预测
 description: 让加载、错误和完成状态拥有明确的转移关系。
 date: "2026-10-14"
-category: HarmonyOS
-tags: [ArkUI, State]
+category: 鸿蒙开发
+tags: [ArkUI, 状态]
 series:
   order: 2
 ---
