@@ -4,6 +4,7 @@ import { computed, ref } from 'vue';
 import { withBase } from 'vitepress';
 import { data as content } from '../../data/content.data';
 import { filterArticles } from '../composables/article-filter';
+import CompactPageHeader from '../components/CompactPageHeader.vue';
 
 const category = ref('全部');
 const query = ref('');
@@ -20,28 +21,23 @@ const articles = computed(() =>
 <template>
   <div class="listing-page blog-listing-page">
     <main class="site-container listing-page__main">
-      <header class="listing-header listing-header--blog">
-        <div>
-          <p class="technical-label">开发记录 · 工程实践</p>
-          <h1>博客</h1>
-          <p>独立成篇的开发记录、工程复盘与智能体实践。</p>
+      <CompactPageHeader
+        description="独立成篇的开发记录、工程复盘与智能体实践。"
+        eyebrow="开发记录 · 工程实践"
+        title="博客"
+        :stats="[
+          { label: '文章', value: content.blogArticles.length, mobilePrimary: true },
+          { label: '分类', value: content.blogCategories.length },
+        ]"
+      >
+        <template #context>
           <a class="listing-header__context-link" :href="withBase('/columns/')">
             <BookOpen :size="16" aria-hidden="true" />
             系统学习请前往专题教程
             <ArrowRight :size="15" aria-hidden="true" />
           </a>
-        </div>
-        <dl class="listing-header__stats">
-          <div>
-            <dt>文章</dt>
-            <dd>{{ content.blogArticles.length }}</dd>
-          </div>
-          <div>
-            <dt>分类</dt>
-            <dd>{{ content.blogCategories.length }}</dd>
-          </div>
-        </dl>
-      </header>
+        </template>
+      </CompactPageHeader>
 
       <section class="article-filters" aria-label="文章筛选">
         <div class="article-filters__categories" role="group" aria-label="分类">

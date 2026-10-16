@@ -1,0 +1,80 @@
+import type { AsPlainObject, Options } from 'minisearch';
+
+export type KnowledgeBlockKind = 'summary' | 'paragraph' | 'list' | 'blockquote' | 'code';
+
+export interface KnowledgeBlock {
+  anchor?: string;
+  articleTitle: string;
+  codeTerms: string[];
+  column?: string;
+  description?: string;
+  documentId: string;
+  href: string;
+  id: string;
+  kind: KnowledgeBlockKind;
+  publishedAt: string;
+  readingMinutes: number;
+  sectionTitle?: string;
+  seriesOrder?: number;
+  tags: string[];
+  text: string;
+}
+
+export type KnowledgeBlockMetadata = Omit<KnowledgeBlock, 'codeTerms' | 'text'>;
+export type KnowledgeBlockContent = Pick<KnowledgeBlock, 'codeTerms' | 'text'>;
+
+export interface KnowledgeIndexArtifact {
+  index: AsPlainObject;
+  metadata: Record<string, KnowledgeBlockMetadata>;
+  version: 1;
+}
+
+export interface KnowledgeCorpusArtifact {
+  blocks: Record<string, KnowledgeBlockContent>;
+  version: 1;
+}
+
+export interface KnowledgeSearchDocument {
+  code: string;
+  description: string;
+  id: string;
+  section: string;
+  tags: string;
+  text: string;
+  title: string;
+}
+
+const LATIN_OR_NUMBER = /[a-z0-9][a-z0-9._+#-]*/giu;
+const CJK_SEQUENCE = /[\p{Script=Han}]+/gu;
+
+export function normalizeKnowledgeTerm(term: string): string | null {
+  const normalized = term.trim().toLocaleLowerCase();
+  return normalized.length > 0 ? normalized : null;
+}
+
+export function tokenizeKnowledgeText(text: string): string[] {
+  const normalized = text.normalize('NFKC').toLocaleLowerCase();
+  const tokens: string[] = [...(normalized.match(LATIN_OR_NUMBER) ?? [])];
+
+  for (const sequence of normalized.match(CJK_SEQUENCE) ?? []) {
+    if (sequence.length === 1) {
+      tokens.push(sequence);
+      continue;
+    }
+
+    for (let index = 0; index < sequence.length - 1; index += 1) {
+      tokens.push(sequence.slice(index, index + 2));
+    }
+  }
+
+  return [...new Set(tokens)];
+}
+
+export function getKnowledgeMiniSearchOptions(): Options<KnowledgeSearchDocument> {
+  return {
+    fields: ['title', 'section', 'tags', 'description', 'text', 'code'],
+    idField: 'id',
+    processTerm: normalizeKnowledgeTerm,
+    tokenize: tokenizeKnowledgeText,
+  };
+}

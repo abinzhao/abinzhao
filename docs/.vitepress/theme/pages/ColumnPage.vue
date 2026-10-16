@@ -22,21 +22,16 @@ const column = computed(() =>
     <main v-if="column" class="site-container column-reading-page__main">
       <header class="column-reading-hero">
         <p class="technical-label">专题教程 · 完整学习路径</p>
-        <span class="column-reading-hero__status">{{ column.status === 'ongoing' ? '持续更新' : column.status === 'completed' ? '已完结' : column.status === 'archived' ? '已归档' : column.status ?? '持续更新' }}</span>
         <h1>{{ column.title }}</h1>
         <p>{{ column.description }}</p>
         <div class="column-reading-hero__stats">
+          <span><CheckCircle2 :size="16" aria-hidden="true" /> {{ column.status === 'ongoing' ? '持续更新' : column.status === 'completed' ? '已完结' : column.status === 'archived' ? '已归档' : column.status ?? '持续更新' }}</span>
           <span><Layers3 :size="16" aria-hidden="true" /> {{ column.articles.length }} 篇章节</span>
           <span><ListOrdered :size="16" aria-hidden="true" /> 按阅读顺序编排</span>
-          <span><CheckCircle2 :size="16" aria-hidden="true" /> 持续更新</span>
         </div>
       </header>
 
       <div class="column-reading-layout">
-        <article class="reading-prose column-reading-prose vp-doc">
-          <Content />
-        </article>
-
         <section class="column-reading-chapters" aria-labelledby="chapters-title">
           <header>
             <div>
@@ -62,6 +57,10 @@ const column = computed(() =>
             </li>
           </ol>
         </section>
+
+        <article class="reading-prose column-reading-prose vp-doc">
+          <Content />
+        </article>
       </div>
     </main>
   </div>

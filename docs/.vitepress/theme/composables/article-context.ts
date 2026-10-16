@@ -3,6 +3,22 @@ export interface SeriesArticle {
   title: string;
 }
 
+export type ArticleChatAction = 'ask' | 'summary' | 'key-points' | 'learning-path';
+
+export interface ArticleChatContext {
+  action: ArticleChatAction;
+  articleId?: string;
+  valid: boolean;
+}
+
+const ARTICLE_CHAT_ACTIONS = new Set<ArticleChatAction>([
+  'ask',
+  'summary',
+  'key-points',
+  'learning-path',
+]);
+const PUBLIC_ARTICLE_HREF = /^\/(?:blog\/[^/?#]+\.html|columns\/[^/?#]+\/[^/?#]+\.html)$/u;
+
 export interface SeriesColumn<TArticle extends SeriesArticle = SeriesArticle> {
   articles: TArticle[];
   href: string;
@@ -66,4 +82,50 @@ export function resolveArticlePagination<TArticle extends SeriesArticle>(
   return series.column
     ? { next: series.next, previous: series.previous }
     : global;
+}
+
+export function buildArticleChatHref(
+  articleHref: string,
+  action: ArticleChatAction,
+  base = '/',
+): string {
+  if (!PUBLIC_ARTICLE_HREF.test(articleHref)) {
+    throw new Error('文章地址不是可公开使用的站内路径。');
+  }
+
+  const normalizedBase = `/${base.replace(/^\/+|\/+$/gu, '')}`;
+  const chatPath = `${normalizedBase === '/' ? '' : normalizedBase}/chat/`;
+  const params = new URLSearchParams({
+    article: articleHref,
+    action,
+  });
+
+  return `${chatPath}?${params.toString()}`;
+}
+
+export function resolveArticleChatContext(
+  search: string,
+  publishedArticleHrefs: ReadonlySet<string>,
+): ArticleChatContext {
+  const params = new URLSearchParams(search);
+  const articleId = params.get('article');
+  const requestedAction = params.get('action');
+
+  if (!articleId && !requestedAction) {
+    return { action: 'ask', valid: true };
+  }
+  if (
+    !articleId ||
+    !PUBLIC_ARTICLE_HREF.test(articleId) ||
+    !publishedArticleHrefs.has(articleId) ||
+    !ARTICLE_CHAT_ACTIONS.has(requestedAction as ArticleChatAction)
+  ) {
+    return { action: 'ask', valid: false };
+  }
+
+  return {
+    action: requestedAction as ArticleChatAction,
+    articleId,
+    valid: true,
+  };
 }

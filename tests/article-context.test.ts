@@ -1,7 +1,9 @@
 import { describe, expect, test } from 'vitest';
 import {
+  buildArticleChatHref,
   getSeriesNavigation,
   normalizeContentHref,
+  resolveArticleChatContext,
   resolveArticlePagination,
 } from '../docs/.vitepress/theme/composables/article-context';
 
@@ -54,6 +56,54 @@ describe('article context', () => {
     ).toEqual({
       next: columns[0].articles[1],
       previous: undefined,
+    });
+  });
+
+  test('builds a base-aware chat URL with only public article context', () => {
+    expect(
+      buildArticleChatHref(
+        '/blog/local-first-agent.html',
+        'summary',
+        '/abinzhao/',
+      ),
+    ).toBe(
+      '/abinzhao/chat/?article=%2Fblog%2Flocal-first-agent.html&action=summary',
+    );
+    expect(
+      buildArticleChatHref(
+        '/columns/fullstack-development/03-box-model-layout.html',
+        'ask',
+        '/',
+      ),
+    ).toBe(
+      '/chat/?article=%2Fcolumns%2Ffullstack-development%2F03-box-model-layout.html&action=ask',
+    );
+  });
+
+  test('accepts only published articles and controlled actions from chat params', () => {
+    const published = new Set([
+      '/blog/local-first-agent.html',
+      '/columns/fullstack-development/03-box-model-layout.html',
+    ]);
+
+    expect(resolveArticleChatContext(
+      '?article=%2Fblog%2Flocal-first-agent.html&action=key-points',
+      published,
+    )).toEqual({
+      action: 'key-points',
+      articleId: '/blog/local-first-agent.html',
+      valid: true,
+    });
+    expect(resolveArticleChatContext(
+      '?article=https%3A%2F%2Fexample.com&action=delete',
+      published,
+    )).toEqual({
+      action: 'ask',
+      valid: false,
+    });
+    expect(resolveArticleChatContext('', published)).toEqual({
+      action: 'ask',
+      valid: true,
     });
   });
 });

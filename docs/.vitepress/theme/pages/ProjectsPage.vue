@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ArrowUpRight, Boxes, Code2, Command, Layers3, Smartphone } from '@lucide/vue';
 import { computed, ref } from 'vue';
+import CompactPageHeader from '../components/CompactPageHeader.vue';
 
 // Canonical repository URLs are recorded in the README and verified against GitHub.
 const projects = [
@@ -17,10 +18,14 @@ const filtered = computed(() => projects.filter((project) => category.value === 
 
 <template>
   <main class="site-container listing-page__main projects-page">
-    <header class="listing-header">
-      <div><p class="technical-label">公开构建 · 实践积累</p><h1>开源项目</h1><p>把想法做成工具，把经验留在代码里。</p></div>
-      <dl class="listing-header__stats"><div><dt>精选仓库</dt><dd>{{ projects.length }}</dd></div></dl>
-    </header>
+    <CompactPageHeader
+      description="把想法做成工具，把经验留在代码里。"
+      eyebrow="公开构建 · 实践积累"
+      title="开源项目"
+      :stats="[
+        { label: '精选仓库', value: projects.length, mobilePrimary: true },
+      ]"
+    />
     <section class="article-filters" aria-label="项目筛选">
       <div class="article-filters__categories" role="group" aria-label="项目分类">
         <button v-for="item in categories" :key="item" class="filter-button" :class="{ 'filter-button--active': category === item }" :aria-pressed="category === item" @click="category = item">{{ item }}</button>

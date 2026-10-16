@@ -9,6 +9,7 @@ import {
 import { computed } from 'vue';
 import { withBase } from 'vitepress';
 import { data as content } from '../../data/content.data';
+import CompactPageHeader from '../components/CompactPageHeader.vue';
 
 const columns = computed(() =>
   [...content.columns].sort(
@@ -25,28 +26,23 @@ const totalChapters = computed(() =>
 <template>
   <div class="listing-page columns-page">
     <main class="site-container listing-page__main">
-      <header class="listing-header">
-        <div>
-          <p class="technical-label">系统学习 · 逐章实践</p>
-          <h1>专题教程</h1>
-          <p>按章节推进的系统学习路径，从基础概念走到完整项目。</p>
+      <CompactPageHeader
+        description="按章节推进的系统学习路径，从基础概念走到完整项目。"
+        eyebrow="系统学习 · 逐章实践"
+        title="专题教程"
+        :stats="[
+          { label: '专题', value: content.columns.length, mobilePrimary: true },
+          { label: '章节', value: totalChapters },
+        ]"
+      >
+        <template #context>
           <a class="listing-header__context-link" :href="withBase('/blog/')">
             <FileText :size="16" aria-hidden="true" />
             随笔与实践复盘请前往博客
             <ArrowRight :size="15" aria-hidden="true" />
           </a>
-        </div>
-        <dl class="listing-header__stats">
-          <div>
-            <dt>专题</dt>
-            <dd>{{ content.columns.length }}</dd>
-          </div>
-          <div>
-            <dt>章节</dt>
-            <dd>{{ totalChapters }}</dd>
-          </div>
-        </dl>
-      </header>
+        </template>
+      </CompactPageHeader>
 
       <section class="column-grid" aria-label="专栏列表">
         <article

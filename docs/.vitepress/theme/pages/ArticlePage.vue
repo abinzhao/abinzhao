@@ -30,10 +30,20 @@ import {
   calculateReadingProgress,
   selectActiveHeading,
 } from '../composables/visual-effects';
+import ArticleAskMenu from '../components/ArticleAskMenu.vue';
 
 const route = useRoute();
 const { frontmatter } = useData();
 const contentHref = computed(() => normalizeContentHref(route.path));
+const allArticles = [
+  ...content.blogArticles,
+  ...content.columns.flatMap((column) => column.articles),
+];
+const currentArticle = computed(() =>
+  allArticles.find(
+    (article) => normalizeContentHref(article.href) === contentHref.value,
+  ),
+);
 const tags = computed(() =>
   Array.isArray(frontmatter.value.tags)
     ? frontmatter.value.tags.filter((item): item is string => typeof item === 'string')
@@ -99,7 +109,7 @@ function updateReadingState(): void {
       id: heading.id,
       top: heading.getBoundingClientRect().top,
     })),
-    156,
+    88,
   );
 }
 
@@ -165,17 +175,21 @@ onBeforeUnmount(() => {
             {{ frontmatter.date }}
           </time>
           <span v-if="series.column"><BookOpen :size="14" aria-hidden="true" /> 系列文章</span>
+          <span v-for="item in tags" :key="item" class="reading-header__tag">
+            <Tag :size="13" aria-hidden="true" />
+            {{ item }}
+          </span>
         </div>
-        <p class="technical-label">
-          {{ isSeriesArticle ? '课程章节 · 循序学习' : '独立笔记 · 阅读模式' }}
-        </p>
-        <h1>{{ frontmatter.title }}</h1>
+        <div class="reading-header__title-row">
+          <h1>{{ frontmatter.title }}</h1>
+          <ArticleAskMenu
+            v-if="currentArticle"
+            :article-href="currentArticle.href"
+          />
+        </div>
         <p v-if="frontmatter.description" class="reading-header__description">
           {{ frontmatter.description }}
         </p>
-        <div v-if="tags.length" class="reading-header__tags">
-          <span v-for="item in tags" :key="item"><Tag :size="13" aria-hidden="true" /> {{ item }}</span>
-        </div>
       </header>
 
       <div class="reading-layout">

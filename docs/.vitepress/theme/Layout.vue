@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
 import { Content, useData, useRoute, withBase } from 'vitepress';
 import AboutPage from './pages/AboutPage.vue';
 import ArticlePage from './pages/ArticlePage.vue';
@@ -8,13 +8,13 @@ import ColumnPage from './pages/ColumnPage.vue';
 import ColumnsIndexPage from './pages/ColumnsIndexPage.vue';
 import HomePage from './pages/HomePage.vue';
 import ProjectsPage from './pages/ProjectsPage.vue';
-import ChatPage from './pages/ChatPage.vue';
 import SiteHeader from './components/SiteHeader.vue';
 import SiteFooter from './components/SiteFooter.vue';
 import AiLauncher from './components/AiLauncher.vue';
 import AmbientField from './components/AmbientField.vue';
 import { getCustomPageKind } from './composables/page-kind';
 
+const ChatPage = defineAsyncComponent(() => import('./pages/ChatPage.vue'));
 const route = useRoute();
 const { frontmatter, page } = useData();
 const pageKind = computed(() =>
@@ -23,7 +23,13 @@ const pageKind = computed(() =>
 </script>
 
 <template>
-  <div class="site-shell" :class="{ 'site-shell--reading': pageKind === 'article' }">
+  <div
+    class="site-shell"
+    :class="{
+      'site-shell--chat': pageKind === 'chat',
+      'site-shell--reading': pageKind === 'article',
+    }"
+  >
     <a class="skip-link" href="#page-content">跳到主要内容</a>
     <AmbientField />
     <SiteHeader />
@@ -47,7 +53,7 @@ const pageKind = computed(() =>
         </div>
       </Transition>
     </div>
-    <SiteFooter />
-    <AiLauncher />
+    <SiteFooter v-if="pageKind !== 'chat'" />
+    <AiLauncher v-if="pageKind !== 'chat'" />
   </div>
 </template>

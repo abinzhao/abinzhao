@@ -7,6 +7,7 @@ body,
 html {
   background: var(--site-bg);
   scroll-behavior: smooth;
+  scroll-padding-top: var(--site-anchor-offset);
 }
 
 body {
@@ -30,8 +31,8 @@ body {
 
 .theme-toggle {
   display: inline-grid;
-  width: 44px;
-  height: 44px;
+  width: var(--site-touch-target);
+  height: var(--site-touch-target);
   place-items: center;
   border: 1px solid var(--site-border);
   border-radius: 8px;

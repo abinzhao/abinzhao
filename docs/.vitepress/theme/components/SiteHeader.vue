@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Atom, Code2, Menu, X } from '@lucide/vue';
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { useData, useRoute, withBase } from 'vitepress';
 import ThemeToggle from './ThemeToggle.vue';
 
@@ -12,6 +12,7 @@ interface NavigationItem {
 const { site } = useData();
 const route = useRoute();
 const mobileMenuOpen = ref(false);
+const menuButton = ref<HTMLButtonElement>();
 const navigation = computed(
   () => (site.value.themeConfig.nav ?? []) as NavigationItem[],
 );
@@ -24,15 +25,24 @@ function isActive(link: string): boolean {
   return normalizedLink === '/' ? normalizedPath === '/' : normalizedPath === normalizedLink || normalizedPath.startsWith(`${normalizedLink}/`);
 }
 
-function closeMobileMenu(): void {
+function closeMobileMenu(restoreFocus = false): void {
+  const wasOpen = mobileMenuOpen.value;
   mobileMenuOpen.value = false;
+
+  if (restoreFocus && wasOpen) {
+    void nextTick(() => menuButton.value?.focus());
+  }
 }
 
-watch(() => route.path, closeMobileMenu);
+function handleHeaderEscape(): void {
+  closeMobileMenu(true);
+}
+
+watch(() => route.path, () => closeMobileMenu());
 </script>
 
 <template>
-  <header class="site-header">
+  <header class="site-header" @keydown.esc="handleHeaderEscape">
     <div class="site-header__frame">
       <a class="site-brand" :href="withBase('/')">
         <span class="site-brand__mark" aria-hidden="true">
@@ -66,12 +76,13 @@ watch(() => route.path, closeMobileMenu);
         </a>
         <ThemeToggle />
         <button
+          ref="menuButton"
           class="site-menu-button"
           type="button"
           :aria-expanded="mobileMenuOpen"
+          aria-controls="site-mobile-nav"
           aria-label="切换导航菜单"
           @click="mobileMenuOpen = !mobileMenuOpen"
-          @keydown.esc="closeMobileMenu"
         >
           <X v-if="mobileMenuOpen" :size="20" aria-hidden="true" />
           <Menu v-else :size="20" aria-hidden="true" />
@@ -80,7 +91,12 @@ watch(() => route.path, closeMobileMenu);
     </div>
 
     <Transition name="mobile-nav">
-      <nav v-if="mobileMenuOpen" class="site-mobile-nav" aria-label="移动端主导航">
+      <nav
+        v-if="mobileMenuOpen"
+        id="site-mobile-nav"
+        class="site-mobile-nav"
+        aria-label="移动端主导航"
+      >
         <a
           v-for="item in navigation"
           :key="item.link"
@@ -88,7 +104,7 @@ watch(() => route.path, closeMobileMenu);
           class="site-mobile-nav__link"
           :href="withBase(item.link)"
           :aria-current="isActive(item.link) ? 'page' : undefined"
-          @click="closeMobileMenu"
+          @click="closeMobileMenu()"
         >
           {{ item.text }}
         </a>

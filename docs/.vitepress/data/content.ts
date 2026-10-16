@@ -32,6 +32,12 @@ export interface ContentIndex {
   columns: Column[];
 }
 
+export interface PublishedArticleSource {
+  article: Article;
+  filePath: string;
+  markdown: string;
+}
+
 type Frontmatter = Record<string, unknown>;
 
 function asRecord(value: unknown): Frontmatter {
@@ -93,12 +99,15 @@ async function readMarkdownFiles(directory: string): Promise<string[]> {
     .map((entry) => join(directory, entry.name));
 }
 
-async function readArticle(
+async function readArticleSource(
   filePath: string,
   href: string,
   column?: string,
-): Promise<Article | undefined> {
-  return createArticle(await readFile(filePath, 'utf8'), href, column);
+): Promise<PublishedArticleSource | undefined> {
+  const markdown = await readFile(filePath, 'utf8');
+  const article = createArticle(markdown, href, column);
+
+  return article ? { article, filePath, markdown } : undefined;
 }
 
 function sortByPublishedDate(left: Article, right: Article): number {
@@ -112,15 +121,25 @@ function sortBySeriesOrder(left: Article, right: Article): number {
   );
 }
 
-export async function createContentIndex(contentRoot: string): Promise<ContentIndex> {
+interface LoadedContent {
+  blogSources: PublishedArticleSource[];
+  columns: Array<{
+    column: Column;
+    sources: PublishedArticleSource[];
+  }>;
+}
+
+async function loadContent(contentRoot: string): Promise<LoadedContent> {
   const blogFiles = await readMarkdownFiles(join(contentRoot, 'blog'));
-  const blogArticles = (
+  const blogSources = (
     await Promise.all(
       blogFiles.map((filePath) =>
-        readArticle(filePath, `/blog/${basename(filePath, '.md')}.html`),
+        readArticleSource(filePath, `/blog/${basename(filePath, '.md')}.html`),
       ),
     )
-  ).filter((article): article is Article => article !== undefined);
+  )
+    .filter((source): source is PublishedArticleSource => source !== undefined)
+    .sort((left, right) => sortByPublishedDate(left.article, right.article));
 
   const columnsDirectory = join(contentRoot, 'columns');
   const columnDirectories = await readdir(columnsDirectory, { withFileTypes: true }).catch(() => []);
@@ -128,11 +147,12 @@ export async function createContentIndex(contentRoot: string): Promise<ContentIn
     await Promise.all(
       columnDirectories
         .filter((entry) => entry.isDirectory())
-        .map(async (entry): Promise<Column | undefined> => {
+        .map(async (entry): Promise<LoadedContent['columns'][number] | undefined> => {
           const slug = entry.name;
           const directory = join(columnsDirectory, slug);
           const indexPath = join(directory, 'index.md');
-          const { data } = matter(await readFile(indexPath, 'utf8'));
+          const indexSource = await readFile(indexPath, 'utf8').catch(() => '');
+          const { data } = matter(indexSource);
           const frontmatter = asRecord(data);
           const title = asString(frontmatter.title);
 
@@ -146,7 +166,7 @@ export async function createContentIndex(contentRoot: string): Promise<ContentIn
           const articles = (
             await Promise.all(
               articleFiles.map((filePath) =>
-                readArticle(
+                readArticleSource(
                   filePath,
                   `/columns/${slug}/${basename(filePath, '.md')}.html`,
                   slug,
@@ -154,23 +174,45 @@ export async function createContentIndex(contentRoot: string): Promise<ContentIn
               ),
             )
           )
-            .filter((article): article is Article => article !== undefined)
-            .sort(sortBySeriesOrder);
+            .filter((source): source is PublishedArticleSource => source !== undefined)
+            .sort((left, right) => sortBySeriesOrder(left.article, right.article));
 
           return {
-            articles,
-            description: asString(frontmatter.description),
-            featured: frontmatter.featured === true,
-            href: `/columns/${slug}/`,
-            slug,
-            status: asString(frontmatter.status),
-            title,
+            column: {
+              articles: articles.map(({ article }) => article),
+              description: asString(frontmatter.description),
+              featured: frontmatter.featured === true,
+              href: `/columns/${slug}/`,
+              slug,
+              status: asString(frontmatter.status),
+              title,
+            },
+            sources: articles,
           };
         }),
     )
-  ).filter((column): column is Column => column !== undefined);
+  ).filter((column): column is LoadedContent['columns'][number] => column !== undefined);
 
-  const sortedBlogArticles = blogArticles.sort(sortByPublishedDate);
+  return {
+    blogSources,
+    columns: columns.sort((left, right) => left.column.title.localeCompare(right.column.title)),
+  };
+}
+
+export async function loadPublishedArticleSources(
+  contentRoot: string,
+): Promise<PublishedArticleSource[]> {
+  const content = await loadContent(contentRoot);
+  return [
+    ...content.blogSources,
+    ...content.columns.flatMap(({ sources }) => sources),
+  ];
+}
+
+export async function createContentIndex(contentRoot: string): Promise<ContentIndex> {
+  const content = await loadContent(contentRoot);
+  const sortedBlogArticles = content.blogSources.map(({ article }) => article);
+
   const blogTags = [...new Set(sortedBlogArticles.flatMap((article) => article.tags))].sort();
   const blogCategories = [
     ...new Set(
@@ -182,6 +224,6 @@ export async function createContentIndex(contentRoot: string): Promise<ContentIn
     blogArticles: sortedBlogArticles,
     blogCategories,
     blogTags,
-    columns: columns.sort((left, right) => left.title.localeCompare(right.title)),
+    columns: content.columns.map(({ column }) => column),
   };
 }

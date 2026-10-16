@@ -1,71 +1,96 @@
 import { describe, expect, test } from 'vitest';
 import {
-  buildKnowledgeReply,
-  normalizeModelEndpoint,
-  readCompletionStream,
-  restoreConversations,
+  createConversation,
+  exportConversationMarkdown,
+  type Conversation,
 } from '../docs/.vitepress/theme/composables/chat';
 
-describe('site knowledge and model conversations', () => {
-  const documents = [
-    { title: 'CSS 布局', description: '盒模型、弹性布局与网格布局', href: '/css.html', tags: ['CSS'] },
-    { title: '本地优先的智能体', description: '隐私与模型接口', href: '/agent.html', tags: ['智能体'] },
-  ];
-
-  test('retrieves relevant sources and admits when the site has no answer', () => {
-    const reply = buildKnowledgeReply('CSS 布局怎么学习', documents);
-    expect(reply.sources.map((source) => source.href)).toEqual(['/css.html']);
-    expect(reply.text).toContain('盒模型');
-    expect(buildKnowledgeReply('烘焙面包', documents).sources).toHaveLength(0);
-  });
-
-  test('normalizes compatible API bases and rejects credentials and unsafe schemes', () => {
-    expect(normalizeModelEndpoint('http://localhost:11434/v1/')).toBe('http://localhost:11434/v1/chat/completions');
-    expect(normalizeModelEndpoint('https://example.com/v1/chat/completions')).toBe('https://example.com/v1/chat/completions');
-    expect(() => normalizeModelEndpoint('javascript:alert(1)')).toThrow();
-    expect(() => normalizeModelEndpoint('http://example.com/v1')).toThrow();
-    expect(() => normalizeModelEndpoint('https://user:password@example.com/v1')).toThrow();
-  });
-
-  test('parses UTF-8 and SSE events split across arbitrary network chunks', async () => {
-    const bytes = new TextEncoder().encode(
-      'data: {"choices":[{"delta":{"content":"你好"}}]}\r\n\r\n' +
-      'data: {"choices":[{"delta":{"content":"，世界"}}]}\n\n' +
-      'data: [DONE]\n\n',
-    );
-    const stream = new ReadableStream<Uint8Array>({
-      start(controller) {
-        for (let index = 0; index < bytes.length; index += 7) {
-          controller.enqueue(bytes.slice(index, index + 7));
-        }
-        controller.close();
-      },
+describe('local chat protocol', () => {
+  test('creates an isolated local conversation with the selected scope', () => {
+    expect(createConversation('session-1', 100)).toEqual({
+      id: 'session-1',
+      messages: [],
+      scope: 'site',
+      title: '新会话',
+      updatedAt: 100,
     });
-    let text = '';
-    await readCompletionStream(stream, (chunk) => { text += chunk; });
-    expect(text).toBe('你好，世界');
-  });
-
-  test('reports API errors and interrupted streams instead of silently succeeding', async () => {
-    const stream = (text: string) => new ReadableStream<Uint8Array>({
-      start(controller) {
-        controller.enqueue(new TextEncoder().encode(text));
-        controller.close();
-      },
+    expect(
+      createConversation(
+        'session-2',
+        200,
+        'article',
+        '/blog/local-first-agent.html',
+      ),
+    ).toEqual({
+      articleId: '/blog/local-first-agent.html',
+      id: 'session-2',
+      messages: [],
+      scope: 'article',
+      title: '新会话',
+      updatedAt: 200,
     });
-    await expect(readCompletionStream(stream('data: {"error":{"message":"private provider detail"}}\n\n'), () => {})).rejects.toThrow('模型服务');
-    await expect(readCompletionStream(stream('data: {"choices":[{"delta":{"content":"部分"}}]}\n\n'), () => {})).rejects.toThrow('中断');
   });
 
-  test('validates saved history and recovers interrupted generation without restoring credentials', () => {
-    expect(restoreConversations('broken')).toEqual([]);
-    expect(restoreConversations(JSON.stringify([{ id: 'bad', messages: [null] }]))).toEqual([]);
-    const sessions = restoreConversations(JSON.stringify([{
-      id: 'session', title: '问题', mode: 'model', updatedAt: 100,
-      apiKey: 'do-not-restore',
-      messages: [{ id: 'message', role: 'assistant', content: '部分回答', status: 'streaming' }],
-    }]));
-    expect(sessions[0].messages[0].status).toBe('stopped');
-    expect(sessions[0]).not.toHaveProperty('apiKey');
+  test('exports visible local and legacy history without hidden state', () => {
+    const conversation: Conversation = {
+      id: 'session',
+      legacyRecord: true,
+      messages: [
+        {
+          content: 'CSS 布局怎么学',
+          id: 'user',
+          role: 'user',
+          status: 'complete',
+        },
+        {
+          content: '旧回答',
+          id: 'legacy',
+          legacyRecord: true,
+          role: 'assistant',
+          status: 'complete',
+        },
+        {
+          content: '本地回答',
+          id: 'local',
+          role: 'assistant',
+          status: 'complete',
+          reply: {
+            blocks: [{
+              heading: '相关资料',
+              items: [{
+                sourceIds: ['flex'],
+                text: 'Flexbox 控制一行或一列内元素的排布。',
+              }],
+              kind: 'list',
+            }],
+            confidence: { level: 'high', reasons: [], score: 0.8 },
+            intent: 'lookup',
+            nextContext: {
+              entities: ['Flexbox'],
+              intent: 'lookup',
+              scope: 'site',
+              sourceIds: ['flex'],
+            },
+            sources: [{
+              href: '/columns/fullstack-development/03-box-model-layout.html#flexbox',
+              id: 'flex',
+              title: '现代 CSS 布局',
+            }],
+          },
+        },
+      ],
+      scope: 'site',
+      title: 'CSS 布局',
+      updatedAt: 100,
+    };
+    const markdown = exportConversationMarkdown(conversation);
+
+    expect(markdown).toContain('## 我');
+    expect(markdown).toContain('## 助手（旧版记录）');
+    expect(markdown).toContain('可信度：高');
+    expect(markdown).toContain('Flexbox 控制一行或一列内元素的排布。');
+    expect(markdown).toContain('/columns/fullstack-development/03-box-model-layout.html#flexbox');
+    expect(markdown).not.toContain('sourceIds');
+    expect(markdown).not.toContain('nextContext');
   });
 });

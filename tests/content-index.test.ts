@@ -2,7 +2,10 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
-import { createContentIndex } from '../docs/.vitepress/data/content';
+import {
+  createContentIndex,
+  loadPublishedArticleSources,
+} from '../docs/.vitepress/data/content';
 
 let fixtureRoot = '';
 
@@ -98,5 +101,22 @@ describe('content index', () => {
     ]);
     expect(index.blogTags).toEqual(['GitHub Pages', 'VitePress']);
     expect(index.blogCategories).toEqual(['工程化']);
+  });
+
+  test('shares one published article source loader without exposing source internals', async () => {
+    const sources = await loadPublishedArticleSources(fixtureRoot);
+    const index = await createContentIndex(fixtureRoot);
+
+    expect(sources.map(({ article }) => article.href)).toEqual([
+      '/blog/static-site.html',
+      '/columns/web-performance/metrics.html',
+      '/columns/web-performance/rendering.html',
+    ]);
+    expect(sources.every(({ filePath, markdown }) => filePath.endsWith('.md') && markdown.length > 0)).toBe(true);
+
+    const publicIndex = JSON.stringify(index);
+    expect(publicIndex).not.toContain(fixtureRoot);
+    expect(publicIndex).not.toContain('# 静态站点架构');
+    expect(publicIndex).not.toContain('"markdown"');
   });
 });

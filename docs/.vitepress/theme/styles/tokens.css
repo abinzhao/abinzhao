@@ -22,6 +22,10 @@
   --radius-card: 18px;
   --radius-panel: 22px;
   --site-ease: cubic-bezier(0.22, 0.8, 0.24, 1);
+  --site-nav-height: 56px;
+  --site-touch-target: 44px;
+  --site-page-top: 28px;
+  --site-anchor-offset: 88px;
 
   --vp-c-bg: var(--site-bg);
   --vp-c-bg-alt: var(--site-bg-soft);
