@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
+import { parse } from 'yaml';
 
 const projectRoot = resolve(import.meta.dirname, '..');
 
@@ -34,5 +35,14 @@ describe('verification configuration', () => {
       expect(index).toBeGreaterThan(previousIndex);
       previousIndex = index;
     }
+  });
+
+  test('checks pull requests with read-only permissions and no publishing job', async () => {
+    const workflow = parse(await readFile(resolve(projectRoot, '.github/workflows/check-pr.yml'), 'utf8'));
+    expect(workflow.on).toEqual({ pull_request: { branches: ['master'] } });
+    expect(workflow.permissions).toEqual({ contents: 'read' });
+    expect(Object.keys(workflow.jobs)).toEqual(['verify']);
+    const steps = workflow.jobs.verify.steps.map((step: { run?: string }) => step.run).filter(Boolean);
+    expect(steps).toEqual(['pnpm install --frozen-lockfile', 'pnpm check', 'pnpm test', 'pnpm exec playwright install --with-deps chromium', 'pnpm test:e2e', 'pnpm build']);
   });
 });

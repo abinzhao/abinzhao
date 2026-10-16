@@ -1,19 +1,19 @@
 profile:
   name: 阿斌
   handle: "@abinzhao"
-  role: 鸿蒙开发者 / 前端工具构建者 / 智能体探索者
+  role: 全栈工程师 / 独立开发者 / 智能体工具构建者
   location: 中国 · 杭州
   avatar: https://copilot-cn.bytedance.net/api/ide/v1/tool_text_to_image?prompt=Website%20profile%20avatar%3A%20an%20anonymous%20Asian%20software%20engineer%20in%20a%20dark%20studio%2C%20side%20profile%20at%20a%20computer%20showing%20code%2C%20editorial%20photography%2C%20teal%20monitor%20light%2C%20deep%20navy%20background%2C%20square%20professional%20avatar%2C%20no%20text%2C%20not%20a%20recognizable%20person&image_size=square_hd
-  status: 探索鸿蒙、前端工程与智能体开发工作流
-  intro: 独立开发者，写博客、做开源、探索技术边界
-  description: 构建可靠的开发者工具、可维护的跨端体验与智能工程工作流。用博客与开源项目记录每一步探索。
+  status: 持续构建本地优先的工具与智能体
+  intro: 从界面到系统，把想法写成可靠的软件。
+  description: 全栈工程师与独立开发者。写可维护的前端，设计可验证的服务，构建用户可控的智能体。源码公开，经验成文。
   metrics:
-    - value: "3"
+    - value: "4"
       label: 系统专题
-    - value: "5"
+    - value: "12"
       label: 开源仓库
-    - value: "100%"
-      label: 静态部署
+    - value: "10"
+      label: 技术博客
 actions:
   primary:
     label: 阅读博客
@@ -24,29 +24,32 @@ actions:
 terminal:
   label: 开发工作台
   lines:
-    - "// 把想法变成可验证的作品"
-    - "学习方向：鸿蒙开发、前端工程、智能体"
-    - ""
-    - "理解问题 → 划定边界"
-    - "实现功能 → 验证体验"
-    - "公开代码 → 沉淀方法"
-    - ""
-    - "每次前进一步，持续记录与迭代。"
-  footer: 保持专注，持续构建。
+    - "// developer.ts · 每一次构建，都有迹可循"
+    - "export const developer = {"
+    - "  name: '阿斌',"
+    - "  stack: ['TypeScript', 'Rust', 'ArkTS'],"
+    - "  focus: 'Local-first Agent Harness',"
+    - "  principles: {"
+    - "    privacy: 'by design',"
+    - "    quality: 'verified',"
+    - "    source: 'open',"
+    - "  },"
+    - "} as const;"
+  footer: 让代码可读，让结果可验证。
 modules:
   - icon: book
     title: 技术博客
-    description: 鸿蒙开发、工程化与工具实践
+    description: 架构、数据、性能与全栈工程实践
     meta: 持续更新
     link: /blog/
   - icon: graduation
     title: 系列专栏
-    description: 以问题为线索的长期知识沉淀
+    description: 从 Web 基础到 Agent Harness 完整项目
     meta: 深度写作
     link: /columns/
   - icon: rocket
     title: 开源项目
-    description: 从命令行工具到跨端应用的公开实验
+    description: 检索全部公开仓库，直接阅读源码
     meta: GitHub 公开
     link: /projects/
   - icon: fingerprint

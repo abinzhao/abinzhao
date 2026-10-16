@@ -1,5 +1,5 @@
 ---
 layout: chat
-title: 智能问答
-description: 完全在浏览器本地检索站内已发布内容，回答附带可追溯来源。
+title: AI 助手
+description: 在浏览器本地检索站内资料，可按需加载 WebLLM 模型，问题与会话保留在本机。
 ---

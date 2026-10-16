@@ -107,6 +107,34 @@ test.describe('mobile layout density', () => {
     await expectNoHorizontalOverflow(page);
   });
 
+  test('folds the terminal and shows modules and a recent article in the first viewport', async ({ page }) => {
+    await page.goto('');
+    expect((await page.locator('.home-section--modules').boundingBox())?.y).toBeLessThanOrEqual(600);
+    expect((await page.locator('.home-section--articles .article-card').first().boundingBox())?.y).toBeLessThan(844);
+    const toggle = page.getByRole('button', { name: '展开开发终端' });
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.locator('.terminal-window__code')).not.toBeVisible();
+    await toggle.click();
+    await expect(page.locator('.terminal-window__code')).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+  });
+
+  test('opens the article outline before the body and returns focus with Escape', async ({ page }) => {
+    await page.goto('columns/fullstack-development/00-web-foundations.html');
+    const toggle = page.getByRole('button', { name: '打开本页目录' });
+    expect((await toggle.boundingBox())?.y).toBeLessThan(380);
+    await toggle.click();
+    const dialog = page.getByRole('dialog', { name: '本页目录' });
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(dialog).not.toBeVisible();
+    await expect(toggle).toBeFocused();
+    await toggle.click();
+    await dialog.getByRole('link').first().click();
+    await expect(dialog).not.toBeVisible();
+    await expectNoHorizontalOverflow(page);
+  });
+
   test('keeps all top-level page families within the mobile viewport', async ({ page }) => {
     for (const path of ['columns/', 'projects/', 'about', 'not-found-layout-check']) {
       await page.goto(path);

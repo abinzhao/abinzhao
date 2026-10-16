@@ -13,7 +13,7 @@ import { withBase } from 'vitepress';
       <a :href="withBase('/blog/')">博客</a>
       <a :href="withBase('/columns/')">专题教程</a>
       <a :href="withBase('/projects/')">开源项目</a>
-      <a :href="withBase('/chat/')">智能问答</a>
+      <a :href="withBase('/chat/')">AI 助手</a>
       <a href="https://github.com/abinzhao" target="_blank" rel="noopener noreferrer">GitHub <ArrowUpRight :size="14" aria-hidden="true" /></a>
     </nav>
     <p class="site-footer__note">© {{ new Date().getFullYear() }} 阿斌 · 用 VitePress 构建 · 会话保存在本机</p>

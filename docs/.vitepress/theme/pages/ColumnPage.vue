@@ -51,9 +51,9 @@ const column = computed(() =>
                 <h3><a :href="withBase(article.href)">{{ article.title }}</a></h3>
                 <span>{{ article.description }}</span>
               </div>
-              <a class="column-reading-chapters__link" :href="withBase(article.href)">
+              <span class="column-reading-chapters__link" aria-hidden="true">
                 开始阅读 <ArrowRight :size="17" />
-              </a>
+              </span>
             </li>
           </ol>
         </section>

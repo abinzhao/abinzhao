@@ -6,7 +6,9 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "ES2022",
-    "types": ["node"]
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node", "vitepress/client"]
   },
-  "include": [".vitepress/**/*.ts", ".vitepress/**/*.vue"]
+  "include": [".vitepress/**/*.ts", ".vitepress/**/*.vue"],
+  "exclude": [".vitepress/theme/assistant/*.worker.ts", ".vitepress/dist", ".vitepress/cache"]
 }

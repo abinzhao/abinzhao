@@ -1,13 +1,9 @@
 <script setup lang="ts">
 import {
-  Check,
-  Clock3,
-  Copy,
   Download,
   History,
   Menu,
   Plus,
-  Send,
   Sparkles,
 } from '@lucide/vue';
 import {
@@ -16,21 +12,23 @@ import {
   onBeforeUnmount,
   onMounted,
   ref,
+  watch,
 } from 'vue';
-import { withBase } from 'vitepress';
 import { data as content } from '../../data/content.data';
-import ChatAnswer from '../components/ChatAnswer.vue';
+import AssistantComposer from '../components/AssistantComposer.vue';
+import AssistantMessage from '../components/AssistantMessage.vue';
+import AssistantStatus from '../components/AssistantStatus.vue';
 import ChatQuickActions from '../components/ChatQuickActions.vue';
 import ChatSessionList from '../components/ChatSessionList.vue';
+import ModelSetup from '../components/ModelSetup.vue';
 import {
   createConversation,
   exportConversationMarkdown,
-  loadConversationStorage,
-  persistConversationEnvelope,
   type ChatMessage,
   type Conversation,
-  type ConversationEnvelopeV2,
 } from '../composables/chat';
+import { createAssistantStorage, type ConversationEnvelopeV3 } from '../assistant/storage';
+import { useAssistant } from '../composables/use-assistant';
 import {
   resolveArticleChatContext,
   type ArticleChatAction,
@@ -45,7 +43,7 @@ import {
   type KnowledgeScope,
   type QuickAction,
 } from '../composables/local-assistant';
-import { createKnowledgeSearchRuntime } from '../composables/knowledge-search';
+import { createBrowserKnowledgeSearch } from '../assistant/knowledge-client';
 
 const allArticles = [
   ...content.blogArticles,
@@ -53,7 +51,9 @@ const allArticles = [
 ];
 const publishedArticleHrefs = new Set(allArticles.map((article) => article.href));
 const articleTitles = new Map(allArticles.map((article) => [article.href, article.title]));
-const searchRuntime = createKnowledgeSearchRuntime();
+const searchRuntime = createBrowserKnowledgeSearch();
+const storage = createAssistantStorage(publishedArticleHrefs);
+const assistant = useAssistant();
 
 const conversations = ref<Conversation[]>([]);
 const activeId = ref<string | null>(null);
@@ -66,14 +66,26 @@ const copied = ref('');
 const selectedAction = ref<QuickAction>('lookup');
 const actionOverride = ref<QuickAction>();
 const selectedScope = ref<KnowledgeScope>('site');
+const modelEnabled = ref(false);
 const currentArticleId = ref<string>();
 const indexStatus = ref<'idle' | 'loading' | 'ready' | 'error'>('idle');
 const thread = ref<HTMLElement>();
-const textarea = ref<HTMLTextAreaElement>();
+const composer = ref<InstanceType<typeof AssistantComposer>>();
+const showLatest = ref(false);
 const historyDialog = ref<HTMLDialogElement>();
 const historyTrigger = ref<HTMLButtonElement>();
 let copyTimer: ReturnType<typeof setTimeout> | undefined;
 let alive = true;
+let requestSerial = 0;
+let saveTimer: ReturnType<typeof setTimeout> | undefined;
+let storageReady = false;
+function updateViewport(): void {
+  const viewport = window.visualViewport;
+  // 缩放时保留阅读比例；仅处理键盘引起的可视区域变化。
+  if (viewport && viewport.scale === 1) {
+    document.documentElement.style.setProperty('--assistant-viewport-height', `${viewport.height}px`);
+  }
+}
 
 const current = computed(() =>
   conversations.value.find((session) => session.id === activeId.value),
@@ -83,12 +95,6 @@ const hasArticleScope = computed(() => Boolean(currentArticleId.value));
 const currentArticleTitle = computed(() =>
   currentArticleId.value ? articleTitles.get(currentArticleId.value) : undefined,
 );
-const indexStatusText = computed(() => {
-  if (indexStatus.value === 'loading') return '正在准备本地知识库…';
-  if (indexStatus.value === 'error') return '本地知识库加载失败';
-  if (pending.value) return '正在检索站内资料…';
-  return '完全本地 · 内容不上传';
-});
 
 function uid(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
@@ -97,24 +103,28 @@ function uid(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-function createEnvelope(): ConversationEnvelopeV2 {
+function createEnvelope(): ConversationEnvelopeV3 {
   return {
     activeConversationId: activeId.value,
     conversations: conversations.value.slice(0, 30),
-    migration: {
-      completedAt: migrationCompletedAt.value,
-      v1Completed: true,
-    },
-    version: 2,
+    migrationCompletedAt: migrationCompletedAt.value,
+    draft: input.value,
+    version: 3,
   };
 }
 
 function persist(): void {
-  if (!persistConversationEnvelope(localStorage, createEnvelope())) {
-    storageNotice.value =
-      '浏览器无法保存会话，刷新后记录可能丢失。你仍可导出当前会话。';
-  }
+  clearTimeout(saveTimer);
+  if (!storageReady) return;
+  void storage.save(createEnvelope()).then((result) => {
+    if (alive) storageNotice.value = result.warning ?? '';
+  });
 }
+function scheduleSave(): void {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(persist, 350);
+}
+watch(input, scheduleSave);
 
 function createSession(): Conversation {
   const session = createConversation(
@@ -126,7 +136,7 @@ function createSession(): Conversation {
   conversations.value.unshift(session);
   conversations.value = conversations.value.slice(0, 30);
   activeId.value = session.id;
-  return session;
+  return conversations.value[0];
 }
 
 function newConversation(): void {
@@ -135,7 +145,8 @@ function newConversation(): void {
   input.value = '';
   notice.value = '';
   closeHistory();
-  void nextTick(() => textarea.value?.focus());
+  persist();
+  void nextTick(() => composer.value?.focus());
 }
 
 function selectSession(session: Conversation): void {
@@ -145,6 +156,7 @@ function selectSession(session: Conversation): void {
   currentArticleId.value = session.articleId;
   notice.value = '';
   closeHistory();
+  persist();
   scrollToLatest(true);
 }
 
@@ -156,11 +168,12 @@ function deleteSession(session: Conversation): void {
 }
 
 function updateScope(scope: KnowledgeScope): void {
+  if (pending.value) return;
   selectedScope.value = scope;
   if (current.value) {
     current.value.scope = scope;
     current.value.articleId = scope === 'article' ? currentArticleId.value : undefined;
-    current.value.context = undefined;
+    current.value.context = { entities: [], intent: 'lookup', scope, sourceIds: [] };
     current.value.updatedAt = Date.now();
     persist();
   }
@@ -174,8 +187,9 @@ function scrollToLatest(force = false): void {
   if (force || nearBottom) {
     void nextTick(() => {
       if (thread.value) thread.value.scrollTop = thread.value.scrollHeight;
+      showLatest.value = false;
     });
-  }
+  } else showLatest.value = true;
 }
 
 function deriveLegacyContext(session: Conversation): ChatContext | undefined {
@@ -195,7 +209,7 @@ function deriveLegacyContext(session: Conversation): ChatContext | undefined {
 
 function assistantMessageContent(reply: Awaited<ReturnType<typeof answerQuestion>>): string {
   if (reply.confidence.level === 'insufficient') {
-    return '本站暂时没有足够资料回答这个问题。';
+    return reply.blocks[0]?.heading ?? '本站暂时没有足够资料回答这个问题。';
   }
   if (reply.clarification?.length) {
     return reply.blocks[0]?.heading ?? '你更想了解哪一部分？';
@@ -213,14 +227,29 @@ async function send(
     notice.value = '问题请控制在 4000 字以内。';
     return;
   }
+  if (!current.value && conversations.value.length >= 30) {
+    notice.value = '已达 30 个会话，请导出并整理历史后新建会话。';
+    return;
+  }
 
   const session = current.value ?? createSession();
-  if (session.messages.length >= 100) {
+  if (session.messages.length > 98) {
     notice.value = '当前会话已达 100 条消息，请开启新会话。';
     return;
   }
 
   const previousContext = deriveLegacyContext(session);
+  const history = session.messages.filter((message) => message.status === 'complete').map((message) => ({
+    role: message.role, content: message.content,
+  }));
+  const requestId = ++requestSerial;
+  const snapshot = Object.freeze({
+    requestId: String(requestId),
+    conversationId: session.id,
+    question: trimmedQuestion,
+    articleId: selectedScope.value === 'article' ? currentArticleId.value : undefined,
+    scope: selectedScope.value,
+  });
   session.scope = selectedScope.value;
   session.articleId =
     selectedScope.value === 'article' ? currentArticleId.value : undefined;
@@ -233,6 +262,8 @@ async function send(
   });
   if (session.title === '新会话') session.title = trimmedQuestion.slice(0, 28);
   session.updatedAt = Date.now();
+  session.messages.push({ id: uid(), role: 'assistant', content: '', status: 'streaming', createdAt: Date.now() });
+  const output = session.messages[session.messages.length - 1];
   input.value = '';
   notice.value = '';
   pending.value = true;
@@ -240,49 +271,64 @@ async function send(
   scrollToLatest(true);
 
   try {
-    const reply = await answerQuestion({
+    const result = await assistant.run({
       action,
-      articleId: session.articleId,
+      request: snapshot,
+      modelEnabled: modelEnabled.value,
+      history,
       context: previousContext,
-      question: trimmedQuestion,
-      scope: session.scope,
       search: searchRuntime.search,
+      onEvidence: (prompt) => {
+        output.provenance = 'webllm';
+        output.citations = prompt.citations;
+      },
+      onDelta: (delta) => {
+        if (!alive || requestId !== requestSerial) return;
+        output.content += delta;
+        scheduleSave();
+        scrollToLatest();
+      },
     });
-    const message: ChatMessage = {
-      content: assistantMessageContent(reply),
-      createdAt: Date.now(),
-      id: uid(),
-      reply,
-      role: 'assistant',
-      status: 'complete',
-    };
-    session.messages.push(message);
+    if (!alive || requestId !== requestSerial || activeId.value !== snapshot.conversationId) return;
+    const { reply } = result;
+    if (result.provenance === 'webllm') {
+      Object.assign(output, {
+        content: result.text, status: result.stopped ? 'stopped' : 'complete',
+        provenance: result.provenance, citations: result.citations, versions: result.versions,
+        citationWarning: result.citationAudit.invalid.length
+          ? `回答包含未提供的引用：${result.citationAudit.invalid.join('、')}，请核对原文。`
+          : !result.citationAudit.valid.length ? '回答未引用本轮资料，请核对来源后使用。' : '模型回答可能有误，请结合来源核对。',
+      });
+      if (result.truncated) notice.value = '问题超出本地上下文预算，本轮只使用了问题开头，请缩短后重试。';
+    } else {
+      Object.assign(output, { content: assistantMessageContent(reply), reply, provenance: 'retrieval', status: 'complete' });
+    }
     if (reply.confidence.level !== 'insufficient' && !reply.clarification) {
       session.context = reply.nextContext;
     }
     session.updatedAt = Date.now();
-  } catch {
-    session.messages.push({
-      content: '本地知识库暂时无法完成检索，请重试。',
-      createdAt: Date.now(),
-      id: uid(),
-      role: 'assistant',
-      status: 'error',
-    });
-    notice.value = '本地知识库加载失败。请确认静态资源已完成加载后重试。';
+  } catch (error) {
+    if (!alive || requestId !== requestSerial) return;
+    output.status = (error as Error).name === 'AbortError' ? 'stopped' : 'error';
+    if (output.status === 'error') {
+      if (!output.content) output.content = '本地回答未完成，请重试。';
+      if (searchRuntime.loadState === 'error') indexStatus.value = 'error';
+      notice.value = error instanceof Error ? error.message : '本地回答未完成，请重试。';
+    }
   } finally {
-    pending.value = false;
-    actionOverride.value = undefined;
-    selectedAction.value = 'lookup';
-    if (alive) {
+    if (alive && requestId === requestSerial) {
+      pending.value = false;
+      actionOverride.value = undefined;
+      selectedAction.value = 'lookup';
       persist();
       scrollToLatest();
-      void nextTick(() => textarea.value?.focus());
+      void nextTick(() => composer.value?.focus());
     }
   }
 }
 
 function selectAction(action: QuickAction): void {
+  if (pending.value) return;
   selectedAction.value = action;
   actionOverride.value = action;
 }
@@ -293,8 +339,9 @@ async function runSpecial(action: 'random-topic' | 'study-task'): Promise<void> 
   try {
     const response = await searchRuntime.search(
       input.value.trim() || 'CSS HTML JavaScript TypeScript React 浏览器 工程化',
-      { limit: 40 },
+      { limit: 40, scope: selectedScope.value, documentId: selectedScope.value === 'article' ? currentArticleId.value : undefined },
     );
+    if (!alive) return;
     if (action === 'random-topic') {
       const topic = selectRandomTopic(response.results);
       pending.value = false;
@@ -302,7 +349,7 @@ async function runSpecial(action: 'random-topic' | 'study-task'): Promise<void> 
       return;
     }
 
-    const task = createStudyTask(response.results, 18);
+    const task = createStudyTask(response.results, 15);
     const topics = task.map((step) => step.title).join('、');
     pending.value = false;
     await send(
@@ -316,10 +363,7 @@ async function runSpecial(action: 'random-topic' | 'study-task'): Promise<void> 
 }
 
 async function copyMessage(message: ChatMessage): Promise<void> {
-  const replyText = message.reply?.blocks
-    .flatMap((block) => block.items.map((item) => item.text))
-    .join('\n');
-  const text = replyText || message.content;
+  const text = exportConversationMarkdown({ ...current.value!, messages: [message] });
   try {
     await navigator.clipboard.writeText(text);
     copied.value = message.id;
@@ -340,16 +384,20 @@ function exportConversation(): void {
   );
   const link = document.createElement('a');
   link.href = url;
-  link.download = '智能问答记录.md';
+  link.download = 'AI助手会话.md';
   link.click();
   URL.revokeObjectURL(url);
 }
 
-function handleEnter(event: KeyboardEvent): void {
-  if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
-    event.preventDefault();
-    void send();
+function clarify(option: string): void {
+  if (pending.value) return;
+  if (option === '切换到当前文章范围' && currentArticleId.value) updateScope('article');
+  else if (current.value?.context?.entities.includes(option)) input.value = `解释 ${option}`;
+  else {
+    input.value = '';
+    notice.value = option === '从文章页进入问答' ? '打开需要阅读的文章，选择“总结本文”进入当前文章范围。' : option;
   }
+  void nextTick(() => composer.value?.focus());
 }
 
 function openHistory(): void {
@@ -368,9 +416,19 @@ function restoreHistoryFocus(): void {
   historyTrigger.value?.focus();
 }
 
+function retryKnowledge(): void {
+  persist();
+  // 原生ESM会缓存失败的模块；新文档才能可靠重新请求失败的静态资源。
+  window.location.reload();
+}
+
 function applyArticleAction(action: ArticleChatAction): void {
   if (action === 'ask') {
-    void nextTick(() => textarea.value?.focus());
+    void nextTick(() => {
+      // 异步知识加载完成时，保留用户已经选择的控件或弹层焦点。
+      const active = document.activeElement;
+      if (!historyDialog.value?.open && (active === document.body || active?.id === 'page-content')) composer.value?.focus();
+    });
     return;
   }
 
@@ -388,14 +446,16 @@ function applyArticleAction(action: ArticleChatAction): void {
 }
 
 onMounted(async () => {
-  const restored = loadConversationStorage(
-    localStorage,
-    publishedArticleHrefs,
-  );
+  updateViewport();
+  window.visualViewport?.addEventListener('resize', updateViewport);
+  const restored = await storage.load();
+  if (!alive) return;
   conversations.value = restored.envelope.conversations;
   activeId.value = restored.envelope.activeConversationId;
-  migrationCompletedAt.value = restored.envelope.migration.completedAt;
-  storageNotice.value = restored.storageWarning ?? '';
+  migrationCompletedAt.value = restored.envelope.migrationCompletedAt;
+  input.value = restored.envelope.draft;
+  storageReady = true;
+  storageNotice.value = restored.warning ?? '';
   if (current.value) {
     selectedScope.value = current.value.scope;
     currentArticleId.value = current.value.articleId;
@@ -419,11 +479,13 @@ onMounted(async () => {
   indexStatus.value = 'loading';
   try {
     await searchRuntime.prepare();
+    if (!alive) return;
     indexStatus.value = 'ready';
     if (articleContext.valid) applyArticleAction(articleContext.action);
   } catch {
+    if (!alive) return;
     indexStatus.value = 'error';
-    notice.value = '本地知识库加载失败。刷新页面后可以重试。';
+    notice.value = '本地知识库加载失败，可以重新加载后重试。';
   }
 
   window.addEventListener('pagehide', persist);
@@ -431,9 +493,18 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   alive = false;
+  requestSerial++;
   clearTimeout(copyTimer);
+  clearTimeout(saveTimer);
+  assistant.stop();
+  searchRuntime.dispose();
+  for (const session of conversations.value) for (const message of session.messages) {
+    if (message.status === 'streaming') message.status = 'stopped';
+  }
   persist();
   window.removeEventListener('pagehide', persist);
+  window.visualViewport?.removeEventListener('resize', updateViewport);
+  document.documentElement.style.removeProperty('--assistant-viewport-height');
 });
 </script>
 
@@ -454,19 +525,16 @@ onBeforeUnmount(() => {
       <section class="chat-panel" aria-label="本地知识问答">
         <header class="chat-panel__header">
           <div class="chat-panel__identity">
-            <h1>智能问答</h1>
+            <h1>AI 助手</h1>
             <p>
-              <span class="chat-local-status" :data-status="indexStatus">
-                <Clock3 v-if="indexStatus === 'loading'" :size="14" aria-hidden="true" />
-                <Sparkles v-else :size="14" aria-hidden="true" />
-                {{ indexStatusText }}
-              </span>
+              <AssistantStatus :model="assistant.model.value.modelState" :generation="assistant.generation.value" :index="indexStatus" />
               <span v-if="currentArticleTitle" class="chat-article-context">
                 {{ currentArticleTitle }}
               </span>
             </p>
           </div>
           <div class="chat-panel__commands">
+            <ModelSetup />
             <button
               ref="historyTrigger"
               class="icon-button chat-history-trigger"
@@ -499,12 +567,18 @@ onBeforeUnmount(() => {
 
         <ChatQuickActions
           :action="selectedAction"
+          :disabled="pending"
           :has-article="hasArticleScope"
           :scope="selectedScope"
           @special="runSpecial"
           @update:action="selectAction"
           @update:scope="updateScope"
         />
+        <label class="chat-mode">
+          <input v-model="modelEnabled" type="checkbox" :disabled="pending || assistant.model.value.modelState !== 'ready'" />
+          实验生成
+          <span>{{ assistant.model.value.modelState === 'ready' ? '需核对来源；关闭时使用本地检索' : '加载模型后可开启，默认使用本地检索' }}</span>
+        </label>
 
         <div
           ref="thread"
@@ -512,7 +586,7 @@ onBeforeUnmount(() => {
           role="log"
           aria-label="对话记录"
           :aria-busy="pending"
-          aria-live="polite"
+          aria-live="off"
           aria-relevant="additions"
         >
           <div v-if="!messages.length" class="chat-welcome">
@@ -534,88 +608,30 @@ onBeforeUnmount(() => {
             </div>
           </div>
 
-          <article
+          <AssistantMessage
             v-for="message in messages"
             :key="message.id"
-            class="chat-message"
-            :class="`chat-message--${message.role}`"
-          >
-            <header>
-              <span>{{ message.role === 'user' ? '我' : '站内资料助手' }}</span>
-              <small v-if="message.legacyRecord">旧版记录</small>
-              <small v-else-if="message.status === 'error'">未完成</small>
-              <small v-else-if="message.status === 'stopped'">已停止</small>
-            </header>
-            <p v-if="message.role === 'user' || !message.reply" class="chat-message__text">
-              {{ message.content }}
-            </p>
-            <ChatAnswer
-              v-if="message.reply"
-              :reply="message.reply"
-              @clarify="send($event)"
-            />
-            <nav
-              v-else-if="message.sources?.length"
-              class="chat-answer__sources"
-              aria-label="旧版参考资料"
-            >
-              <a
-                v-for="source in message.sources"
-                :key="source.href"
-                class="chat-source-link"
-                :href="withBase(source.href)"
-              >
-                {{ source.title }}
-              </a>
-            </nav>
-            <footer v-if="message.role === 'assistant'">
-              <button
-                class="chat-text-button"
-                type="button"
-                @click="copyMessage(message)"
-              >
-                <Check v-if="copied === message.id" :size="14" aria-hidden="true" />
-                <Copy v-else :size="14" aria-hidden="true" />
-                {{ copied === message.id ? '已复制' : '复制回答' }}
-              </button>
-            </footer>
-          </article>
+            :message="message"
+            :copied="copied === message.id"
+            @copy="copyMessage(message)"
+            @clarify="clarify"
+          />
 
           <div v-if="pending" class="chat-loading" aria-hidden="true">
             <span /><span /><span />
           </div>
         </div>
 
-        <p class="sr-only" role="status" aria-live="polite">
-          {{ indexStatusText }}
-        </p>
+        <button v-if="showLatest" class="chat-latest chat-text-button" type="button" @click="scrollToLatest(true)">回到最新回答 ↓</button>
+        <p class="sr-only" role="status" aria-live="polite">{{ assistant.generation.value === 'complete' ? '回答已完成' : assistant.generation.value === 'stopped' ? '回答已停止' : '' }}</p>
         <p v-if="notice" class="chat-notice" role="alert">{{ notice }}</p>
+        <button v-if="indexStatus === 'error'" class="chat-text-button" type="button" @click="retryKnowledge">重试知识库</button>
         <p v-if="storageNotice" class="chat-notice" role="status">
           {{ storageNotice }}
         </p>
 
-        <form class="chat-composer" @submit.prevent="send()">
-          <label class="sr-only" for="chat-input">输入问题</label>
-          <textarea
-            id="chat-input"
-            ref="textarea"
-            v-model="input"
-            :disabled="pending || indexStatus === 'error'"
-            rows="1"
-            maxlength="4000"
-            placeholder="输入问题，检索本站知识…"
-            @keydown="handleEnter"
-          />
-          <button
-            class="chat-send"
-            type="submit"
-            :disabled="pending || indexStatus !== 'ready' || !input.trim()"
-            aria-label="发送问题"
-          >
-            <Send :size="18" aria-hidden="true" />
-          </button>
-          <p>回车发送，Shift + 回车换行。答案仅来自站内已发布内容。</p>
-        </form>
+        <AssistantComposer ref="composer" v-model="input" :pending="pending" :disabled="indexStatus !== 'ready'"
+          @submit="send()" @stop="assistant.stop()" />
       </section>
     </div>
 

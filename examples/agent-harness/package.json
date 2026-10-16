@@ -1,0 +1,12 @@
+{
+  "name": "local-harness-tutorial",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.0.0" },
+  "scripts": {
+    "start": "node src/cli.mjs",
+    "web": "node src/cli.mjs --web",
+    "test": "node --test test/*.test.mjs"
+  }
+}

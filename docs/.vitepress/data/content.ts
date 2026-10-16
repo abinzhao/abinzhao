@@ -1,4 +1,5 @@
 import { readdir, readFile } from 'node:fs/promises';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join, basename } from 'node:path';
 import matter from 'gray-matter';
 
@@ -70,11 +71,22 @@ function createArticle(
   const title = asString(frontmatter.title);
   const date = asDate(frontmatter.date);
 
-  if (!title || !date || frontmatter.draft === true) {
-    return undefined;
+  validateFlags(frontmatter, href);
+  if (frontmatter.draft === true) return undefined;
+  if (!title) throw new Error(`${href}: title 必须是非空字符串`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(Date.parse(date)) || new Date(date).toISOString().slice(0, 10) !== date) {
+    throw new Error(`${href}: date 必须是有效的 YYYY-MM-DD 日期`);
+  }
+  if (frontmatter.tags !== undefined && (!Array.isArray(frontmatter.tags) || frontmatter.tags.some((tag) => typeof tag !== 'string' || !tag.trim()))) {
+    throw new Error(`${href}: tags 必须是字符串数组`);
+  }
+  for (const key of ['category', 'description']) {
+    if (frontmatter[key] !== undefined && typeof frontmatter[key] !== 'string') throw new Error(`${href}: ${key} 必须是字符串`);
   }
 
   const series = asRecord(frontmatter.series);
+  if (frontmatter.series !== undefined && (!frontmatter.series || typeof frontmatter.series !== 'object' || Array.isArray(frontmatter.series))) throw new Error(`${href}: series 必须是对象`);
+  if (series.order !== undefined && (typeof series.order !== 'number' || !Number.isSafeInteger(series.order) || series.order < 1)) throw new Error(`${href}: series.order 必须是正整数`);
   const seriesOrder = typeof series.order === 'number' ? series.order : undefined;
 
   return {
@@ -89,6 +101,38 @@ function createArticle(
     tags: asStringArray(frontmatter.tags),
     title,
   };
+}
+
+function validateFlags(frontmatter: Frontmatter, source: string): void {
+  for (const key of ['draft', 'featured']) {
+    if (frontmatter[key] !== undefined && typeof frontmatter[key] !== 'boolean') throw new Error(`${source}: ${key} 必须是布尔值`);
+  }
+}
+
+export function publicationExclusions(contentRoot: string): string[] {
+  const excluded: string[] = [];
+  const blog = join(contentRoot, 'blog');
+  for (const entry of readdirSync(blog, { withFileTypes: true })) {
+    if (!entry.isFile() || !entry.name.endsWith('.md') || entry.name === 'index.md') continue;
+    if (!createArticle(readFileSync(join(blog, entry.name), 'utf8'), `/blog/${entry.name}`)) excluded.push(`blog/${entry.name}`);
+  }
+  const columns = join(contentRoot, 'columns');
+  let directories: string[] = [];
+  try { directories = readdirSync(columns, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name); }
+  catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
+  for (const name of directories) {
+    // 专题目录是已有发布模型的一部分；缺少 index.md 应报错而不是偷偷发布子页。
+    const entries = readdirSync(join(columns, name), { withFileTypes: true });
+    const frontmatter = asRecord(matter(readFileSync(join(columns, name, 'index.md'), 'utf8')).data);
+    validateFlags(frontmatter, `columns/${name}/index.md`);
+    if (frontmatter.draft === true) { excluded.push(`columns/${name}/**`); continue; }
+    if (!asString(frontmatter.title)) throw new Error(`columns/${name}/index.md: title 必须是非空字符串`);
+    for (const entry of entries) {
+      if (!entry.isFile() || !entry.name.endsWith('.md') || entry.name === 'index.md') continue;
+      if (!createArticle(readFileSync(join(columns, name, entry.name), 'utf8'), `/columns/${name}/${entry.name}`)) excluded.push(`columns/${name}/${entry.name}`);
+    }
+  }
+  return excluded.sort();
 }
 
 async function readMarkdownFiles(directory: string): Promise<string[]> {
@@ -130,7 +174,7 @@ interface LoadedContent {
 }
 
 async function loadContent(contentRoot: string): Promise<LoadedContent> {
-  const blogFiles = await readMarkdownFiles(join(contentRoot, 'blog'));
+  const blogFiles = (await readMarkdownFiles(join(contentRoot, 'blog'))).filter((file) => basename(file) !== 'index.md');
   const blogSources = (
     await Promise.all(
       blogFiles.map((filePath) =>
@@ -156,9 +200,9 @@ async function loadContent(contentRoot: string): Promise<LoadedContent> {
           const frontmatter = asRecord(data);
           const title = asString(frontmatter.title);
 
-          if (!title || frontmatter.draft === true) {
-            return undefined;
-          }
+          validateFlags(frontmatter, indexPath);
+          if (frontmatter.draft === true) return undefined;
+          if (!title) throw new Error(`${indexPath}: title 必须是非空字符串`);
 
           const articleFiles = (await readMarkdownFiles(directory)).filter(
             (filePath) => basename(filePath) !== 'index.md',

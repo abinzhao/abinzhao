@@ -81,9 +81,9 @@ const totalChapters = computed(() =>
             </li>
           </ol>
 
-          <a class="column-card__link" :href="withBase(column.href)">
+          <span class="column-card__link" aria-hidden="true">
             查看完整学习路径 <ArrowRight :size="17" aria-hidden="true" />
-          </a>
+          </span>
         </article>
       </section>
     </main>

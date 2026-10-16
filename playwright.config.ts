@@ -8,6 +8,8 @@ export default defineConfig({
   testDir: './tests/e2e',
   testMatch: '**/*.e2e.ts',
   fullyParallel: false,
+  // 用例共用一个开发服务；串行冷启动避免索引变换与动效争用主机资源。
+  workers: 1,
   timeout: 30_000,
   use: {
     baseURL,

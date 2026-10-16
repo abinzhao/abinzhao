@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ArrowRight, BookOpen, CalendarDays, Search, Tag } from '@lucide/vue';
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { withBase } from 'vitepress';
 import { data as content } from '../../data/content.data';
 import { filterArticles } from '../composables/article-filter';
@@ -15,6 +15,41 @@ const articles = computed(() =>
     query: query.value,
   }),
 );
+let restoring = false;
+let queryTimer: ReturnType<typeof setTimeout> | undefined;
+
+function restoreFilters(): void {
+  clearTimeout(queryTimer);
+  const params = new URLSearchParams(window.location.search);
+  restoring = true;
+  category.value = categories.value.includes(params.get('category') ?? '') ? params.get('category')! : '全部';
+  query.value = (params.get('q') ?? '').slice(0, 200);
+  restoring = false;
+}
+function saveFilters(push: boolean): void {
+  const url = new URL(window.location.href);
+  if (category.value === '全部') url.searchParams.delete('category');
+  else url.searchParams.set('category', category.value);
+  if (query.value.trim()) url.searchParams.set('q', query.value.trim().slice(0, 200));
+  else url.searchParams.delete('q');
+  if (url.href !== window.location.href) {
+    window.history[push ? 'pushState' : 'replaceState'](window.history.state, '', url);
+  }
+}
+watch(category, () => {
+  if (!restoring) { clearTimeout(queryTimer); saveFilters(true); }
+}, { flush: 'sync' });
+watch(query, () => {
+  if (!restoring) { clearTimeout(queryTimer); queryTimer = setTimeout(() => saveFilters(false), 250); }
+}, { flush: 'sync' });
+onMounted(() => {
+  restoreFilters();
+  window.addEventListener('popstate', restoreFilters);
+});
+onBeforeUnmount(() => {
+  clearTimeout(queryTimer);
+  window.removeEventListener('popstate', restoreFilters);
+});
 
 </script>
 
@@ -93,14 +128,13 @@ const articles = computed(() =>
             </footer>
           </div>
 
-          <a
+          <span
             class="article-list-item__link"
-            :href="withBase(article.href)"
-            :aria-label="`阅读《${article.title}》`"
+            aria-hidden="true"
           >
             阅读
             <ArrowRight :size="16" aria-hidden="true" />
-          </a>
+          </span>
         </article>
       </TransitionGroup>
 

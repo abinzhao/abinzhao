@@ -1,6 +1,6 @@
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import {
   createContentIndex,
@@ -118,5 +118,16 @@ describe('content index', () => {
     expect(publicIndex).not.toContain(fixtureRoot);
     expect(publicIndex).not.toContain('# 静态站点架构');
     expect(publicIndex).not.toContain('"markdown"');
+  });
+
+  test('publishes ten distinct blogs and the complete twelve-chapter Harness path', async () => {
+    const index = await createContentIndex(resolve(import.meta.dirname, '../docs'));
+    expect(index.blogArticles).toHaveLength(10);
+    expect(new Set(index.blogArticles.map((article) => article.href))).toHaveLength(10);
+    const harness = index.columns.find((column) => column.slug === 'agent-harness');
+    expect(harness?.articles.map((article) => article.seriesOrder)).toEqual(
+      Array.from({ length: 12 }, (_, index) => index + 1),
+    );
+    expect(harness?.featured).toBe(true);
   });
 });

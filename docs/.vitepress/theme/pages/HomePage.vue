@@ -4,16 +4,49 @@ import {
   BookOpen,
   CheckCircle2,
   Code2,
+  GitBranch,
   Fingerprint,
   GraduationCap,
   Rocket,
 } from '@lucide/vue';
 import { withBase } from 'vitepress';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { data as home } from '../../data/home.data';
 import { data as content } from '../../data/content.data';
+import { data as repositories } from '../../data/projects.data';
 
 const articles = computed(() => content.blogArticles.slice(0, 3));
+const terminalExpanded = ref(false);
+const activeFile = ref<'developer.ts' | 'harness.config.ts'>('developer.ts');
+const metrics = computed(() => [
+  { label: '系统专题', value: content.columns.length, href: '/columns/' },
+  { label: '公开仓库', value: repositories.projects.length, href: '/projects/' },
+  { label: '技术博客', value: content.blogArticles.length, href: '/blog/' },
+]);
+const codeLines = computed(() => activeFile.value === 'developer.ts' ? home.terminal.lines : [
+  '// harness.config.ts · 默认本地，明确边界',
+  'export const harness = {',
+  "  provider: 'ollama',",
+  "  endpoint: 'http://127.0.0.1:11434/v1',",
+  "  tools: ['list_files', 'read_file'],",
+  '  maxSteps: 8,',
+  "  persistence: 'append-only',",
+  "  permissions: 'read-only',",
+  '} as const;',
+]);
+const highlightedLines = computed(() => codeLines.value.map((line) => {
+  const parts: Array<{ text: string; kind: string }> = [];
+  const pattern = /\/\/.*|'[^']*'|\b(?:export|const|as)\b|\b\d+\b|[{}[\]:,;]/g;
+  let offset = 0;
+  for (const match of line.matchAll(pattern)) {
+    if (match.index! > offset) parts.push({ text: line.slice(offset, match.index), kind: 'plain' });
+    const text = match[0];
+    parts.push({ text, kind: text.startsWith('//') ? 'comment' : text.startsWith("'") ? 'string' : /^[a-z]/.test(text) ? 'keyword' : /^\d/.test(text) ? 'number' : 'punctuation' });
+    offset = match.index! + text.length;
+  }
+  if (offset < line.length) parts.push({ text: line.slice(offset), kind: 'plain' });
+  return parts;
+}));
 
 const moduleIcons = {
   book: BookOpen,
@@ -27,10 +60,11 @@ const moduleIcons = {
   <div class="home-page">
     <main class="site-container">
       <section class="home-hero" aria-labelledby="home-title">
+        <div class="hero-orbits" aria-hidden="true"><i /><i /><i /></div>
         <div class="home-hero__content">
           <p class="status-line">
             <span class="status-line__dot" aria-hidden="true" />
-            状态：{{ home.profile.status }}
+            {{ home.profile.status }}
           </p>
 
           <div class="profile-intro">
@@ -41,7 +75,7 @@ const moduleIcons = {
               <span class="profile-intro__online" aria-label="在线" />
             </div>
             <div>
-              <p class="technical-label">工程实践 · 独立开发 · 开源</p>
+              <p class="technical-label">FULL STACK / OPEN SOURCE</p>
               <h1 id="home-title">你好，我是 <span>{{ home.profile.name }}</span></h1>
               <p class="profile-intro__meta">
                 {{ home.profile.handle }} · {{ home.profile.location }}
@@ -67,39 +101,53 @@ const moduleIcons = {
               rel="noreferrer"
             >
               <span>在 GitHub 关注我</span>
-              <ArrowRight :size="15" aria-hidden="true" />
+              <span class="command-link__short" aria-hidden="true">GitHub</span>
+              <ArrowRight :size="18" aria-hidden="true" />
             </a>
           </div>
 
           <dl class="hero-metrics">
-            <div v-for="metric in home.profile.metrics" :key="metric.label">
-              <dt>{{ metric.label }}</dt>
+            <div v-for="metric in metrics" :key="metric.label">
+              <dt><a :href="withBase(metric.href)">{{ metric.label }} <ArrowRight :size="12" aria-hidden="true" /></a></dt>
               <dd>{{ metric.value }}</dd>
             </div>
           </dl>
         </div>
 
-        <aside class="terminal-window" aria-label="开发终端">
+        <aside class="terminal-window" :class="{ 'terminal-window--collapsed': !terminalExpanded }" aria-label="开发终端">
           <div class="terminal-window__bar">
             <span class="terminal-window__dots" aria-hidden="true">
               <i /><i /><i />
             </span>
             <span>{{ home.terminal.label }}</span>
             <small>持续构建</small>
+            <button
+              class="terminal-window__toggle"
+              type="button"
+              aria-controls="home-terminal-body"
+              :aria-expanded="terminalExpanded"
+              :aria-label="terminalExpanded ? '折叠开发终端' : '展开开发终端'"
+              @click="terminalExpanded = !terminalExpanded"
+            >{{ terminalExpanded ? '收起' : '展开' }}</button>
           </div>
-          <pre class="terminal-window__code"><code><span
-            v-for="line in home.terminal.lines"
-            :key="line"
-            :class="{ 'terminal-window__comment': line.startsWith('//') }"
-          >{{ line }}
+          <div id="home-terminal-body" class="terminal-window__body">
+          <div class="terminal-tabs" role="group" aria-label="工作台代码文件">
+            <button v-for="file in (['developer.ts', 'harness.config.ts'] as const)" :key="file" type="button" :aria-pressed="activeFile === file" @click="activeFile = file">
+              <Code2 :size="14" aria-hidden="true" />{{ file }}
+            </button>
+          </div>
+          <pre class="terminal-window__code" :aria-label="activeFile"><code><span
+            v-for="(line, index) in highlightedLines" :key="index" class="terminal-code-line"
+          ><span class="terminal-line-number" aria-hidden="true">{{ String(index + 1).padStart(2, '0') }}</span><span><span v-for="(part, partIndex) in line" :key="partIndex" :class="`terminal-token--${part.kind}`">{{ part.text }}</span></span>
 </span></code></pre>
           <p class="terminal-window__ready">
             <CheckCircle2 :size="17" aria-hidden="true" />
             {{ home.terminal.footer }}
           </p>
           <div class="terminal-window__footer">
-            <span>● 本地优先</span>
-            <span>开放 · 可控 · 可复用</span>
+            <span><GitBranch :size="13" aria-hidden="true" /> local-first</span>
+            <a :href="withBase('/columns/agent-harness/')">探索 Harness 教程 <ArrowRight :size="13" aria-hidden="true" /></a>
+          </div>
           </div>
         </aside>
       </section>
@@ -108,7 +156,7 @@ const moduleIcons = {
         <div class="section-heading section-heading--compact">
           <div>
             <p class="technical-label">探索入口</p>
-            <h2 id="modules-title">模块索引</h2>
+            <h2 id="modules-title">探索我的构建</h2>
           </div>
           <span>从记录到实践</span>
         </div>

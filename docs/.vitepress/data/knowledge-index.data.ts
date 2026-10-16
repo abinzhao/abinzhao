@@ -9,7 +9,7 @@ declare const data: import('./knowledge').KnowledgeIndexArtifact;
 export { data };
 
 export default defineLoader({
-  watch: ['../../blog/**/*.md', '../../columns/**/*.md'],
+  watch: ['../../blog/**/*.md', '../../columns/**/*.md', '../../../examples/agent-harness/**/*.mjs', '../../../examples/agent-harness/web/*.html', '../../../examples/agent-harness/package.json'],
   async load() {
     return (await getKnowledgeArtifacts(contentRoot)).index;
   },

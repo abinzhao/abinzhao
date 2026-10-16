@@ -7,6 +7,8 @@ import type {
   KnowledgeScope,
   StructuredReply,
 } from './local-assistant';
+import type { Citation } from '../assistant/prompt-builder';
+import type { AssistantVersions, MessageProvenance } from '../assistant/types';
 
 export const CHAT_STORAGE_KEY = 'abin-conversations-v2';
 export const LEGACY_CHAT_STORAGE_KEY = 'abin-conversations-v1';
@@ -26,7 +28,11 @@ export interface ChatMessage {
   reply?: StructuredReply;
   role: 'user' | 'assistant';
   sources?: KnowledgeSource[];
-  status: 'complete' | 'stopped' | 'error';
+  status: 'streaming' | 'complete' | 'stopped' | 'error';
+  provenance?: MessageProvenance;
+  citations?: Citation[];
+  versions?: AssistantVersions;
+  citationWarning?: string;
 }
 
 export interface Conversation {
@@ -177,6 +183,7 @@ function sanitizeEvidenceSources(
     if (!id || !title || !href || !isAllowedSourceHref(href, allowedSourceHrefs)) return [];
 
     return [{
+      ...(boundedString(source?.contentVersion, 160) ? { contentVersion: boundedString(source?.contentVersion, 160) } : {}),
       href,
       id,
       title,
@@ -199,6 +206,8 @@ function sanitizeAnswerBlocks(value: unknown): AnswerBlock[] {
           const text = boundedString(evidence?.text, 100_000);
           if (!text || !Array.isArray(evidence?.sourceIds)) return [];
           return [{
+            ...(evidence.kind === 'code' || evidence.kind === 'table' ? { kind: evidence.kind } : {}),
+            ...(boundedString(evidence.language, 40) ? { language: boundedString(evidence.language, 40) } : {}),
             sourceIds: evidence.sourceIds
               .filter((id): id is string => typeof id === 'string')
               .slice(0, 8)
@@ -269,8 +278,8 @@ function sanitizeMessage(
 ): ChatMessage | undefined {
   const message = asRecord(value);
   const id = boundedString(message?.id, 160);
-  const content = boundedString(message?.content, 100_000);
-  if (!message || !id || !content || !['user', 'assistant'].includes(String(message.role))) {
+  const content = boundedString(message?.content, 100_000) ?? (message?.content === '' && message.role === 'assistant' ? '' : undefined);
+  if (!message || !id || content === undefined || !['user', 'assistant'].includes(String(message.role))) {
     return undefined;
   }
 
@@ -279,17 +288,33 @@ function sanitizeMessage(
     : ['complete', 'stopped', 'error'].includes(String(message.status))
       ? message.status as ChatMessage['status']
       : 'complete';
-  const reply = legacyRecord
+  const isLegacyMessage = legacyRecord || message.legacyRecord === true || message.provenance === 'legacy';
+  const reply = isLegacyMessage
     ? undefined
     : sanitizeReply(message.reply, allowedSourceHrefs);
+  const versions = asRecord(message.versions);
+  const citations = Array.isArray(message.citations) ? message.citations.slice(0, 8).flatMap((candidate): Citation[] => {
+    const source = asRecord(candidate);
+    const href = boundedString(source?.href, 500);
+    const title = boundedString(source?.title, 160);
+    const blockId = boundedString(source?.blockId, 500);
+    const citationId = boundedString(source?.id, 10);
+    if (!href || !title || !blockId || !citationId || !/^S[1-8]$/u.test(citationId) || !isAllowedSourceHref(href, allowedSourceHrefs)) return [];
+    return [{ href, title, blockId, id: citationId, contentVersion: boundedString(source?.contentVersion, 160) ?? 'unknown', sectionTitle: boundedString(source?.sectionTitle, 160) }];
+  }) : undefined;
 
   return {
     content,
     id,
     role: message.role as ChatMessage['role'],
     status,
+    provenance: isLegacyMessage ? 'legacy' : message.provenance === 'webllm' ? 'webllm' : 'retrieval',
+    ...(citations ? { citations } : {}),
+    ...(boundedString(message.citationWarning, 500) ? { citationWarning: boundedString(message.citationWarning, 500) } : {}),
+    ...(versions && boundedString(versions.promptVersion, 160) && boundedString(versions.corpusVersion, 160)
+      ? { versions: { promptVersion: String(versions.promptVersion).slice(0, 160), corpusVersion: String(versions.corpusVersion).slice(0, 160), modelId: boundedString(versions.modelId, 160) } } : {}),
     ...(typeof message.createdAt === 'number' ? { createdAt: message.createdAt } : {}),
-    ...(legacyRecord && message.role === 'assistant' ? { legacyRecord: true } : {}),
+    ...(isLegacyMessage && message.role === 'assistant' ? { legacyRecord: true } : {}),
     ...(reply ? { reply } : {}),
     ...(sanitizeSources(message.sources, allowedSourceHrefs)
       ? { sources: sanitizeSources(message.sources, allowedSourceHrefs) }
@@ -297,7 +322,7 @@ function sanitizeMessage(
   };
 }
 
-function sanitizeConversation(
+export function sanitizeConversation(
   value: unknown,
   allowedSourceHrefs: ReadonlySet<string>,
   legacyMode?: boolean,
@@ -313,7 +338,8 @@ function sanitizeConversation(
   const messages = conversation.messages
     .slice(-100)
     .flatMap((message): ChatMessage[] => {
-      const sanitized = sanitizeMessage(message, allowedSourceHrefs, legacyRecord);
+      // 会话的legacy标记仅说明有迁移历史；后续消息按各自来源恢复。
+      const sanitized = sanitizeMessage(message, allowedSourceHrefs, legacyMode === true);
       return sanitized ? [sanitized] : [];
     });
   const scope = KNOWLEDGE_SCOPES.has(conversation.scope as KnowledgeScope)
@@ -508,7 +534,14 @@ export function exportConversationMarkdown(conversation: Conversation): string {
       );
       for (const block of message.reply.blocks) {
         if (block.heading) details.push('', `### ${block.heading}`);
-        for (const item of block.items) details.push('', `- ${item.text}`);
+        for (const item of block.items) {
+          if (item.kind === 'code') {
+            const fence = '`'.repeat(Math.max(3, ...[...(item.text.match(/`+/gu) ?? [])].map((match) => match.length + 1)));
+            details.push('', `${fence}${item.language ?? ''}\n${item.text}\n${fence}`);
+          } else {
+            details.push('', item.kind === 'table' ? item.text : `- ${item.text}`);
+          }
+        }
       }
       if (message.reply.sources.length > 0) {
         details.push('', '### 来源');
@@ -520,6 +553,14 @@ export function exportConversationMarkdown(conversation: Conversation): string {
         }
       }
     }
+    if (message.citations?.length) {
+      details.push('', '### 来源');
+      for (const source of message.citations) {
+        details.push('', `- [${source.id} · ${source.title}${source.sectionTitle ? ` · ${source.sectionTitle}` : ''}](${source.href})`);
+      }
+    }
+    if (message.citationWarning) details.push('', `引用提示：${message.citationWarning}`);
+    if (message.status !== 'complete') details.push('', `状态：${message.status === 'stopped' ? '已中断' : '未完成'}`);
 
     return details.join('\n');
   });

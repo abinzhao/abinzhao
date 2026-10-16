@@ -1,6 +1,11 @@
 import MiniSearch from 'minisearch';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 import { createMarkdownRenderer } from 'vitepress';
 import type { MarkdownRenderer } from 'vitepress';
+import matter from 'gray-matter';
+import { packKnowledgeIndex } from './knowledge-index-codec';
 import {
   loadPublishedArticleSources,
   type Article,
@@ -24,6 +29,7 @@ export interface KnowledgeArtifacts {
 interface PendingBlock {
   anchor?: string;
   kind: KnowledgeBlockKind;
+  language?: string;
   sectionTitle?: string;
   text: string;
   codeTerms: string[];
@@ -31,7 +37,36 @@ interface PendingBlock {
 
 type MarkdownToken = ReturnType<MarkdownRenderer['parse']>[number];
 
-const artifactCache = new Map<string, Promise<KnowledgeArtifacts>>();
+const artifactCache = new Map<string, { version: string; artifacts: Promise<KnowledgeArtifacts> }>();
+
+function resolveSnippets(source: PublishedArticleSource, contentRoot: string): { markdown: string; paths: string[] } {
+  let fence = '';
+  const paths: string[] = [];
+  const lines = source.markdown.split('\n').map((line) => {
+    const marker = line.match(/^\s*(`{3,}|~{3,})/u)?.[1];
+    if (marker) {
+      if (!fence) fence = marker;
+      else if (marker[0] === fence[0] && marker.length >= fence.length) fence = '';
+      return line;
+    }
+    if (fence) return line;
+    const imported = line.match(/^<<<\s+([^\s#{]+)/u)?.[1];
+    if (!imported) return line;
+    const path = resolve(dirname(source.filePath), imported.replace(/^@(?=\/)/u, contentRoot));
+    paths.push(path);
+    return line.replace(imported, path);
+  });
+  return { markdown: lines.join('\n'), paths };
+}
+
+function contentVersion(sources: PublishedArticleSource[], contentRoot: string): string {
+  const hash = createHash('sha256');
+  for (const source of [...sources].sort((a, b) => a.article.href.localeCompare(b.article.href))) {
+    hash.update(source.article.href).update('\0').update(source.markdown).update('\0');
+    for (const path of resolveSnippets(source, contentRoot).paths) hash.update(readFileSync(path)).update('\0');
+  }
+  return hash.digest('hex').slice(0, 16);
+}
 
 function normalizeVisibleText(text: string): string {
   return text
@@ -98,8 +133,18 @@ function createBlockId(article: Article, block: PendingBlock, index: number): st
 function parseArticleBlocks(
   renderer: MarkdownRenderer,
   source: PublishedArticleSource,
+  contentRoot: string,
 ): KnowledgeBlock[] {
-  const tokens = renderer.parse(source.markdown, {});
+  const env = { path: source.filePath, realPath: source.filePath };
+  // VitePress caches one renderer globally; resolve @ against this content root explicitly.
+  const { markdown } = resolveSnippets({ ...source, markdown: matter(source.markdown).content }, contentRoot);
+  const tokens = renderer.parse(markdown, env);
+  // VitePress loads imported snippets in its fence renderer, after Markdown parsing.
+  for (const [index, token] of tokens.entries()) {
+    if (token.type === 'fence' && 'src' in token && token.src) {
+      renderer.renderer.rules.fence?.(tokens, index, renderer.options, env, renderer.renderer);
+    }
+  }
   const pending: PendingBlock[] = [];
   let sectionTitle: string | undefined;
   let anchor: string | undefined;
@@ -173,12 +218,20 @@ function parseArticleBlocks(
 
     if (token.type === 'table_open' && token.level === 0) {
       const grouped = readGroupedInlineText(tokens, index, 'table_close');
-      if (grouped.text) {
+      const rows: string[][] = [];
+      for (let rowIndex = index; rowIndex <= grouped.nextIndex; rowIndex += 1) {
+        const rowToken = tokens[rowIndex];
+        if (rowToken.type === 'tr_open') rows.push([]);
+        if (rowToken.type === 'inline') rows.at(-1)?.push(readInlineText(rowToken).replace(/\|/gu, '\\|'));
+      }
+      if (rows.length) {
         pending.push({
           anchor,
-          kind: 'list',
+          kind: 'table',
           sectionTitle,
-          text: grouped.text,
+          text: rows.map((row, rowIndex) =>
+            `| ${row.join(' | ')} |${rowIndex === 0 ? `\n| ${row.map(() => '---').join(' | ')} |` : ''}`,
+          ).join('\n'),
           codeTerms: [],
         });
       }
@@ -190,8 +243,9 @@ function parseArticleBlocks(
       pending.push({
         anchor,
         kind: 'code',
+        language: token.info.trim().split(/\s/u)[0] || 'text',
         sectionTitle,
-        text: '',
+        text: token.content.trimEnd(),
         codeTerms: extractCodeTerms(token.content),
       });
     }
@@ -208,6 +262,7 @@ function parseArticleBlocks(
     href: block.anchor ? `${source.article.href}#${block.anchor}` : source.article.href,
     id: createBlockId(source.article, block, index),
     kind: block.kind,
+    ...(block.language ? { language: block.language } : {}),
     publishedAt: source.article.date,
     readingMinutes,
     sectionTitle: block.sectionTitle,
@@ -217,46 +272,46 @@ function parseArticleBlocks(
   }));
 }
 
-export async function buildKnowledgeArtifacts(contentRoot: string): Promise<KnowledgeArtifacts> {
-  const renderer = await createMarkdownRenderer(contentRoot);
-  const sources = await loadPublishedArticleSources(contentRoot);
-  const blocks = sources.flatMap((source) => parseArticleBlocks(renderer, source));
+async function buildFromSources(
+  contentRoot: string,
+  sources: PublishedArticleSource[],
+): Promise<KnowledgeArtifacts> {
+  const renderer = await createMarkdownRenderer(contentRoot, { languageAlias: { mjs: 'javascript' } });
+  const version = contentVersion(sources, contentRoot);
+  const blocks = sources.flatMap((source) => parseArticleBlocks(renderer, source, contentRoot));
   const miniSearch = new MiniSearch<KnowledgeSearchDocument>(getKnowledgeMiniSearchOptions());
-  const indexedDocuments = new Set<string>();
-  const indexedSections = new Set<string>();
-
-  miniSearch.addAll(
-    blocks.map((block) => {
-      const firstDocumentBlock = !indexedDocuments.has(block.documentId);
-      const sectionKey = `${block.documentId}#${block.anchor ?? ''}`;
-      const firstSectionBlock = Boolean(block.sectionTitle) && !indexedSections.has(sectionKey);
-      indexedDocuments.add(block.documentId);
-      if (firstSectionBlock) indexedSections.add(sectionKey);
-
-      return {
-        code: block.codeTerms.join(' '),
-        description: firstDocumentBlock ? block.description ?? '' : '',
-        id: block.id,
-        section: firstSectionBlock ? block.sectionTitle ?? '' : '',
-        tags: firstDocumentBlock ? block.tags.join(' ') : '',
-        text: block.text,
-        title: firstDocumentBlock ? block.articleTitle : '',
-      };
-    }),
-  );
+  const documents = new Map<string, KnowledgeBlock[]>();
+  for (const block of blocks) {
+    const documentBlocks = documents.get(block.documentId) ?? [];
+    documentBlocks.push(block);
+    documents.set(block.documentId, documentBlocks);
+  }
+  // Recall whole documents; the lazy corpus retains every block for local selection.
+  miniSearch.addAll([...documents].map(([id, documentBlocks]) => ({
+    id,
+    title: documentBlocks[0].articleTitle,
+    description: documentBlocks[0].description ?? '',
+    tags: documentBlocks[0].tags.join(' '),
+    section: [...new Set(documentBlocks.map((block) => block.sectionTitle ?? ''))].join('\n'),
+    text: documentBlocks.filter((block) => block.kind !== 'code').map((block) => block.text).join('\n'),
+    code: documentBlocks.flatMap((block) => block.codeTerms).join(' '),
+  })));
 
   return {
     blocks,
     corpus: {
+      contentVersion: version,
       blocks: Object.fromEntries(
-        blocks.map(({ id, text, codeTerms }) => [id, { text, codeTerms }]),
+        blocks.map(({ id, text, codeTerms, language }) => [id, { text, codeTerms, ...(language ? { language } : {}) }]),
       ),
       version: 1,
     },
     index: {
-      index: miniSearch.toJSON(),
+      contentVersion: version,
+      granularity: 'document',
+      index: packKnowledgeIndex(miniSearch.toJSON()),
       metadata: Object.fromEntries(
-        blocks.map(({ text: _text, codeTerms: _codeTerms, ...metadata }) => [
+        blocks.map(({ text: _text, codeTerms: _codeTerms, language: _language, ...metadata }) => [
           metadata.id,
           metadata,
         ]),
@@ -266,11 +321,20 @@ export async function buildKnowledgeArtifacts(contentRoot: string): Promise<Know
   };
 }
 
-export function getKnowledgeArtifacts(contentRoot: string): Promise<KnowledgeArtifacts> {
-  const cached = artifactCache.get(contentRoot);
-  if (cached) return cached;
+export async function buildKnowledgeArtifacts(contentRoot: string): Promise<KnowledgeArtifacts> {
+  return buildFromSources(contentRoot, await loadPublishedArticleSources(contentRoot));
+}
 
-  const artifacts = buildKnowledgeArtifacts(contentRoot);
-  artifactCache.set(contentRoot, artifacts);
+export async function getKnowledgeArtifacts(contentRoot: string): Promise<KnowledgeArtifacts> {
+  const sources = await loadPublishedArticleSources(contentRoot);
+  const version = contentVersion(sources, contentRoot);
+  const cached = artifactCache.get(contentRoot);
+  if (cached?.version === version) return cached.artifacts;
+
+  const artifacts = buildFromSources(contentRoot, sources);
+  artifactCache.set(contentRoot, { version, artifacts });
+  void artifacts.catch(() => {
+    if (artifactCache.get(contentRoot)?.artifacts === artifacts) artifactCache.delete(contentRoot);
+  });
   return artifacts;
 }

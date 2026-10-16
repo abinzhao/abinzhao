@@ -1,0 +1,150 @@
+{
+  "account": "abinzhao",
+  "checkedAt": "2026-10-16",
+  "source": "https://api.github.com/users/abinzhao/repos",
+  "projects": [
+    {
+      "name": "abinzhao",
+      "url": "https://github.com/abinzhao/abinzhao",
+      "description": "GitHub profile README for abin",
+      "language": "TypeScript",
+      "topics": [],
+      "stars": 0,
+      "fork": false,
+      "archived": false,
+      "updatedAt": "2026-10-16T13:18:23Z"
+    },
+    {
+      "name": "code-courses",
+      "url": "https://github.com/abinzhao/code-courses",
+      "description": "A growing collection of systematic, project-driven programming courses — full-stack web (React, Vue, Node, Express, PostgreSQL), WeChat mini programs, cross-platform, native, and game development. From zero to shipping real products.",
+      "language": "JavaScript",
+      "topics": [],
+      "stars": 1,
+      "fork": false,
+      "archived": false,
+      "updatedAt": "2026-10-12T15:56:10Z"
+    },
+    {
+      "name": "singularity-engine",
+      "url": "https://github.com/abinzhao/singularity-engine",
+      "description": "Local-first evolution engine for Agent, Skill, and Rule assets",
+      "language": "Rust",
+      "topics": [],
+      "stars": 0,
+      "fork": false,
+      "archived": false,
+      "updatedAt": "2026-08-20T06:51:24Z"
+    },
+    {
+      "name": "publish-kit",
+      "url": "https://github.com/abinzhao/publish-kit",
+      "description": "",
+      "language": "TypeScript",
+      "topics": [],
+      "stars": 0,
+      "fork": false,
+      "archived": false,
+      "updatedAt": "2026-08-20T06:51:07Z"
+    },
+    {
+      "name": "dsh-request-flight-recorder",
+      "url": "https://github.com/abinzhao/dsh-request-flight-recorder",
+      "description": "Privacy-safe request flight recorder for DeepSeek Harness",
+      "language": "TypeScript",
+      "topics": [
+        "deepseek-harness",
+        "diagnostics",
+        "dsh-plugin",
+        "llm",
+        "observability"
+      ],
+      "stars": 0,
+      "fork": false,
+      "archived": false,
+      "updatedAt": "2026-08-16T02:57:10Z"
+    },
+    {
+      "name": "repo-compass",
+      "url": "https://github.com/abinzhao/repo-compass",
+      "description": "Contributor navigation protocol and freshness toolchain for open source repositories",
+      "language": "TypeScript",
+      "topics": [],
+      "stars": 0,
+      "fork": false,
+      "archived": false,
+      "updatedAt": "2026-08-12T08:55:52Z"
+    },
+    {
+      "name": "xiaoshuo-skill-tools",
+      "url": "https://github.com/abinzhao/xiaoshuo-skill-tools",
+      "description": "",
+      "language": "Python",
+      "topics": [],
+      "stars": 0,
+      "fork": false,
+      "archived": false,
+      "updatedAt": "2026-08-11T11:25:02Z"
+    },
+    {
+      "name": "code-cnalysis",
+      "url": "https://github.com/abinzhao/code-cnalysis",
+      "description": "代码分析工具",
+      "language": "JavaScript",
+      "topics": [],
+      "stars": 0,
+      "fork": false,
+      "archived": false,
+      "updatedAt": "2026-01-09T12:21:05Z"
+    },
+    {
+      "name": "harmony-next-blog",
+      "url": "https://github.com/abinzhao/harmony-next-blog",
+      "description": "鸿蒙next 笔记教程",
+      "language": null,
+      "topics": [],
+      "stars": 0,
+      "fork": false,
+      "archived": false,
+      "updatedAt": "2025-03-06T10:12:59Z"
+    },
+    {
+      "name": "cps",
+      "url": "https://github.com/abinzhao/cps",
+      "description": "基于node的一款命令行图片压缩工具",
+      "language": "TypeScript",
+      "topics": [],
+      "stars": 4,
+      "fork": false,
+      "archived": false,
+      "updatedAt": "2023-09-11T03:49:03Z"
+    },
+    {
+      "name": "scio-design",
+      "url": "https://github.com/abinzhao/scio-design",
+      "description": "一套前端多包管理最佳实践，一套前端基础工程规范，一套前端效能组件实践",
+      "language": "TypeScript",
+      "topics": [],
+      "stars": 1,
+      "fork": false,
+      "archived": false,
+      "updatedAt": "2023-01-11T06:31:33Z"
+    },
+    {
+      "name": "scioPro",
+      "url": "https://github.com/abinzhao/scioPro",
+      "description": "🪐 通过monorepo搭建多包仓库，其中包括react组件库，hooks库以及工具函数库",
+      "language": "JavaScript",
+      "topics": [
+        "hooks",
+        "sciopro",
+        "ui-components",
+        "utils"
+      ],
+      "stars": 1,
+      "fork": false,
+      "archived": false,
+      "updatedAt": "2023-01-11T06:31:31Z"
+    }
+  ]
+}

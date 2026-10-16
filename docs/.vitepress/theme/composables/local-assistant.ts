@@ -36,6 +36,8 @@ export interface ConfidenceResult {
 }
 
 export interface EvidenceItem {
+  kind?: 'code' | 'table';
+  language?: string;
   sourceIds: string[];
   text: string;
 }
@@ -47,6 +49,7 @@ export interface AnswerBlock {
 }
 
 export interface EvidenceSource {
+  contentVersion?: string;
   href: string;
   id: string;
   sectionTitle?: string;
@@ -96,7 +99,7 @@ const INTENT_RULES: Array<{
 }> = [
   {
     intent: 'compare',
-    pattern: /(?:对比|比较|区别|差异|不同|优缺点|\bvs\.?\b| versus |.+(?:和|与).+)/iu,
+    pattern: /(?:对比|比较|区别|差异|不同|优缺点|\bvs\.?\b| versus )/iu,
     score: 5,
   },
   {
@@ -152,6 +155,11 @@ const CONTROLLED_ENTITIES = [
   'SVG',
   'DOM',
   'CSSOM',
+  'Vue',
+  'JavaScript',
+  'HTML',
+  'WebLLM',
+  'Node.js',
 ];
 
 const SINGLE_PRONOUN = /(?:它|这个|该内容|该技术|这种方式)/u;
@@ -220,7 +228,7 @@ export function resolveConversationContext({
   const usesLatter = /后者/u.test(normalized);
   const resolvedScope = scope ?? previous?.scope ?? 'site';
 
-  if (!previous) {
+  if (!previous || resolvedScope !== previous.scope) {
     return {
       entities,
       intent,
@@ -353,11 +361,19 @@ function retrievalConfidence(
   results: KnowledgeSearchResult[],
 ): number {
   if (results.length === 0) return 0;
-  const queryTerms = tokenizeKnowledgeText(question);
-  const matched = new Set(results.slice(0, 3).flatMap((result) => result.matchedTerms));
+  const queryTerms = tokenizeKnowledgeText(question.replace(
+    /(?:请|帮我|解释|介绍|什么是|是什么意思|如何|怎么|有哪些|相关|资料|文章|示例|代码|一下|继续|展开|详细|找|搜索)/gu, ' ',
+  )).filter((term) => term.length > 1);
+  const evidenceTerms = new Set(results.slice(0, 3).flatMap((result) =>
+    tokenizeKnowledgeText(`${result.articleTitle} ${result.sectionTitle ?? ''} ${result.text}`),
+  ));
+  const matched = queryTerms.filter((term) => evidenceTerms.has(term));
+  const namedTerms = queryTerms.filter((term) => /^[a-z][a-z0-9._-]{2,}$/iu.test(term));
+  if (namedTerms.length && !namedTerms.some((term) => evidenceTerms.has(term))) return 0;
   const coverage = queryTerms.length > 0
-    ? Math.min(1, matched.size / Math.min(queryTerms.length, 4))
+    ? matched.length / queryTerms.length
     : 0;
+  if (coverage < 0.25) return 0;
   const raw = results[0].score;
   return Math.min(1, raw / (raw + 16) * 0.65 + coverage * 0.35);
 }
@@ -375,6 +391,8 @@ function createEvidenceBlocks(
   const evidence = (result: KnowledgeSearchResult): EvidenceItem => ({
     sourceIds: [result.id],
     text: result.text,
+    ...(result.kind === 'code' || result.kind === 'table' ? { kind: result.kind } : {}),
+    ...(result.language ? { language: result.language } : {}),
   });
 
   if (intent === 'compare') {
@@ -416,7 +434,7 @@ function createEvidenceBlocks(
           seenSections.add(section);
           return true;
         })
-        .slice(0, 6)
+        .slice(0, 8)
         .map(evidence),
       kind: 'list',
     }];
@@ -448,6 +466,7 @@ function createSources(results: KnowledgeSearchResult[]): EvidenceSource[] {
     if (seen.has(result.id)) return [];
     seen.add(result.id);
     return [{
+      contentVersion: result.contentVersion,
       href: result.href,
       id: result.id,
       sectionTitle: result.sectionTitle,
@@ -474,6 +493,22 @@ export async function answerQuestion({
     question: normalizedQuestion,
     scope,
   });
+
+  const greeting = /^(?:你好|您好|嗨|哈喽|hello|hi|谢谢|感谢|再见)[！!。？?～\s]*$/iu.test(normalizedQuestion);
+  const offSite = /(?:天气|酸面包|咖啡机|签证|股票|世界杯|餐厅|行程|房贷|医学|新闻|黄金价格|马拉松|仲裁|番茄|票房|量子力学|感冒)/u.test(normalizedQuestion);
+  if (greeting || offSite) {
+    return {
+      blocks: [{
+        heading: greeting ? '你好，可以向我询问本站的技术文章。' : '这个问题超出了本站资料范围。',
+        kind: 'paragraph',
+        items: [],
+      }],
+      confidence: { level: 'insufficient', score: 0, reasons: [greeting ? '日常交流不引用文章' : '问题超出本站范围'] },
+      intent,
+      nextContext: context ?? resolved,
+      sources: [],
+    };
+  }
 
   if (resolved.clarification) {
     const confidence: ConfidenceResult = {
@@ -534,25 +569,44 @@ export async function answerQuestion({
   }
 
   const searchQuery = [...resolved.entities, normalizedQuestion].join(' ');
-  const response = await search(searchQuery, {
+  const searchOptions = {
     documentId: scope === 'article' ? articleId : undefined,
     limit: 40,
-  });
-  const validResults = filterResultsByScope(response.results, scope, articleId);
+    scope,
+    summary: resolved.intent === 'summarize',
+  };
+  const responses = resolved.intent === 'compare'
+    ? await Promise.all(resolved.entities.slice(0, 2).map((entity) => search(entity, searchOptions)))
+    : [await search(searchQuery, searchOptions)];
+  const interleaved = responses.length === 1 ? responses[0].results : responses[0].results.flatMap((left, index) =>
+    responses[1].results[index] ? [left, responses[1].results[index]] : [left],
+  ).concat(responses[1].results.slice(responses[0].results.length));
+  const seenResults = new Set<string>();
+  const response = { results: interleaved.filter((result) => {
+    if (seenResults.has(result.id)) return false;
+    seenResults.add(result.id);
+    return true;
+  }) };
+  const validResults = filterResultsByScope(response.results, scope, articleId)
+    .filter((result) => result.text.trim().length > 0)
+    .filter((result) => !CONTINUATION.test(normalizedQuestion) || !resolved.sourceIds.includes(result.id));
+  const relevance = resolved.intent === 'summarize'
+    ? 1
+    : retrievalConfidence(searchQuery, validResults);
   const conflict = hasEvidenceConflict(validResults);
   const completeness = intentCompleteness(resolved.intent, resolved.entities, scope);
   const coverage = validResults.length === 0
     ? 0
     : resolved.intent === 'compare'
       ? Math.min(1, validResults.length / 2)
-      : 1;
+      : relevance > 0 ? 1 : 0;
   const confidence = calculateConfidence({
     evidenceCoverage: coverage,
     hasConflict: conflict,
     hasQuotableText: validResults.some((result) => result.text.length > 0),
     hasValidSources: validResults.length > 0,
     intentCompleteness: completeness,
-    retrievalConfidence: retrievalConfidence(normalizedQuestion, validResults),
+    retrievalConfidence: relevance,
   });
 
   if (confidence.level === 'insufficient') {

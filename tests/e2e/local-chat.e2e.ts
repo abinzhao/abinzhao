@@ -20,8 +20,8 @@ test.describe('desktop local chat', () => {
     });
     await page.goto('chat/');
 
-    await expect(page.getByRole('heading', { level: 1, name: '智能问答' })).toBeVisible();
-    await expect(page.locator('.chat-local-status')).toContainText('完全本地 · 内容不上传');
+    await expect(page.getByRole('heading', { level: 1, name: 'AI 助手' })).toBeVisible();
+    await expect(page.locator('.chat-local-status')).toContainText('本地检索');
     await expect(page.locator('.site-footer')).toHaveCount(0);
     await expect(page.locator('.ai-launcher')).toHaveCount(0);
 
@@ -66,6 +66,7 @@ test.describe('desktop local chat', () => {
 
   test('keeps every local quick action connected to a visible result', async ({ page }) => {
     await page.goto('chat/');
+    await page.locator('.chat-advanced summary').click();
     const cases = [
       { action: '找资料', question: '查找 VitePress 静态站点资料' },
       { action: '总结', question: '总结内容' },
@@ -109,5 +110,74 @@ test.describe('mobile local chat', () => {
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog', { name: '会话历史' })).not.toBeVisible();
     await expect(historyButton).toBeFocused();
+  });
+
+  test('keeps retrieval and export usable when browser storage throws SecurityError', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(window, 'localStorage', {
+        get() { throw new DOMException('blocked', 'SecurityError'); },
+      });
+      Object.defineProperty(window, 'indexedDB', {
+        get() { throw new DOMException('blocked', 'SecurityError'); },
+      });
+    });
+    await page.goto('chat/');
+    await expect(page.getByLabel('输入问题')).toBeEnabled();
+    await expect(page.locator('.chat-notice')).toContainText('内存');
+    await page.getByLabel('输入问题').fill('解释 Flexbox');
+    await page.getByRole('button', { name: '发送问题' }).click();
+    await expect(page.locator('.chat-answer')).toBeVisible();
+    await expect(page.getByRole('button', { name: '导出会话' })).toBeEnabled();
+  });
+
+  test('offers a working retry after a failed local index request', async ({ page }) => {
+    let blocked = true;
+    await page.route('**/knowledge-index.data.ts*', async (route) => {
+      if (blocked) await route.abort();
+      else await route.continue();
+    });
+    await page.goto('chat/');
+    await expect(page.locator('.chat-local-status')).toContainText('加载失败');
+    blocked = false;
+    await page.getByRole('button', { name: '重试知识库' }).click();
+    await expect(page.getByRole('button', { name: '重试知识库' })).not.toBeVisible();
+    await page.getByLabel('输入问题').fill('解释 Grid');
+    await page.getByRole('button', { name: '发送问题' }).click();
+    await expect(page.locator('.chat-answer')).toBeVisible();
+  });
+
+  test('freezes the source scope while a request is pending', async ({ page }) => {
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => { release = resolve; });
+    await page.route('**/knowledge-corpus.data.ts*', async (route) => {
+      await gate;
+      await route.continue();
+    });
+    await page.goto('chat/');
+    await page.getByLabel('输入问题').fill('解释 Flexbox');
+    await page.getByRole('button', { name: '发送问题' }).click();
+    try {
+      await expect(page.getByRole('button', { name: '博客', exact: true })).toBeDisabled();
+    } finally {
+      release();
+    }
+    await expect(page.locator('.chat-answer')).toBeVisible();
+  });
+
+  test('also recovers from a corpus request failure after the index is ready', async ({ page }) => {
+    let blocked = true;
+    await page.route('**/knowledge-corpus.data.ts*', async (route) => {
+      if (blocked) await route.abort();
+      else await route.continue();
+    });
+    await page.goto('chat/');
+    await page.getByLabel('输入问题').fill('解释 Flexbox');
+    await page.getByRole('button', { name: '发送问题' }).click();
+    await expect(page.getByRole('button', { name: '重试知识库' })).toBeVisible();
+    blocked = false;
+    await page.getByRole('button', { name: '重试知识库' }).click();
+    await page.getByLabel('输入问题').fill('解释 Grid');
+    await page.getByRole('button', { name: '发送问题' }).click();
+    await expect(page.locator('.chat-answer')).toBeVisible();
   });
 });

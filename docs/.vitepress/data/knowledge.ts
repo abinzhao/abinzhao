@@ -1,6 +1,7 @@
-import type { AsPlainObject, Options } from 'minisearch';
+import type { Options } from 'minisearch';
+import type { SerializedKnowledgeIndex } from './knowledge-index-codec';
 
-export type KnowledgeBlockKind = 'summary' | 'paragraph' | 'list' | 'blockquote' | 'code';
+export type KnowledgeBlockKind = 'summary' | 'paragraph' | 'list' | 'blockquote' | 'code' | 'table';
 
 export interface KnowledgeBlock {
   anchor?: string;
@@ -12,6 +13,7 @@ export interface KnowledgeBlock {
   href: string;
   id: string;
   kind: KnowledgeBlockKind;
+  language?: string;
   publishedAt: string;
   readingMinutes: number;
   sectionTitle?: string;
@@ -20,16 +22,19 @@ export interface KnowledgeBlock {
   text: string;
 }
 
-export type KnowledgeBlockMetadata = Omit<KnowledgeBlock, 'codeTerms' | 'text'>;
-export type KnowledgeBlockContent = Pick<KnowledgeBlock, 'codeTerms' | 'text'>;
+export type KnowledgeBlockMetadata = Omit<KnowledgeBlock, 'codeTerms' | 'text' | 'language'>;
+export type KnowledgeBlockContent = Pick<KnowledgeBlock, 'codeTerms' | 'text' | 'language'>;
 
 export interface KnowledgeIndexArtifact {
-  index: AsPlainObject;
+  contentVersion?: string;
+  granularity?: 'document';
+  index: SerializedKnowledgeIndex;
   metadata: Record<string, KnowledgeBlockMetadata>;
   version: 1;
 }
 
 export interface KnowledgeCorpusArtifact {
+  contentVersion?: string;
   blocks: Record<string, KnowledgeBlockContent>;
   version: 1;
 }

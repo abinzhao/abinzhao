@@ -1,7 +1,7 @@
 identity:
   name: 阿斌
   handle: "@abinzhao"
-  role: 鸿蒙开发者 / 前端工具构建者 / 智能体探索者
+  role: 全栈工程师 / 独立开发者 / 智能体工具构建者
   location: 中国 · 杭州
   avatar: https://copilot-cn.bytedance.net/api/ide/v1/tool_text_to_image?prompt=Website%20profile%20avatar%3A%20an%20anonymous%20Asian%20software%20engineer%20in%20a%20dark%20studio%2C%20side%20profile%20at%20a%20computer%20showing%20code%2C%20editorial%20photography%2C%20teal%20monitor%20light%2C%20deep%20navy%20background%2C%20square%20professional%20avatar%2C%20no%20text%2C%20not%20a%20recognizable%20person&image_size=square_hd
   status: 正在构建鸿蒙应用、前端工具与智能体产品
@@ -14,10 +14,10 @@ actions:
     link: /projects/
     kind: project
 stats:
-  - value: 5
+  - value: 12
     label: 开源仓库
     detail: 公开项目与工具
-  - value: 3
+  - value: 4
     label: 学习专题
     detail: 系统学习与实践
   - value: "本机"

@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { parse } from 'yaml';
+import { validateConfig } from './config-validation';
 
 export interface SiteConfig {
   description: string;
@@ -8,18 +9,11 @@ export interface SiteConfig {
   title: string;
 }
 
-interface SiteConfigFile {
-  site?: Partial<SiteConfig>;
-}
-
 const configPath = fileURLToPath(new URL('../../content/config/site.yml', import.meta.url));
 
 export function loadSiteConfig(): SiteConfig {
-  const parsed = parse(readFileSync(configPath, 'utf8')) as SiteConfigFile;
+  const parsed = parse(readFileSync(configPath, 'utf8'));
+  validateConfig(parsed, { site: { title: 'string', description: 'string', githubUrl: 'string' } }, configPath);
 
-  return {
-    description: parsed.site?.description ?? '',
-    githubUrl: parsed.site?.githubUrl ?? '',
-    title: parsed.site?.title ?? '阿斌实验室',
-  };
+  return parsed.site as SiteConfig;
 }

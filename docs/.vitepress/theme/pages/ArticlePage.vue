@@ -53,6 +53,9 @@ const headings = ref<ArticleOutlineItem[]>([]);
 const readingProse = ref<HTMLElement>();
 const readingProgress = ref(0);
 const activeHeading = ref('');
+const outlineDialog = ref<HTMLDialogElement>();
+const outlineTrigger = ref<HTMLButtonElement>();
+let navigatingOutline = false;
 let readingFrame = 0;
 const series = computed(() =>
   getSeriesNavigation(content.columns, contentHref.value),
@@ -116,6 +119,29 @@ function updateReadingState(): void {
 function scheduleReadingStateUpdate(): void {
   window.cancelAnimationFrame(readingFrame);
   readingFrame = window.requestAnimationFrame(updateReadingState);
+}
+
+function closeOutline(event?: MouseEvent): void {
+  if (!event || event.target === outlineDialog.value) outlineDialog.value?.close();
+}
+
+function jumpToHeading(id: string): void {
+  navigatingOutline = true;
+  outlineDialog.value?.close();
+  void nextTick(() => {
+    const heading = document.getElementById(id);
+    if (!heading) return;
+    const url = new URL(window.location.href);
+    url.hash = id;
+    if (url.href !== window.location.href) window.history.pushState(window.history.state, '', url);
+    heading.scrollIntoView({ block: 'start' });
+    heading.tabIndex = -1;
+    heading.focus({ preventScroll: true });
+  });
+}
+function restoreOutlineFocus(): void {
+  if (!navigatingOutline) outlineTrigger.value?.focus();
+  navigatingOutline = false;
 }
 
 onMounted(() => {
@@ -192,13 +218,25 @@ onBeforeUnmount(() => {
         </p>
       </header>
 
+      <div v-if="headings.length" class="reading-mobile-toolbar">
+        <button
+          ref="outlineTrigger"
+          class="reading-outline-trigger"
+          type="button"
+          aria-label="打开本页目录"
+          aria-haspopup="dialog"
+          @click="outlineDialog?.showModal()"
+        ><List :size="18" aria-hidden="true" /> 本页目录 <span>{{ headings.length }} 节</span></button>
+        <span>{{ Math.round(readingProgress * 100) }}%</span>
+      </div>
+
       <div class="reading-layout">
         <article ref="readingProse" class="reading-prose vp-doc">
           <Content />
         </article>
 
         <aside class="reading-aside">
-          <section v-if="headings.length" class="reading-aside__panel">
+          <section v-if="headings.length" class="reading-aside__panel reading-desktop-outline">
             <h2><List :size="16" aria-hidden="true" /> 本页目录</h2>
             <nav aria-label="本页目录">
               <a
@@ -260,5 +298,25 @@ onBeforeUnmount(() => {
         </a>
       </nav>
     </main>
+
+    <dialog
+      ref="outlineDialog"
+      class="reading-outline-dialog"
+      aria-labelledby="reading-outline-title"
+      @click="closeOutline"
+      @close="restoreOutlineFocus"
+    >
+      <header><h2 id="reading-outline-title">本页目录</h2><button class="icon-button" type="button" aria-label="关闭本页目录" @click="closeOutline()">×</button></header>
+      <nav aria-label="文章章节">
+        <a
+          v-for="heading in headings"
+          :key="heading.link"
+          :href="heading.link"
+          :aria-current="activeHeading === heading.link.slice(1) ? 'location' : undefined"
+          :class="{ 'reading-aside__subitem': heading.level > 2 }"
+          @click.prevent="jumpToHeading(heading.link.slice(1))"
+        >{{ heading.title }}</a>
+      </nav>
+    </dialog>
   </div>
 </template>

@@ -7,6 +7,7 @@ import {
   type AmbientParticle,
 } from '../composables/visual-effects';
 
+const props = defineProps<{ paused?: boolean }>();
 const canvas = ref<HTMLCanvasElement>();
 const cursor = ref<HTMLElement>();
 const route = useRoute();
@@ -134,7 +135,7 @@ function resizeCanvas(): void {
 }
 
 function updatePointer(event: PointerEvent): void {
-  if (!canvas.value || coarsePointerQuery?.matches) {
+  if (!canvas.value || coarsePointerQuery?.matches || props.paused) {
     return;
   }
 
@@ -214,7 +215,7 @@ function drawParticles(
 }
 
 function drawFrame(timestamp: number): void {
-  if (!canvas.value || !context) {
+  if (!canvas.value || !context || props.paused || document.hidden) {
     return;
   }
 
@@ -245,6 +246,11 @@ function drawFrame(timestamp: number): void {
 function restartAnimation(): void {
   window.cancelAnimationFrame(animationFrame);
   lastFrame = 0;
+  if (props.paused || document.hidden) {
+    resetTarget();
+    if (cursor.value) cursor.value.style.opacity = '0';
+    return;
+  }
   drawFrame(0);
 }
 
@@ -284,6 +290,7 @@ onMounted(() => {
 });
 
 watch(() => route.path, () => { resetTarget(); void nextTick(() => { boundsDirty = true; }); });
+watch(() => props.paused, restartAnimation);
 
 onBeforeUnmount(() => {
   window.cancelAnimationFrame(animationFrame);

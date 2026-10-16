@@ -7,7 +7,16 @@ import {
   ShieldCheck,
 } from '@lucide/vue';
 import { withBase } from 'vitepress';
+import { computed } from 'vue';
 import { data as about } from '../../data/about.data';
+import { data as content } from '../../data/content.data';
+import { data as repositories } from '../../data/projects.data';
+
+const stats = computed(() => about.stats.map((stat) => ({
+  ...stat,
+  value: stat.label === '开源仓库' ? repositories.projects.length
+    : stat.label === '学习专题' ? content.columns.length : stat.value,
+})));
 
 const actionIcons = {
   github: Code2,
@@ -62,7 +71,7 @@ const actionIcons = {
         <p class="about-profile__bio">“{{ about.identity.bio }}”</p>
 
         <dl class="about-stats">
-          <div v-for="stat in about.stats" :key="stat.label">
+          <div v-for="stat in stats" :key="stat.label">
             <dt>{{ stat.label }}</dt>
             <dd>{{ stat.value }}</dd>
             <p>{{ stat.detail }}</p>
@@ -98,7 +107,7 @@ const actionIcons = {
         <div class="section-heading">
           <div>
             <p class="technical-label">技术能力与实践方向</p>
-            <h2 id="skills-title">工程雷达与技术拓扑</h2>
+            <h2 id="skills-title">技术实践</h2>
           </div>
           <p class="section-heading__copy">持续打磨底层能力，把技术选择落到真实产品体验。</p>
         </div>
@@ -112,14 +121,22 @@ const actionIcons = {
             <div v-for="skill in group.items" :key="skill.name" class="skill-row">
               <div class="skill-row__title">
                 <strong>{{ skill.name }}</strong>
-                <span>{{ skill.value }}%</span>
-              </div>
-              <div class="skill-row__track" aria-hidden="true">
-                <span :style="{ width: `${skill.value}%` }" />
               </div>
               <p>{{ skill.detail }}</p>
             </div>
           </section>
+        </div>
+      </section>
+      <section class="about-section" aria-labelledby="practice-title">
+        <div class="section-heading">
+          <div><p class="technical-label">已发布内容</p><h2 id="practice-title">公开实践与学习记录</h2></div>
+          <p class="section-heading__copy">{{ content.blogArticles.length }} 篇博客 · {{ content.columns.length }} 个学习专题</p>
+        </div>
+        <div class="skill-grid">
+          <a v-for="column in content.columns" :key="column.href" class="skill-card" :href="withBase(column.href)">
+            <header><h3>{{ column.title }}</h3><ArrowUpRight :size="18" aria-hidden="true" /></header>
+            <p>{{ column.description }}</p><small>{{ column.articles.length }} 篇已发布教程</small>
+          </a>
         </div>
       </section>
     </main>

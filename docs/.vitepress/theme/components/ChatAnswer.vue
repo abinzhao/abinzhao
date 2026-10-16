@@ -42,17 +42,20 @@ const confidence = computed(() => {
       :class="`chat-answer__block--${block.kind}`"
     >
       <h3 v-if="block.heading">{{ block.heading }}</h3>
-      <p v-if="block.kind === 'paragraph' && block.items[0]">
+      <pre v-if="block.kind === 'paragraph' && block.items[0]?.kind === 'code'" class="chat-answer__code"><code>{{ block.items[0].text }}</code></pre>
+      <p v-else-if="block.kind === 'paragraph' && block.items[0]">
         {{ block.items[0].text }}
       </p>
       <ol v-else-if="block.kind === 'steps'">
         <li v-for="item in block.items" :key="`${item.text}-${item.sourceIds.join('-')}`">
-          {{ item.text }}
+          <pre v-if="item.kind === 'code' || item.kind === 'table'" class="chat-answer__code"><code>{{ item.text }}</code></pre>
+          <template v-else>{{ item.text }}</template>
         </li>
       </ol>
       <ul v-else-if="block.items.length">
         <li v-for="item in block.items" :key="`${item.text}-${item.sourceIds.join('-')}`">
-          {{ item.text }}
+          <pre v-if="item.kind === 'code' || item.kind === 'table'" class="chat-answer__code"><code>{{ item.text }}</code></pre>
+          <template v-else>{{ item.text }}</template>
         </li>
       </ul>
     </section>

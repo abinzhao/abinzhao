@@ -16,6 +16,7 @@ import type {
 
 defineProps<{
   action: QuickAction;
+  disabled?: boolean;
   hasArticle: boolean;
   scope: KnowledgeScope;
 }>();
@@ -48,6 +49,7 @@ const scopes = [
         v-for="item in scopes"
         :key="item.value"
         :aria-pressed="scope === item.value"
+        :disabled="disabled"
         :class="{ active: scope === item.value }"
         type="button"
         @click="emit('update:scope', item.value)"
@@ -57,6 +59,7 @@ const scopes = [
       <button
         v-if="hasArticle"
         :aria-pressed="scope === 'article'"
+        :disabled="disabled"
         :class="{ active: scope === 'article' }"
         type="button"
         @click="emit('update:scope', 'article')"
@@ -65,11 +68,14 @@ const scopes = [
       </button>
     </div>
 
-    <div class="chat-actions" role="group" aria-label="问答动作">
+    <details class="chat-advanced">
+      <summary>更多动作</summary>
+      <div class="chat-actions" role="group" aria-label="问答动作">
       <button
         v-for="item in actions"
         :key="item.value"
         :aria-pressed="action === item.value"
+        :disabled="disabled"
         :class="{ active: action === item.value }"
         :title="item.label"
         type="button"
@@ -80,6 +86,7 @@ const scopes = [
       </button>
       <button
         title="随机探索"
+        :disabled="disabled"
         type="button"
         @click="emit('special', 'random-topic')"
       >
@@ -88,6 +95,7 @@ const scopes = [
       </button>
       <button
         title="15 分钟学习任务"
+        :disabled="disabled"
         type="button"
         @click="emit('special', 'study-task')"
       >
@@ -95,6 +103,7 @@ const scopes = [
         <span>15 分钟</span>
         <Sparkles class="chat-actions__spark" :size="10" aria-hidden="true" />
       </button>
-    </div>
+      </div>
+    </details>
   </div>
 </template>

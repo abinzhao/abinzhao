@@ -1,7 +1,8 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
+import { loadPublishedArticleSources } from '../docs/.vitepress/data/content';
 
 type KnowledgeBuildModule = typeof import('../docs/.vitepress/data/knowledge-build');
 
@@ -42,6 +43,11 @@ describe('knowledge corpus', () => {
         '```ts',
         'const useLocalState = () => window.localStorage;',
         '```',
+        '',
+        '| 属性 | 作用 |',
+        '| --- | --- |',
+        '| scope | 限定来源 |',
+        '| status | 请求状态 |',
         '',
         '<SecretPanel token="do-not-index" />',
         '',
@@ -101,10 +107,45 @@ describe('knowledge corpus', () => {
     const codeBlock = artifacts.blocks.find((block) => block.kind === 'code');
     const serialized = JSON.stringify(artifacts);
 
-    expect(codeBlock?.text).toBe('');
+    // 新契约保留可展示代码，仍只通过code字段赋予低检索权重。
+    expect(codeBlock?.text).toContain('const useLocalState');
+    expect(codeBlock).toHaveProperty('language', 'ts');
     expect(codeBlock?.codeTerms).toContain('useLocalState');
     expect(serialized).not.toContain('do-not-index');
     expect(serialized).not.toContain(fixtureRoot);
+  });
+
+  test('preserves table row and column relationships', async () => {
+    const { blocks } = await knowledgeBuild!.buildKnowledgeArtifacts(fixtureRoot);
+    const table = blocks.find((block) => block.kind === 'table');
+    expect(table?.text).toContain('| 属性 | 作用 |');
+    expect(table?.text).toContain('| scope | 限定来源 |');
+  });
+
+  test('indexes the visible body without treating YAML frontmatter as a heading', async () => {
+    const path = join(fixtureRoot, 'blog', 'knowledge.md');
+    const original = await readFile(path, 'utf8');
+    try {
+      await writeFile(path, original.replace('# 本地知识测试\n', '# 本地知识测试\n\n引言段应指向文章而不是 YAML 伪标题。\n'));
+      const { blocks } = await knowledgeBuild!.buildKnowledgeArtifacts(fixtureRoot);
+      const intro = blocks.find((block) => block.text.includes('引言段'));
+      expect(intro?.href).toBe('/blog/knowledge.html');
+      expect(intro?.sectionTitle).toBeUndefined();
+    } finally { await writeFile(path, original); }
+  });
+
+  test('invalidates cached artifacts when Markdown content changes', async () => {
+    const path = join(fixtureRoot, 'blog', 'knowledge.md');
+    const original = await readFile(path, 'utf8');
+    const before = await knowledgeBuild!.getKnowledgeArtifacts(fixtureRoot);
+    try {
+      await writeFile(path, `${original}\n\n新增可检索版本标记。\n`);
+      const after = await knowledgeBuild!.getKnowledgeArtifacts(fixtureRoot);
+      expect(after.blocks.some((block) => block.text.includes('新增可检索版本标记'))).toBe(true);
+      expect(after.corpus.contentVersion).not.toBe(before.corpus.contentVersion);
+    } finally {
+      await writeFile(path, original);
+    }
   });
 
   test('separates searchable metadata from answer text with stable IDs', async () => {
@@ -123,13 +164,31 @@ describe('knowledge corpus', () => {
     expect(corpus.blocks[ids[0]]).toHaveProperty('text');
   });
 
-  test('includes all 44 published articles from the real site', async () => {
+  test('includes every published article from the real site exactly once in the document set', async () => {
     expect(knowledgeBuild?.buildKnowledgeArtifacts).toBeTypeOf('function');
     if (!knowledgeBuild) return;
 
     const contentRoot = resolve(import.meta.dirname, '../docs');
     const { blocks } = await knowledgeBuild.buildKnowledgeArtifacts(contentRoot);
-
-    expect(new Set(blocks.map((block) => block.documentId))).toHaveLength(44);
+    const sources = await loadPublishedArticleSources(contentRoot);
+    expect([...new Set(blocks.map((block) => block.documentId))].sort()).toEqual(
+      sources.map(({ article }) => article.href).sort(),
+    );
   }, 30_000);
+
+  test('indexes actual imported source and invalidates its cache after a source edit', async () => {
+    const path = join(fixtureRoot, 'blog', 'knowledge.md');
+    const original = await readFile(path, 'utf8');
+    const snippet = join(fixtureRoot, 'source.mjs');
+    try {
+      await writeFile(snippet, 'export const importedSource = "version-one";\n');
+      await writeFile(path, `${original}\n\n<<< ../source.mjs\n`);
+      const before = await knowledgeBuild!.getKnowledgeArtifacts(fixtureRoot);
+      expect(before.blocks.some((block) => block.kind === 'code' && block.text.includes('importedSource'))).toBe(true);
+      await writeFile(snippet, 'export const importedSource = "version-two";\n');
+      const after = await knowledgeBuild!.getKnowledgeArtifacts(fixtureRoot);
+      expect(after.blocks.some((block) => block.text.includes('version-two'))).toBe(true);
+      expect(after.corpus.contentVersion).not.toBe(before.corpus.contentVersion);
+    } finally { await writeFile(path, original); }
+  });
 });

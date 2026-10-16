@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Local Harness · 工作区助手</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0c111b;color:#dde5f5;font:16px/1.7 system-ui,sans-serif}main{max-width:880px;margin:7vh auto;padding:24px}small{color:#82d3c9;letter-spacing:.12em}h1{font-size:clamp(28px,5vw,44px);line-height:1.2}p{color:#9daecc}label{display:block;margin-bottom:8px}textarea{width:100%;min-height:116px;resize:vertical;border:1px solid #34435e;border-radius:12px;background:#141e30;color:inherit;font:inherit;padding:16px}textarea:focus{outline:2px solid #83ddce}button{min-height:44px;padding:8px 20px;margin:12px 8px 12px 0;border:1px solid #43605c;border-radius:9px;background:#83ddce;color:#102622;font:inherit;cursor:pointer}button:disabled{opacity:.5;cursor:default}#stop{background:transparent;color:#dde5f5}#status{color:#83ddce}pre{white-space:pre-wrap;overflow-wrap:anywhere;border-top:1px solid #34435e;padding-top:22px;font:15px/1.8 ui-monospace,monospace;min-height:80px}details{color:#9daecc}summary{cursor:pointer;min-height:44px}#events{font-size:13px}
+</style>
+<main>
+<small>LOCAL HARNESS / 只读工作区</small>
+<h1>用文件证据回答问题</h1>
+<p>模型运行在本机。助手可列出、读取工作区文本文件；每次运行最多 8 步。</p>
+<form id="form">
+<label for="prompt">你的问题</label>
+<textarea id="prompt" required maxlength="2000">请阅读 guide.md，解释这个项目的运行边界，并引用文件路径。</textarea>
+<button id="send">开始运行</button><button id="stop" type="button" disabled>取消</button>
+</form>
+<div id="status" role="status">等待输入</div>
+<pre id="answer" aria-label="回答"></pre>
+<details><summary>查看本次运行事件</summary><pre id="events"></pre></details>
+</main>
+<script type="module">
+const form = document.querySelector('#form');
+const send = document.querySelector('#send');
+const stop = document.querySelector('#stop');
+const status = document.querySelector('#status');
+const answer = document.querySelector('#answer');
+const events = document.querySelector('#events');
+let active;
+stop.onclick = () => active?.abort();
+form.onsubmit = async (event) => {
+  event.preventDefault();
+  active = new AbortController();
+  send.disabled = true;
+  stop.disabled = false;
+  answer.textContent = '';
+  events.textContent = '';
+  status.textContent = '运行中';
+  let reader;
+  let settled = false;
+  try {
+    const response = await fetch('/api/run', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ prompt: document.querySelector('#prompt').value }),
+      signal: active.signal,
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    while (true) {
+      const { value, done } = await reader.read();
+      buffer += done ? decoder.decode() : decoder.decode(value, { stream: true });
+      let end;
+      while ((end = buffer.indexOf('\n\n')) >= 0) {
+        const frame = buffer.slice(0, end);
+        buffer = buffer.slice(end + 2);
+        if (!frame.startsWith('data: ')) continue;
+        const data = JSON.parse(frame.slice(6));
+        if (data.type === 'text.delta') answer.textContent += data.text;
+        else events.textContent += `${JSON.stringify(data)}\n`;
+        if (data.type === 'run.end') {
+          settled = true;
+          status.textContent = data.status === 'completed' ? '运行完成' : '运行未完成';
+        }
+        if (data.type === 'run.error') throw new Error(data.message);
+      }
+      if (done) break;
+    }
+    if (!settled || buffer.trim()) throw new Error('连接中断，回答未完成');
+  } catch (error) {
+    status.textContent = active.signal.aborted ? '已取消，部分回答未保存为历史' : `运行失败：${error.message}`;
+  } finally {
+    await reader?.cancel().catch(() => {});
+    reader?.releaseLock();
+    send.disabled = false;
+    stop.disabled = true;
+    active = undefined;
+  }
+};
+</script>
+</html>
