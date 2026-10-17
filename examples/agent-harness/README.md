@@ -9,7 +9,10 @@
 ```sh
 node --version
 npm test
+npm run labs
 ```
+
+`labs/` 提供独立的扩展机制实验：技能元信息发现与按需正文加载、审批参数绑定、完整上下文组选择、DAG 检查点恢复和配对评测统计。实际步骤、接口子集和未实现边界见 [labs/README.md](./labs/README.md)。实验不调用模型；人工评测夹具不代表模型效果。
 
 安装并启动本机 Ollama 后，选择支持 tools 的模型。以下名称是一个可选模型，不保证你的硬件可运行；`MODEL` 必须与 `ollama list` 中的已安装名称一致。
 
@@ -35,6 +38,7 @@ Web 地址：`http://127.0.0.1:8787`。按 Ctrl+C 停止。Ollama 未启动会�
 | `src/context.mjs` | 按完整用户轮次选择上下文 |
 | `src/cli.mjs` | CLI 组合、超时及 SIGINT 传播 |
 | `src/web.mjs`、`web/index.html` | SSE 传输与可取消界面 |
+| `labs/` | Skills、权限、上下文、工作流和评测的独立实验 |
 | `test/` | 确定性协议、工具、状态与运输层测试 |
 
 ## 配置与边界

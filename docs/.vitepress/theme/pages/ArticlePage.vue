@@ -31,6 +31,7 @@ import {
   selectActiveHeading,
 } from '../composables/visual-effects';
 import ArticleAskMenu from '../components/ArticleAskMenu.vue';
+import { groupHarnessChapters } from '../composables/harness-navigation';
 
 const route = useRoute();
 const { frontmatter } = useData();
@@ -60,6 +61,9 @@ let readingFrame = 0;
 const series = computed(() =>
   getSeriesNavigation(content.columns, contentHref.value),
 );
+const seriesGroups = computed(() => series.value.column?.slug === 'agent-harness'
+  ? groupHarnessChapters(series.value.column.articles)
+  : []);
 const globalIndex = computed(() =>
   content.blogArticles.findIndex(
     (item) => normalizeContentHref(item.href) === contentHref.value,
@@ -255,7 +259,22 @@ onBeforeUnmount(() => {
 
           <section v-if="series.column" class="reading-aside__panel">
             <h2><BookOpen :size="16" aria-hidden="true" /> {{ series.column.title }}</h2>
-            <ol class="series-list">
+            <template v-if="seriesGroups.length">
+              <details v-for="group in seriesGroups" :key="group.id" class="series-unit"
+                :open="group.articles.some((item) => normalizeContentHref(item.href) === contentHref)">
+                <summary>{{ String(group.from).padStart(2, '0') }}–{{ group.to }} · {{ group.title }}</summary>
+                <ol class="series-list" :start="group.from">
+                  <li v-for="item in group.articles" :key="item.href">
+                    <a :href="withBase(item.href)"
+                      :aria-current="normalizeContentHref(item.href) === contentHref ? 'page' : undefined"
+                      :class="{ 'series-list__current': normalizeContentHref(item.href) === contentHref }">
+                      <span>{{ String(item.seriesOrder ?? 0).padStart(2, '0') }}</span>{{ item.title }}
+                    </a>
+                  </li>
+                </ol>
+              </details>
+            </template>
+            <ol v-else class="series-list">
               <li v-for="item in series.column.articles" :key="item.href">
                 <a
                   :class="{

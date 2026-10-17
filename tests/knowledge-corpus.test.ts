@@ -122,6 +122,17 @@ describe('knowledge corpus', () => {
     expect(table?.text).toContain('| scope | 限定来源 |');
   });
 
+  test('excludes chapter navigation while retaining real source explanations', async () => {
+    const path = join(fixtureRoot, 'blog', 'knowledge.md');
+    const original = await readFile(path, 'utf8');
+    try {
+      await writeFile(path, `${original}\n\n来源说明：MCP 资源授权与工具审批分开。\n\n上一篇：[MCP 授权](./knowledge.md) · 下一篇：[技能](./knowledge.md)\n\n下一章：[工作流](./knowledge.md)\n`);
+      const { blocks } = await knowledgeBuild!.buildKnowledgeArtifacts(fixtureRoot);
+      expect(blocks.some((block) => /^(上一篇|下一章)：/u.test(block.text))).toBe(false);
+      expect(blocks.some((block) => block.text.includes('MCP 资源授权与工具审批分开'))).toBe(true);
+    } finally { await writeFile(path, original); }
+  });
+
   test('indexes the visible body without treating YAML frontmatter as a heading', async () => {
     const path = join(fixtureRoot, 'blog', 'knowledge.md');
     const original = await readFile(path, 'utf8');

@@ -178,4 +178,6 @@ node --test --test-name-pattern="session replay|invalid session transitions|agen
 
 ---
 
+深化阅读：[事件日志与模型表面](./37-event-surface)、[耐久存储](./38-durable-storage)、[会话分支](./39-session-branching)、[副作用与检查点](./40-checkpoints-side-effects)。消息回放与动作重做是不同契约。
+
 上一篇：[第 05 章：Agent 循环](./05-agent-loop.md) · 下一篇：[第 07 章：上下文预算](./07-context-budget.md)

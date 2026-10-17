@@ -167,4 +167,6 @@ JS
 
 ---
 
+深化阅读：[文件观察与编辑](./43-file-editing)、[执行管线](./46-tool-pipeline)、[文件系统沙箱](./50-filesystem-sandbox)、[审批绑定](./52-permissions-approvals)。参数和路径校验之外，还需要检查实际副作用与系统隔离。
+
 上一篇：[第 03 章：流式模型](./03-streaming-provider.md) · 下一篇：[第 05 章：Agent 循环](./05-agent-loop.md)

@@ -1,5 +1,5 @@
 import MiniSearch, { type SearchResult } from 'minisearch';
-import { unpackKnowledgeIndex } from '../../data/knowledge-index-codec';
+import { unpackKnowledgeArtifact, unpackKnowledgeIndex } from '../../data/knowledge-index-codec';
 import {
   getKnowledgeMiniSearchOptions,
   tokenizeKnowledgeText,
@@ -150,7 +150,9 @@ function rerank(
     })
     .filter((result): result is KnowledgeSearchResult => result !== undefined)
     // 先选出相关代码，再应用每篇文章的多样性上限，避免摘要占掉代码的名额。
-    .sort((left, right) => codePriority(right) - codePriority(left) || right.score - left.score || left.id.localeCompare(right.id));
+    .sort((left, right) => codePriority(right) - codePriority(left) ||
+      (!wantsCode ? Number(left.kind === 'code') - Number(right.kind === 'code') : 0) ||
+      right.score - left.score || left.id.localeCompare(right.id));
 
   const limit = Math.max(1, options.limit ?? 6);
   if (options.documentId) return candidates.slice(0, limit);
@@ -185,7 +187,7 @@ export function createKnowledgeSearchRuntime(
   }> => {
     if (!artifactPromise) {
       loadState = 'loading-index';
-      artifactPromise = loaders.loadIndex();
+      artifactPromise = loaders.loadIndex().then(unpackKnowledgeArtifact);
       miniSearchPromise = artifactPromise.then((artifact) => {
         documentBlocks.clear();
         blockTerms.clear();

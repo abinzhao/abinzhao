@@ -151,4 +151,6 @@ MODEL=qwen3:4b npm start -- "阅读 guide.md，解释运行边界并引用路径
 - [DeepSeek Harness：子运行取消所有权](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/subagent.md)：取消属于明确生命周期；当前示例没有子 Agent。
 - [Node.js 22：AbortController 与 AbortSignal](https://nodejs.org/docs/latest-v22.x/api/globals.html#class-abortcontroller)：确认信号组合、超时和检查点语义。
 
+深化阅读：[PTY 与后台任务](./45-pty-background-jobs)、[子 Agent 控制](./56-subagent-control)、[工作流恢复](./58-durable-workflows)。取消必须继续传递到进程、委派任务与耐久状态。
+
 上一章：[第七章：上下文预算](./07-context-budget) · 下一章：[第九章：结构化运行事件](./09-observability)

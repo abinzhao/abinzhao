@@ -160,4 +160,6 @@ CLI 测试以 `import.meta.url` 定位子进程入口，因此下载包根目录
 - [Ollama：工具调用能力](https://docs.ollama.com/capabilities/tool-calling)：核对模型支持前提，文档能力不等于本机安装状态。
 - [Node.js 22：进程信号与退出码](https://nodejs.org/docs/latest-v22.x/api/process.html#signal-events)：确认协作退出与信号处理边界。
 
+深化阅读：[Harness SDK](./61-harness-sdk)、[Claude Agent SDK](./62-claude-code-sdk)、[Codex App Server](./63-codex-app-server)、[OpenCode Server](./64-opencode-server)。入口组合的思想可以迁移，具体 SDK 类型和授权契约不能混用。
+
 上一章：[第十章：行为测试](./10-behavior-tests) · 下一章：[第十二章：Web 运输层](./12-web-transport)

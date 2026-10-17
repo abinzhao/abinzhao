@@ -148,4 +148,6 @@ MODEL=qwen3:4b npm start -- "阅读 guide.md，说明上下文预算的单位并
 - [DeepSeek Harness：模型请求与容量](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/llm-streaming.md)：区分请求协议、模型能力与本例的字节估算。
 - [Node.js 22：Buffer.byteLength](https://nodejs.org/docs/latest-v22.x/api/buffer.html#static-method-bufferbytelengthstring-encoding)：确认 UTF-8 字节计算语义。
 
+深化阅读：[上下文装配](./31-context-assembly)、[Token 压力](./32-token-pressure)、[Spill](./33-tool-discovery-spill)、[压缩与交接](./34-context-compaction)、[Prompt Cache](./35-prompt-caching)。基础字节预算需要结合模型真实计量和事实保留策略继续完善。
+
 上一章：[第六章：会话与回放](./06-session-replay) · 下一章：[第八章：取消与受限重试](./08-cancellation-retry)

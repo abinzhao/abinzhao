@@ -140,4 +140,6 @@ MODEL=qwen3:4b npm start -- "阅读 guide.md，解释工具边界并引用路径
 - [DeepSeek Harness：compact assistant streams](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/llm-streaming.md)：对照实时输出与已结算回复。
 - [Node.js 22：performance.now](https://nodejs.org/docs/latest-v22.x/api/perf_hooks.html#performancenow)：确认进程内高精度经过时间语义。
 
+深化阅读：[轨迹与结果评测](./68-agent-evaluation)、[OpenTelemetry 与成本](./70-observability-cost)、[性能运维](./71-performance-operations)。运行事件进一步连接安全失败、任务结果与资源开销。
+
 上一章：[第八章：取消与受限重试](./08-cancellation-retry) · 下一章：[第十章：行为测试](./10-behavior-tests)

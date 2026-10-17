@@ -157,4 +157,6 @@ MODEL=qwen3:4b npm start -- "读取 guide.md，并根据文件说明项目能做
 
 ---
 
+深化阅读：[模型能力与预算](./15-model-capabilities)、[消息与内容块协议](./16-model-protocols)、[路由与认证](./17-model-routing)。本章的兼容 SSE 只是其中一种适配路径。
+
 上一篇：[第 02 章：插件生命周期](./02-plugin-lifecycle.md) · 下一篇：[第 04 章：工具边界](./04-tool-boundaries.md)

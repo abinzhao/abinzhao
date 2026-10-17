@@ -3,8 +3,11 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, 
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { promisify } from 'node:util';
+import { pathToFileURL } from 'node:url';
 import { gzipSync } from 'node:zlib';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
+import { loadPublishedArticleSources } from '../docs/.vitepress/data/content';
+import { unpackKnowledgeArtifact, unpackKnowledgeIndex } from '../docs/.vitepress/data/knowledge-index-codec';
 
 const projectRoot = resolve(import.meta.dirname, '..');
 const fixtureRoot = mkdtempSync(join(tmpdir(), 'abinzhao-build-'));
@@ -63,6 +66,27 @@ describe('VitePress static site', () => {
     expect(corpusSource).toContain('DOM 树');
     expect(gzipSync(readFileSync(resolve(chunksDirectory, indexChunk!))).byteLength)
       .toBeLessThanOrEqual(250 * 1024);
+  });
+
+  test('decodes the emitted compact chunk into every published document and block identity', async () => {
+    const file = readdirSync(chunksDirectory).find((name) =>
+      name.startsWith('knowledge-index.data.') && name.endsWith('.js'),
+    );
+    expect(file).toBeDefined();
+    const { data } = await import(pathToFileURL(join(chunksDirectory, file!)).href);
+    expect(data.packed.encoding).toBe('gzip-columns-v1');
+    const artifact = await unpackKnowledgeArtifact(data);
+    const index = unpackKnowledgeIndex(artifact.index);
+    const sources = await loadPublishedArticleSources(join(fixtureRoot, 'docs'));
+    const documentIds = sources.map(({ article }) => article.href).sort();
+    expect(Object.values(index.documentIds).sort()).toEqual(documentIds);
+    expect([...new Set(Object.values(artifact.metadata).map((block) => block.documentId))].sort())
+      .toEqual(documentIds);
+    expect(index.index.length).toBeGreaterThan(0);
+    for (const [id, block] of Object.entries(artifact.metadata)) {
+      expect(block.id).toBe(id);
+      expect(block.href).toBe(block.anchor ? `${block.documentId}#${block.anchor}` : block.documentId);
+    }
   });
 
   test('excludes draft HTML, column descendants, page bundles, knowledge and sitemap entries', () => {

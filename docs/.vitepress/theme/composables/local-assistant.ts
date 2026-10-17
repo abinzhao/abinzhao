@@ -364,14 +364,21 @@ function retrievalConfidence(
   const queryTerms = tokenizeKnowledgeText(question.replace(
     /(?:请|帮我|解释|介绍|什么是|是什么意思|如何|怎么|有哪些|相关|资料|文章|示例|代码|一下|继续|展开|详细|找|搜索)/gu, ' ',
   )).filter((term) => term.length > 1);
-  const evidenceTerms = new Set(results.slice(0, 3).flatMap((result) =>
-    tokenizeKnowledgeText(`${result.articleTitle} ${result.sectionTitle ?? ''} ${result.text}`),
-  ));
-  const matched = queryTerms.filter((term) => evidenceTerms.has(term));
+  const documents = new Map<string, Set<string>>();
+  for (const result of results.slice(0, 3)) {
+    const terms = documents.get(result.documentId) ?? new Set<string>();
+    for (const term of tokenizeKnowledgeText(`${result.articleTitle} ${result.sectionTitle ?? ''} ${result.text}`)) {
+      terms.add(term);
+    }
+    documents.set(result.documentId, terms);
+  }
+  const evidenceTerms = new Set([...documents.values()].flatMap((terms) => [...terms]));
   const namedTerms = queryTerms.filter((term) => /^[a-z][a-z0-9._-]{2,}$/iu.test(term));
   if (namedTerms.length && !namedTerms.some((term) => evidenceTerms.has(term))) return 0;
+  // 不把不同文章各命中一个片段拼成“相关证据”；至少一篇要支持问题主体。
   const coverage = queryTerms.length > 0
-    ? matched.length / queryTerms.length
+    ? Math.max(0, ...[...documents.values()].map((terms) =>
+      queryTerms.filter((term) => terms.has(term)).length / queryTerms.length))
     : 0;
   if (coverage < 0.25) return 0;
   const raw = results[0].score;

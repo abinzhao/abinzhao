@@ -2,10 +2,11 @@ import MiniSearch from 'minisearch';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import { gzipSync } from 'node:zlib';
 import { createMarkdownRenderer } from 'vitepress';
 import type { MarkdownRenderer } from 'vitepress';
 import matter from 'gray-matter';
-import { packKnowledgeIndex } from './knowledge-index-codec';
+import { packKnowledgeArtifact, packKnowledgeIndex } from './knowledge-index-codec';
 import {
   loadPublishedArticleSources,
   type Article,
@@ -174,8 +175,11 @@ function parseArticleBlocks(
     }
 
     if (token.type === 'paragraph_open' && token.level === 0) {
-      const text = readInlineText(tokens[index + 1]);
-      if (text) {
+      const inline = tokens[index + 1];
+      const text = readInlineText(inline);
+      const isChapterNavigation = /^(?:上一(?:篇|章)|下一(?:篇|章|步))\s*[:：]/u.test(text) &&
+        inline.children?.some((child) => child.type === 'link_open');
+      if (text && !isChapterNavigation) {
         pending.push({ anchor, kind: 'paragraph', sectionTitle, text, codeTerms: [] });
       }
       index += 2;
@@ -306,7 +310,7 @@ async function buildFromSources(
       ),
       version: 1,
     },
-    index: {
+    index: await packKnowledgeArtifact({
       contentVersion: version,
       granularity: 'document',
       index: packKnowledgeIndex(miniSearch.toJSON()),
@@ -317,7 +321,7 @@ async function buildFromSources(
         ]),
       ),
       version: 1,
-    },
+    }, async (bytes) => gzipSync(bytes, { level: 9 })),
   };
 }
 

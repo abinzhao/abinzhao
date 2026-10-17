@@ -167,4 +167,6 @@ node --test --test-name-pattern="plugin services" test/harness.test.mjs
 
 ---
 
+深化阅读：[插件分发与版本](./22-plugin-packaging)、[Cordis 组合](./23-cordis-composition)、[Hooks 与 Mods](./24-hooks-mods)。这些章节进一步区分生命周期所有权与外部插件的信任边界。
+
 上一篇：[第 01 章：服务契约](./01-contracts.md) · 下一篇：[第 03 章：流式模型](./03-streaming-provider.md)

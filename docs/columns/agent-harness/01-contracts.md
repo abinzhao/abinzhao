@@ -172,4 +172,6 @@ MODEL=qwen3:4b npm start -- "阅读 guide.md，说明运行边界并引用文件
 
 ---
 
+深化阅读：[Agent 与 Harness 的职责](./13-agent-foundations)、[Harness SDK 宿主契约](./61-harness-sdk)。前者解释控制权，后者把本章的服务边界扩展到可编程宿主。
+
 上一篇：[专题入口与完整路线](./index.md) · 下一篇：[第 02 章：插件生命周期](./02-plugin-lifecycle.md)

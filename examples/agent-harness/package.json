@@ -7,6 +7,7 @@
   "scripts": {
     "start": "node src/cli.mjs",
     "web": "node src/cli.mjs --web",
+    "labs": "node labs/run.mjs",
     "test": "node --test test/*.test.mjs"
   }
 }

@@ -157,4 +157,10 @@ MODEL=qwen3:4b npm run web
 - [DeepSeek Harness：Session 事件与远程边界](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/session.md)：上游会话能力不与本例两条 HTTP 路由混同。
 - [Node.js 22：HTTP response.write](https://nodejs.org/docs/latest-v22.x/api/http.html#responsewritechunk-encoding-callback)：确认返回 false 与发送缓冲背压的关系。
 
-上一章：[第十一章：CLI 组合入口](./11-cli-composition) · 下一章：[返回 Agent Harness 专题](./index)
+## 从基础项目进入完整工程体系
+
+本章完成基础助手的运输闭环。继续学习时，先在第 13–18 章厘清 Agent、模型和指令边界，再进入 Skills、插件和 MCP；上下文、沙箱、多 Agent、SDK 与真实评测在后续单元逐一展开。基础项目和扩展实验的实现范围分别记录，新增知识不会自动赋予本机助手更高权限。
+
+下载包新增 `labs/`，可用 `npm run labs` 在不启动模型的情况下观察技能发现、一次性审批、完整工具组裁剪、DAG 恢复和评测统计。它们是独立机制实验，具体步骤与局限见包内 `labs/README.md`。
+
+上一章：[第十一章：CLI 组合入口](./11-cli-composition) · 下一章：[第十三章：Agent、Workflow 与 Harness 的边界](./13-agent-foundations)

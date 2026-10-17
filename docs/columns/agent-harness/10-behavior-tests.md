@@ -144,4 +144,6 @@ MODEL=qwen3:4b npm start -- "阅读 guide.md，说明没有哪些工具，并引
 - [DeepSeek Harness：Session 耐久契约](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/session.md)：对照状态拒绝与重新打开后的事实。
 - [Node.js 22：Test runner](https://nodejs.org/docs/latest-v22.x/api/test.html)：测试选择、异步用例和内置执行能力。
 
+深化阅读：[契约与故障注入](./67-contract-fault-tests)、[真实任务评测](./68-agent-evaluation)、[Skill 与插件消融](./69-skill-plugin-evals)、[完整验收](./72-production-capstone)。机制正确性与模型效果需要分别取证。
+
 上一章：[第九章：结构化运行事件](./09-observability) · 下一章：[第十一章：CLI 组合入口](./11-cli-composition)

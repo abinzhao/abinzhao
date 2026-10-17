@@ -155,4 +155,6 @@ SESSION_ID=loop MODEL=qwen3:4b npm start -- "读取 guide.md，结合文件给�
 
 ---
 
+深化阅读：[控制策略与验证门](./14-agent-control-patterns)、[Inbox 与 Steering](./42-input-concurrency)、[长任务与 Goal](./59-long-running-goals)。有限循环之外还需明确定义目标、阶段与中途输入的影响。
+
 上一篇：[第 04 章：工具边界](./04-tool-boundaries.md) · 下一篇：[第 06 章：会话回放](./06-session-replay.md)

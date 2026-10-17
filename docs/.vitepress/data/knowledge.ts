@@ -30,6 +30,10 @@ export interface KnowledgeIndexArtifact {
   granularity?: 'document';
   index: SerializedKnowledgeIndex;
   metadata: Record<string, KnowledgeBlockMetadata>;
+  packed?: {
+    encoding: 'gzip-columns-v1';
+    data: string;
+  };
   version: 1;
 }
 

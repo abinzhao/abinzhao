@@ -53,10 +53,14 @@ test('opens a column by clicking the card description and keeps chapter links in
   await expect(page).toHaveURL(new RegExp(chapterHref!.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$'));
 });
 
-test('offers twelve Harness chapters, downloadable source and rendered runnable code', async ({ page }) => {
+test('offers seventy-two Harness chapters, grouped navigation and downloadable source', async ({ page }) => {
   await page.goto('columns/agent-harness/');
   const chapters = page.locator('.column-reading-chapters ol > li');
-  await expect(chapters).toHaveCount(12);
+  await expect(chapters).toHaveCount(72);
+  await expect(page.getByRole('navigation', { name: '学习单元' }).locator('a')).toHaveCount(12);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect.poll(async () => (await chapters.first().boundingBox())!.y).toBeLessThan(720);
+  await page.setViewportSize({ width: 1440, height: 900 });
   const download = page.getByRole('link', { name: '下载完整项目源码', exact: true });
   const response = await page.request.get((await download.getAttribute('href'))!);
   expect(response.ok()).toBe(true);
@@ -69,4 +73,22 @@ test('offers twelve Harness chapters, downloadable source and rendered runnable 
   await expect(page).toHaveURL(/01-contracts\.html$/);
   await expect(page.locator('.reading-prose')).toContainText('createScope');
   await expect(page.locator('.reading-prose')).not.toContainText('Code snippet path not found');
+});
+
+test('reads expanded topics and preserves navigation between chapter twelve and thirteen', async ({ page }) => {
+  await page.goto('columns/agent-harness/12-web-transport.html');
+  await page.getByRole('navigation', { name: '文章导航' }).getByRole('link', { name: /下一篇/ }).click();
+  await expect(page).toHaveURL(/13-agent-foundations\.html$/);
+  await expect(page.locator('.series-unit[open]')).toHaveCount(1);
+  for (const slug of [
+    '19-skills-format', '25-mcp-architecture', '31-context-assembly',
+    '50-filesystem-sandbox', '55-subagent-delegation', '63-codex-app-server',
+    '68-agent-evaluation', '72-production-capstone',
+  ]) {
+    await page.goto(`columns/agent-harness/${slug}.html`);
+    await expect(page.locator('.reading-prose h2').first()).toBeVisible();
+    await expect(page.locator('.reading-prose')).not.toContainText('Code snippet path not found');
+    await expect(page.locator('.series-list a[aria-current="page"]')).toHaveCount(1);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  }
 });

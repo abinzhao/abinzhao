@@ -9,12 +9,16 @@ import { computed } from 'vue';
 import { Content, useRoute, withBase } from 'vitepress';
 import { data as content } from '../../data/content.data';
 import { normalizeContentHref } from '../composables/article-context';
+import { groupHarnessChapters } from '../composables/harness-navigation';
 
 const route = useRoute();
 const contentHref = computed(() => normalizeContentHref(route.path));
 const column = computed(() =>
   content.columns.find((item) => item.href === contentHref.value),
 );
+const chapterGroups = computed(() => column.value?.slug === 'agent-harness'
+  ? groupHarnessChapters(column.value.articles)
+  : [{ id: 'all', title: '', from: 1, to: column.value?.articles.length ?? 0, articles: column.value?.articles ?? [] }]);
 </script>
 
 <template>
@@ -41,21 +45,29 @@ const column = computed(() =>
             <span>{{ column.articles.length }} / {{ column.articles.length }}</span>
           </header>
 
-          <ol>
-            <li v-for="article in column.articles" :key="article.href">
-              <span class="column-reading-chapters__order">
-                {{ String(article.seriesOrder ?? 0).padStart(2, '0') }}
-              </span>
-              <div>
-                <p>{{ article.category ?? '未分类' }} · {{ article.date }}</p>
-                <h3><a :href="withBase(article.href)">{{ article.title }}</a></h3>
-                <span>{{ article.description }}</span>
-              </div>
-              <span class="column-reading-chapters__link" aria-hidden="true">
-                开始阅读 <ArrowRight :size="17" />
-              </span>
-            </li>
-          </ol>
+          <nav v-if="chapterGroups.length > 1" class="harness-unit-nav" aria-label="学习单元">
+            <a v-for="group in chapterGroups" :key="group.id" :href="`#unit-${group.id}`">
+              {{ String(group.from).padStart(2, '0') }}–{{ group.to }} · {{ group.title }}
+            </a>
+          </nav>
+          <section v-for="group in chapterGroups" :key="group.id" class="harness-unit">
+            <h3 v-if="group.title" :id="`unit-${group.id}`" class="harness-unit__title">{{ group.title }}</h3>
+            <ol :start="group.from">
+              <li v-for="article in group.articles" :key="article.href">
+                <span class="column-reading-chapters__order">
+                  {{ String(article.seriesOrder ?? 0).padStart(2, '0') }}
+                </span>
+                <div>
+                  <p>{{ article.category ?? '未分类' }} · {{ article.date }}</p>
+                  <h3><a :href="withBase(article.href)">{{ article.title }}</a></h3>
+                  <span>{{ article.description }}</span>
+                </div>
+                <span class="column-reading-chapters__link" aria-hidden="true">
+                  开始阅读 <ArrowRight :size="17" />
+                </span>
+              </li>
+            </ol>
+          </section>
         </section>
 
         <article class="reading-prose column-reading-prose vp-doc">
