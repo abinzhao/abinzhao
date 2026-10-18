@@ -17,7 +17,7 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   webServer: {
-    command: `pnpm dev --host ${host} --port ${port}`,
+    command: `pnpm exec vitepress dev docs --host ${host} --port ${port} --strictPort`,
     reuseExistingServer: false,
     timeout: 30_000,
     url: baseURL,

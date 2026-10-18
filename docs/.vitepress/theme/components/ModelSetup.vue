@@ -5,7 +5,7 @@ import { useData } from 'vitepress';
 import { ASSISTANT_MODELS, type AssistantModelId } from '../assistant/model-config';
 import { useAssistantRuntime } from '../assistant/runtime-context';
 import { clearModelCache, inspectModelCache, selectedModelLocation, type ModelCacheReport } from '../assistant/model-cache';
-import { prepareOfflineSite } from '../assistant/offline-client';
+import { prepareModelRuntime, prepareOfflineSite } from '../assistant/offline-client';
 
 const runtime = useAssistantRuntime();
 const { site } = useData();
@@ -67,7 +67,16 @@ async function prepareOffline(): Promise<void> {
   offlineNotice.value = '正在下载与核查站点离线资产…';
   try {
     const report = await prepareOfflineSite(site.value.base);
-    offlineNotice.value = report.complete ? (report.waiting ? '新版本已缓存。关闭此站点的所有标签页后重新打开以启用。' : '站点离线资产已完整缓存。离线生成还需完整模型缓存和可用 GPU。') : '站点缓存不完整，请保持联网后重试。';
+    offlineNotice.value = report.complete ? (report.waiting ? '新版站点资料已缓存。关闭此站点的所有标签页后重新打开以启用。' : '站点资料已完整缓存，不含模型运行时和模型权重。') : '站点缓存不完整，请保持联网后重试。';
+  } catch (error) { offlineNotice.value = error instanceof Error ? error.message : '离线准备失败，请重试。'; }
+  finally { cacheBusy.value = false; }
+}
+async function prepareRuntimeCache(): Promise<void> {
+  cacheBusy.value = true;
+  offlineNotice.value = '正在缓存模型运行时代码…';
+  try {
+    const report = await prepareModelRuntime(site.value.base);
+    offlineNotice.value = report.complete ? '模型运行时代码已缓存。模型权重仍需通过“下载并加载模型”单独缓存。' : '模型运行时缓存不完整，请保持联网后重试。';
   } catch (error) { offlineNotice.value = error instanceof Error ? error.message : '离线准备失败，请重试。'; }
   finally { cacheBusy.value = false; }
 }
@@ -116,12 +125,14 @@ onBeforeUnmount(unsubscribe);
     <div class="model-setup__actions">
       <button class="button" type="button" :disabled="state.busy || cacheBusy" @click="checkCache">核查模型缓存</button>
       <button class="button" type="button" :disabled="state.busy || cacheBusy" @click="prepareOffline">准备站点离线</button>
+      <button class="button" type="button" :disabled="state.busy || cacheBusy" @click="prepareRuntimeCache">缓存模型运行时</button>
       <button class="button" type="button" :disabled="state.busy || cacheBusy" @click="persist">申请持久存储</button>
       <button class="button" type="button" :disabled="state.busy || cacheBusy" @click="clearCache">清除此模型缓存</button>
     </div>
     <p v-if="cacheReport" role="status">{{ cacheReport.complete ? '配置、tokenizer、WASM 和全部权重分片已缓存。' : `模型缓存不完整：缺失或无效 ${cacheReport.missing.length} 项。联网重新加载模型，或使用本地检索。` }}</p>
     <p v-if="offlineNotice" role="status">{{ offlineNotice }}</p>
     <p v-if="storageInfo">{{ storageInfo }}</p>
+    <p>站点资料、模型运行时和模型权重是三组独立缓存；离线生成需要后两组完整且 GPU 可用。</p>
     <p>缓存完整后仍需实际加载模型验证。存储估算与持久存储申请均不保证永久保留。</p>
     <p>缓存可能被浏览器回收；显存估算不代表下载大小或运行保证。选择 0.5B 会降低回答质量。</p>
   </dialog>

@@ -1,7 +1,10 @@
 import { describe, expect, test } from 'vitest';
 import { inspectModelCache, clearModelCache } from '../docs/.vitepress/theme/assistant/model-cache';
-import { createOfflineWorkerSource } from '../docs/.vitepress/data/offline-build';
+import { createOfflineWorkerSource, writeOfflineAssets } from '../docs/.vitepress/data/offline-build';
 import { runInNewContext } from 'node:vm';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 
 const model = { model: 'https://huggingface.co/mlc-ai/test', model_lib: 'https://example.com/test.wasm' };
 const root = `${model.model}/resolve/main/`;
@@ -59,19 +62,103 @@ describe('local offline boundaries', () => {
     expect(entries.get('abin-assistant-assets-other')!.size).toBe(1);
   });
 
-  test.each(['/', '/abinzhao/'])('serves only versioned local assets under %s and preserves model caches', async (base) => {
+  test('separates the site shell from optional WebLLM runtime assets', async () => {
+    const output = await mkdtemp(join(tmpdir(), 'abin-offline-'));
+    try {
+      await mkdir(join(output, 'assets/chunks'), { recursive: true });
+      await writeFile(join(output, 'index.html'), '<main>site</main>');
+      await writeFile(join(output, 'assets/site.js'), 'site');
+      await writeFile(join(output, 'assets/chunks/webllm-runtime.js'), 'runtime');
+      await writeFile(join(output, 'assets/webllm.worker-test.js'), 'worker');
+      const manifest = await (writeOfflineAssets as (
+        outDir: string,
+        base: string,
+        modelRuntimeFiles: ReadonlySet<string>,
+      ) => Promise<any>)(output, '/abinzhao/', new Set([
+        'assets/chunks/webllm-runtime.js',
+      ]));
+
+      expect(manifest.groups.site).toContain('/abinzhao/index.html');
+      expect(manifest.groups.site).toContain('/abinzhao/assets/site.js');
+      expect(manifest.groups.site).not.toContain('/abinzhao/assets/chunks/webllm-runtime.js');
+      expect(manifest.groups.modelRuntime).toEqual([
+        '/abinzhao/assets/chunks/webllm-runtime.js',
+        '/abinzhao/assets/webllm.worker-test.js',
+      ]);
+    } finally {
+      await rm(output, { recursive: true, force: true });
+    }
+  });
+
+  test.each(['/', '/abinzhao/'])('serves grouped local assets under %s and preserves model caches', async (base) => {
     const handlers: Record<string, (event: any) => void> = {};
     const deleted: string[] = [];
+    const cached: Record<string, string[]> = {};
+    let online = true;
     const key = `abin-assistant-assets-${encodeURIComponent(base)}-`;
-    const source = createOfflineWorkerSource({ base, version: 'v2', urls: [`${base}index.html`, `${base}chat/index.html`, `${base}assets/main.js`] });
+    const source = createOfflineWorkerSource({
+      base,
+      version: 'v2',
+      groups: {
+        site: [`${base}index.html`, `${base}chat/index.html`, `${base}assets/main.js`],
+        modelRuntime: [`${base}assets/webllm-runtime.js`, `${base}assets/webllm.worker.js`],
+      },
+    } as any);
     runInNewContext(source, {
       URL, Response,
+      Request: class {
+        url: string;
+        constructor(url: string) { this.url = new URL(url, 'https://site.test').href; }
+      },
       self: { location: { origin: 'https://site.test' }, clients: { claim: async () => {} }, addEventListener: (kind: string, handler: any) => { handlers[kind] = handler; } },
-      caches: { keys: async () => [`${key}v1`, `${key}v2`, 'webllm/model', 'abin-assistant-assets-other-v1'], delete: async (name: string) => { deleted.push(name); }, open: async () => ({ match: async () => new Response('cached'), addAll: async () => {} }) },
-      fetch: async () => new Response('network'),
+      caches: {
+        keys: async () => [`${key}site-v1`, `${key}site-v2`, `${key}model-runtime-v1`, 'webllm/model', 'abin-assistant-assets-other-v1'],
+        delete: async (name: string) => { deleted.push(name); },
+        open: async (name: string) => ({
+          match: async () => new Response('cached'),
+          addAll: async (requests: Request[]) => { cached[name] = requests.map((request) => new URL(request.url, 'https://site.test').pathname); },
+          keys: async () => (cached[name] ?? []).map((url) => new Request(`https://site.test${url}`)),
+        }),
+      },
+      fetch: async () => {
+        if (!online) throw new Error('offline');
+        return new Response('network');
+      },
     });
+    let installation: Promise<void> | undefined;
+    handlers.install({ waitUntil: (value: Promise<void>) => { installation = value; } });
+    await installation;
+    expect(cached[`${key}site-v2`]).toEqual([
+      `${base}index.html`,
+      `${base}chat/index.html`,
+      `${base}assets/main.js`,
+    ]);
+    expect(cached[`${key}model-runtime-v2`]).toBeUndefined();
+
+    let runtimeCache: Promise<void> | undefined;
+    const runtimeMessages: any[] = [];
+    handlers.message({
+      data: { kind: 'assistant-offline-cache', group: 'modelRuntime' },
+      ports: [{ postMessage: (message: any) => { runtimeMessages.push(message); } }],
+      waitUntil: (value: Promise<void>) => { runtimeCache = value; },
+    });
+    await runtimeCache;
+    expect(cached[`${key}model-runtime-v2`]).toEqual([
+      `${base}assets/webllm-runtime.js`,
+      `${base}assets/webllm.worker.js`,
+    ]);
+    expect(runtimeMessages).toEqual([{ complete: true, group: 'modelRuntime', version: 'v2' }]);
+
     let response: Promise<Response> | undefined;
     handlers.fetch({ request: new Request(`https://site.test${base}chat/?article=local`), respondWith: (value: Promise<Response>) => { response = value; } });
+    expect(await (await response)?.text()).toBe('network');
+    online = false;
+    response = undefined;
+    handlers.fetch({ request: new Request(`https://site.test${base}chat/?article=local`), respondWith: (value: Promise<Response>) => { response = value; } });
+    expect(await (await response)?.text()).toBe('cached');
+    online = true;
+    response = undefined;
+    handlers.fetch({ request: new Request(`https://site.test${base}assets/main.js`), respondWith: (value: Promise<Response>) => { response = value; } });
     expect(await (await response)?.text()).toBe('cached');
     response = undefined;
     handlers.fetch({ request: new Request('https://huggingface.co/test/params.bin'), respondWith: (value: Promise<Response>) => { response = value; } });
@@ -81,7 +168,7 @@ describe('local offline boundaries', () => {
     let activation: Promise<void> | undefined;
     handlers.activate({ waitUntil: (value: Promise<void>) => { activation = value; } });
     await activation;
-    expect(deleted).toEqual([`${key}v1`]);
+    expect(deleted).toEqual([`${key}site-v1`, `${key}model-runtime-v1`]);
     expect(source).not.toContain('skipWaiting');
   });
 });

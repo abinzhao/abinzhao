@@ -14,6 +14,7 @@ const fixtureRoot = mkdtempSync(join(tmpdir(), 'abinzhao-build-'));
 const distDirectory = join(fixtureRoot, 'site');
 const chunksDirectory = resolve(distDirectory, 'assets/chunks');
 const execFileAsync = promisify(execFile);
+let buildLogs = '';
 
 describe('VitePress static site', () => {
   beforeAll(async () => {
@@ -27,10 +28,11 @@ describe('VitePress static site', () => {
     mkdirSync(join(source, 'columns', 'private-series'), { recursive: true });
     writeFileSync(join(source, 'columns', 'private-series', 'index.md'), '---\ntitle: 未公开专题\ndraft: true\n---\nprivate-column-marker');
     writeFileSync(join(source, 'columns', 'private-series', 'note.md'), '---\ntitle: 草稿专题子页\ndate: "2026-10-16"\n---\nprivate-child-marker');
-    await execFileAsync(join(projectRoot, 'node_modules/.bin/vitepress'), ['build', 'docs', '--outDir', distDirectory], {
+    const result = await execFileAsync(join(projectRoot, 'node_modules/.bin/vitepress'), ['build', 'docs', '--outDir', distDirectory], {
       cwd: fixtureRoot,
       timeout: 45_000,
     });
+    buildLogs = `${result.stdout}\n${result.stderr}`;
   }, 60_000);
 
   afterAll(() => rmSync(fixtureRoot, { force: true, recursive: true }));
@@ -66,6 +68,37 @@ describe('VitePress static site', () => {
     expect(corpusSource).toContain('DOM 树');
     expect(gzipSync(readFileSync(resolve(chunksDirectory, indexChunk!))).byteLength)
       .toBeLessThanOrEqual(250 * 1024);
+  });
+
+  test('keeps intentional lazy payloads inside explicit budgets without generic chunk warnings', () => {
+    expect(buildLogs).not.toContain('Some chunks are larger than');
+    const manifest = JSON.parse(readFileSync(join(distDirectory, 'assistant-assets.json'), 'utf8'));
+    const assetsDirectory = join(distDirectory, 'assets');
+    const javascriptFiles = [
+      ...readdirSync(assetsDirectory)
+        .filter((file) => file.endsWith('.js'))
+        .map((file) => join(assetsDirectory, file)),
+      ...readdirSync(chunksDirectory)
+        .filter((file) => file.endsWith('.js'))
+        .map((file) => join(chunksDirectory, file)),
+    ];
+    const largeFiles = javascriptFiles.filter((file) => readFileSync(file).byteLength > 500 * 1024);
+    const modelRuntimeFiles = new Set<string>(
+      manifest.groups.modelRuntime.map((url: string) => join(distDirectory, url.slice(manifest.base.length))),
+    );
+
+    expect(largeFiles).toHaveLength(3);
+    for (const file of largeFiles) {
+      const source = readFileSync(file);
+      if (modelRuntimeFiles.has(file)) {
+        expect(source.byteLength).toBeLessThanOrEqual(6.5 * 1024 * 1024);
+        expect(gzipSync(source).byteLength).toBeLessThanOrEqual(2.5 * 1024 * 1024);
+      } else {
+        expect(file).toMatch(/knowledge-corpus\.data\..+\.js$/);
+        expect(source.byteLength).toBeLessThanOrEqual(2 * 1024 * 1024);
+        expect(gzipSync(source).byteLength).toBeLessThanOrEqual(600 * 1024);
+      }
+    }
   });
 
   test('decodes the emitted compact chunk into every published document and block identity', async () => {
@@ -108,12 +141,15 @@ describe('VitePress static site', () => {
     expect(readFileSync(join(distDirectory, 'robots.txt'), 'utf8')).toContain('Sitemap: https://abinzhao.github.io/abinzhao/sitemap.xml');
     const manifest = JSON.parse(readFileSync(join(distDirectory, 'assistant-assets.json'), 'utf8'));
     expect(manifest.base).toBe('/abinzhao/');
-    expect(manifest.urls).toContain('/abinzhao/chat/index.html');
-    expect(manifest.urls).toContain('/abinzhao/hashmap.json');
-    expect(manifest.urls.some((url: string) => /webllm\.worker.*\.js$/.test(url))).toBe(true);
-    expect(manifest.urls.some((url: string) => /knowledge\.worker.*\.js$/.test(url))).toBe(true);
-    expect(manifest.urls.some((url: string) => /knowledge-corpus\.data.*\.js$/.test(url))).toBe(true);
-    expect(manifest.urls.every((url: string) => url.startsWith('/abinzhao/'))).toBe(true);
+    expect(manifest.groups.site).toContain('/abinzhao/chat/index.html');
+    expect(manifest.groups.site).toContain('/abinzhao/hashmap.json');
+    expect(manifest.groups.site.some((url: string) => /knowledge\.worker.*\.js$/.test(url))).toBe(true);
+    expect(manifest.groups.site.some((url: string) => /knowledge-corpus\.data.*\.js$/.test(url))).toBe(true);
+    expect(manifest.groups.site.some((url: string) => /webllm\.worker.*\.js$/.test(url))).toBe(false);
+    expect(manifest.groups.modelRuntime.some((url: string) => /webllm\.worker.*\.js$/.test(url))).toBe(true);
+    expect(manifest.groups.modelRuntime).toHaveLength(2);
+    expect(Object.values(manifest.groups).flat().every((url: unknown) =>
+      typeof url === 'string' && url.startsWith('/abinzhao/'))).toBe(true);
     expect(existsSync(join(distDirectory, 'assistant-sw.js'))).toBe(true);
   });
 });

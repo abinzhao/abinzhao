@@ -27,6 +27,12 @@ series:
 
 资源读取不等于用户授予后续写操作，模板也不等于 Skill 激活。资源 URI 是服务器命名空间内的身份，即使使用 `file://`，也不一定对应 Host 的本地文件。把它直接交给 Node `readFile()`，会改变执行世界和权限含义。
 
+### MCP 工具发现
+
+MCP 工具发现从服务器声明的 `tools` 能力开始：Client 发送 `tools/list`，取得当前授权允许看到的工具名称、描述与 `inputSchema`。列表返回 `nextCursor` 时，Client 带上该 cursor 继续请求下一页，直到取得完整目录；目录供 Host 选择和加载工具定义，真正执行再发送 `tools/call`。发现一个名字不等于获得执行授权，调用前仍需校验参数和权限。
+
+MCP 工具发现还需要处理目录变化。服务器声明 `listChanged` 能力，且 Client 以 `toolsListChanged: true` 打开 `subscriptions/listen` 流时，服务器可发送 `notifications/tools/list_changed`；收到通知后 Client 重新取得目录并更新 Host 的可用工具。分页与缓存不能当作永久能力凭证，重名工具也必须保留所属服务器的身份。这里说明的是本章固定 `2026-07-28` 协议，其他修订需核对各自的订阅机制。
+
 ## 26.2 完整现代工具请求
 
 下面是一对静态协议夹具，服务器工具假定只读取教学文本。请求与响应均为完整 JSON-RPC envelope；真实网络传输还需要对应的 HTTP 头或 stdio framing。

@@ -6,6 +6,16 @@ import { parse } from 'yaml';
 const projectRoot = resolve(import.meta.dirname, '..');
 
 describe('verification configuration', () => {
+  test('uses one strict local development origin instead of silently changing ports', async () => {
+    const packageJson = JSON.parse(
+      await readFile(resolve(projectRoot, 'package.json'), 'utf8'),
+    ) as { scripts?: Record<string, string> };
+
+    expect(packageJson.scripts?.dev).toBe(
+      'vitepress dev docs --host 127.0.0.1 --port 5201 --strictPort',
+    );
+  });
+
   test('provides one local command for the complete release gate', async () => {
     const packageJson = JSON.parse(
       await readFile(resolve(projectRoot, 'package.json'), 'utf8'),

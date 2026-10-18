@@ -61,7 +61,7 @@ test('offers seventy-two Harness chapters, grouped navigation and downloadable s
   await page.setViewportSize({ width: 390, height: 844 });
   await expect.poll(async () => (await chapters.first().boundingBox())!.y).toBeLessThan(720);
   await page.setViewportSize({ width: 1440, height: 900 });
-  const download = page.getByRole('link', { name: '下载完整项目源码', exact: true });
+  const download = page.getByRole('navigation', { name: '教程快速入口' }).getByRole('link', { name: '下载完整项目源码', exact: true });
   const response = await page.request.get((await download.getAttribute('href'))!);
   expect(response.ok()).toBe(true);
   const archive = await response.body();

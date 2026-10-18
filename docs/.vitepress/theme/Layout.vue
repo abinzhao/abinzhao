@@ -28,7 +28,13 @@ watch(() => route.path, () => { navigationPending = true; });
 function focusDestination(): void {
   if (!navigationPending) return;
   navigationPending = false;
-  // 深链接保留浏览器对章节的滚动；仅改变可访问焦点。
+  // out-in 过渡期间新正文尚未挂载，路由器的首次锚点查找可能落空。
+  if (window.location.hash) {
+    let target: HTMLElement | null = null;
+    try { target = document.getElementById(decodeURIComponent(window.location.hash.slice(1))); }
+    catch { /* 无效编码的锚点不阻断页面导航。 */ }
+    target?.scrollIntoView({ block: 'start', behavior: 'instant' });
+  }
   document.getElementById('page-content')?.focus({ preventScroll: true });
 }
 let runtime: WebLLMRuntime | undefined;
@@ -57,7 +63,7 @@ onBeforeUnmount(() => {
     }"
   >
     <a class="skip-link" href="#page-content">跳到主要内容</a>
-    <AmbientField :paused="inferenceBusy" />
+    <AmbientField v-if="pageKind === 'home'" :paused="inferenceBusy" />
     <SiteHeader />
     <div id="page-content" class="page-stage" tabindex="-1">
       <Transition name="page" mode="out-in" @after-enter="focusDestination">

@@ -67,6 +67,13 @@ function expandKnowledgeQuery(query: string): string {
   return [...new Set([query, ...additions])].join(' ');
 }
 
+function subjectQuery(query: string): string {
+  // 问句修饰词不是知识主体，尤其不能让“的工”等跨词二元组参与召回。
+  return query.replace(/^(?:请|帮我)/u, '')
+    .replace(/(?:是什么意思|什么是|解释|介绍|一下)/gu, ' ')
+    .replace(/(?:如何|怎么|的|是|[？?])/gu, '').trim();
+}
+
 function codeQueryTerms(query: string): string[] {
   return tokenizeKnowledgeText(query).filter((term) =>
     /^[a-z]/iu.test(term) && !['code', 'example', 'examples'].includes(term),
@@ -108,11 +115,16 @@ function rerank(
   corpus: KnowledgeCorpusArtifact,
   query: string,
   options: KnowledgeSearchOptions,
+  bodyTermCache: Map<string, Set<string>>,
 ): KnowledgeSearchResult[] {
-  const normalizedQuery = query.normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, '');
-  const queryTerms = new Set(tokenizeKnowledgeText(query));
+  const subject = subjectQuery(query);
+  const normalizedQuery = subject.normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, '');
+  const queryTerms = new Set(tokenizeKnowledgeText(subject));
   const wantsCode = /代码|示例|\bcode\b/iu.test(query);
+  const wantsBoundaries = /失败|错误|报错|故障|排查|调试|风险|限制|边界|验收|测试|来源|引用|参考/u.test(query);
+  const boundarySection = /失败案例|验收|官方.*来源|官方参考|实现边界/u;
   const namedTerms = codeQueryTerms(query);
+  const exactSections = new Set<string>();
   const codePriority = (result: KnowledgeSearchResult): number => {
     if (!wantsCode || result.kind !== 'code') return 0;
     if (namedTerms.length === 0) return 1;
@@ -139,13 +151,31 @@ function rerank(
       const headingBoost =
         (normalizedQuery.length > 1 && headingText.includes(normalizedQuery) ? 1.35 : 1) *
         (1 + headingCoverage * 1.5);
+      let bodyTerms = bodyTermCache.get(metadata.id);
+      if (!bodyTerms) {
+        bodyTerms = new Set(tokenizeKnowledgeText(content.text));
+        bodyTermCache.set(metadata.id, bodyTerms);
+      }
+      const bodyCoverage = [...queryTerms].filter((term) => bodyTerms.has(term)).length /
+        Math.max(1, queryTerms.size);
+      const sectionText = (metadata.sectionTitle ?? '').normalize('NFKC').toLocaleLowerCase().replace(/\s+/gu, '');
+      if (normalizedQuery.length > 1 && sectionText.includes(normalizedQuery) && bodyCoverage === 1) {
+        exactSections.add(`${metadata.documentId}#${metadata.anchor ?? ''}`);
+      }
+      const namedCoverage = namedTerms.filter((term) => bodyTerms.has(term)).length /
+        Math.max(1, namedTerms.length);
+      // 共享标题和标签负责召回；答案段落还必须直接说明主体，不能只引用验收套话。
+      const sectionWeight = !wantsBoundaries &&
+        boundarySection.test(metadata.sectionTitle ?? '')
+        ? 0.5 : 1;
 
       return {
         ...metadata,
         ...content,
         contentVersion: corpus.contentVersion,
         matchedTerms: result.terms,
-        score: result.score * headingBoost,
+        score: result.score * headingBoost *
+          (wantsCode ? 1 : (1 + bodyCoverage * 2) * (1 + namedCoverage) * sectionWeight),
       };
     })
     .filter((result): result is KnowledgeSearchResult => result !== undefined)
@@ -154,12 +184,16 @@ function rerank(
       (!wantsCode ? Number(left.kind === 'code') - Number(right.kind === 'code') : 0) ||
       right.score - left.score || left.id.localeCompare(right.id));
 
+  // 章节标题与主体精确对应时，围绕这一节回答；宽泛查询仍保留多来源召回。
+  const relevantCandidates = !wantsCode && exactSections.size > 0
+    ? candidates.filter((candidate) => exactSections.has(`${candidate.documentId}#${candidate.anchor ?? ''}`))
+    : candidates;
   const limit = Math.max(1, options.limit ?? 6);
-  if (options.documentId) return candidates.slice(0, limit);
+  if (options.documentId) return relevantCandidates.slice(0, limit);
 
   const documentCounts = new Map<string, number>();
   const diverse: KnowledgeSearchResult[] = [];
-  for (const candidate of candidates) {
+  for (const candidate of relevantCandidates) {
     const count = documentCounts.get(candidate.documentId) ?? 0;
     if (count >= 2) continue;
 
@@ -180,6 +214,7 @@ export function createKnowledgeSearchRuntime(
   let miniSearchPromise: Promise<MiniSearch<KnowledgeSearchDocument>> | undefined;
   const documentBlocks = new Map<string, KnowledgeBlockMetadata[]>();
   const blockTerms = new Map<string, Set<string>>();
+  const bodyTermCache = new Map<string, Set<string>>();
 
   const loadIndex = (): Promise<{
     artifact: KnowledgeIndexArtifact;
@@ -191,6 +226,7 @@ export function createKnowledgeSearchRuntime(
       miniSearchPromise = artifactPromise.then((artifact) => {
         documentBlocks.clear();
         blockTerms.clear();
+        bodyTermCache.clear();
         for (const block of Object.values(artifact.metadata)) {
           const blocks = documentBlocks.get(block.documentId) ?? [];
           blocks.push(block);
@@ -305,7 +341,7 @@ export function createKnowledgeSearchRuntime(
         return { expandedQuery: '', query: trimmedQuery, results: [] };
       }
 
-      const expandedQuery = expandKnowledgeQuery(trimmedQuery);
+      const expandedQuery = expandKnowledgeQuery(subjectQuery(trimmedQuery));
 
       try {
         const { artifact, miniSearch } = await loadIndex();
@@ -360,7 +396,7 @@ export function createKnowledgeSearchRuntime(
         const blockResults = artifact.granularity === 'document'
           ? selectBlocks(rawResults, corpus, options.limit ?? 6, trimmedQuery)
           : rawResults;
-        const results = rerank(blockResults, artifact, corpus, trimmedQuery, options);
+        const results = rerank(blockResults, artifact, corpus, trimmedQuery, options, bodyTermCache);
         loadState = 'ready';
         return { expandedQuery, query: trimmedQuery, results };
       } catch (error) {

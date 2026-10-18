@@ -34,6 +34,32 @@ test.describe('desktop layout density', () => {
     await expect(page.locator('.article-list-item')).toHaveCount(1);
   });
 
+  test('keeps blog reading order and content cards visually stable', async ({ page }) => {
+    await page.goto('blog/');
+    const list = page.locator('.article-list');
+    await expect(list).toHaveCSS('display', 'grid');
+    const cards = await page.locator('.article-list-item').evaluateAll((items) =>
+      items.slice(0, 3).map((item) => {
+        const box = item.getBoundingClientRect();
+        const style = getComputedStyle(item);
+        return { x: box.x, y: box.y, backdropFilter: style.backdropFilter };
+      }),
+    );
+    expect(cards).toHaveLength(3);
+    expect(Math.max(...cards.map(({ y }) => y)) - Math.min(...cards.map(({ y }) => y))).toBeLessThan(2);
+    expect(cards[0].x).toBeLessThan(cards[1].x);
+    expect(cards[1].x).toBeLessThan(cards[2].x);
+    expect(cards.every(({ backdropFilter }) => backdropFilter === 'none')).toBe(true);
+
+    const firstCard = page.locator('.article-list-item').first();
+    await firstCard.hover();
+    await expect(firstCard).toHaveCSS('transform', 'none');
+    await expect(page.locator('.ambient-field')).toHaveCount(0);
+
+    await page.goto('');
+    await expect(page.locator('.ambient-field')).toHaveCount(1);
+  });
+
   test('starts article content before the 320px threshold', async ({ page }) => {
     await page.goto('columns/fullstack-development/00-web-foundations.html');
 

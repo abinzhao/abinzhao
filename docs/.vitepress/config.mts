@@ -12,6 +12,7 @@ const base = configuredBase.endsWith('/') ? configuredBase : `${configuredBase}/
 if (!base.startsWith('/') || base.startsWith('//') || /[?#\\]/.test(base)) throw new Error('VITEPRESS_BASE 必须是站点绝对路径');
 const siteOrigin = 'https://abinzhao.github.io';
 const contentRoot = fileURLToPath(new URL('../', import.meta.url));
+const modelRuntimeAssets = new Set<string>();
 const themeBootstrapScript = `
   let storedTheme = null;
 
@@ -41,6 +42,23 @@ export default defineConfig({
   lang: 'zh-CN',
   title: site.title,
   srcExclude: publicationExclusions(contentRoot),
+  vite: {
+    build: {
+      // Large files are lazy local-AI/corpus payloads with dedicated budgets in site-build.test.ts.
+      chunkSizeWarningLimit: 6400,
+    },
+    plugins: [{
+      name: 'capture-webllm-runtime-assets',
+      generateBundle(_options, bundle) {
+        for (const output of Object.values(bundle)) {
+          if (output.type === 'chunk' &&
+            output.moduleIds.some((id) => id.includes('/@mlc-ai/web-llm/'))) {
+            modelRuntimeAssets.add(output.fileName);
+          }
+        }
+      },
+    }],
+  },
   sitemap: {
     hostname: `${siteOrigin}${base}`,
     transformItems: (items) => items.filter((item) => item.url !== '404.html'),
@@ -62,7 +80,7 @@ export default defineConfig({
   },
   async buildEnd(config) {
     await writeFile(join(config.outDir, 'robots.txt'), `User-agent: *\nAllow: ${base}\nSitemap: ${siteOrigin}${base}sitemap.xml\n`);
-    await writeOfflineAssets(config.outDir, base);
+    await writeOfflineAssets(config.outDir, base, modelRuntimeAssets);
   },
   themeConfig: {
     nav: [

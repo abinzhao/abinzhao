@@ -19,6 +19,7 @@ const column = computed(() =>
 const chapterGroups = computed(() => column.value?.slug === 'agent-harness'
   ? groupHarnessChapters(column.value.articles)
   : [{ id: 'all', title: '', from: 1, to: column.value?.articles.length ?? 0, articles: column.value?.articles ?? [] }]);
+const firstChapter = computed(() => column.value?.articles[0]);
 </script>
 
 <template>
@@ -32,6 +33,14 @@ const chapterGroups = computed(() => column.value?.slug === 'agent-harness'
           <span><CheckCircle2 :size="16" aria-hidden="true" /> {{ column.status === 'ongoing' ? '持续更新' : column.status === 'completed' ? '已完结' : column.status === 'archived' ? '已归档' : column.status ?? '持续更新' }}</span>
           <span><Layers3 :size="16" aria-hidden="true" /> {{ column.articles.length }} 篇章节</span>
           <span><ListOrdered :size="16" aria-hidden="true" /> 按阅读顺序编排</span>
+        </div>
+        <div v-if="column.slug === 'agent-harness' && firstChapter" class="column-reading-start">
+          <p>准备：JavaScript / TypeScript 基础 · Node.js 22+</p>
+          <nav aria-label="教程快速入口">
+            <a class="button button--primary" :href="withBase(firstChapter.href)">开始第一章 <ArrowRight :size="17" aria-hidden="true" /></a>
+            <a class="button button--secondary" :href="withBase('/downloads/agent-harness.zip')">下载完整项目源码</a>
+            <a class="column-reading-start__guide" href="#从下载包开始">运行说明</a>
+          </nav>
         </div>
       </header>
 

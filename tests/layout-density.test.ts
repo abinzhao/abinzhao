@@ -85,4 +85,14 @@ describe('compact site layout', () => {
       '.not-found { padding-block: 56px; text-align: center; }',
     );
   });
+
+  test('keeps ambient animation on home and uses stable solid cards on content pages', () => {
+    const layout = readSource('docs/.vitepress/theme/Layout.vue');
+    const styles = readSource('docs/.vitepress/theme/styles/site.css');
+
+    expect(layout).toContain('<AmbientField v-if="pageKind === \'home\'"');
+    expect(styles).toContain('.article-list { display: grid; grid-template-columns: repeat(3,minmax(0,1fr));');
+    expect(styles).not.toContain('backdrop-filter: blur(16px) saturate(140%);');
+    expect(styles).not.toContain('transform: translateY(-3px);');
+  });
 });

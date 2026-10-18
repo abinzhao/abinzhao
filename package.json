@@ -8,7 +8,7 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "dev": "vitepress dev docs",
+    "dev": "vitepress dev docs --host 127.0.0.1 --port 5201 --strictPort",
     "build": "node scripts/package-harness.mjs && vitepress build docs",
     "preview": "vitepress preview docs",
     "check": "vue-tsc --noEmit -p docs/tsconfig.json && tsc --noEmit -p docs/tsconfig.worker.json",
