@@ -1,13 +1,9 @@
 <script setup lang="ts">
 import {
   ArrowRight,
-  BookOpen,
   CheckCircle2,
   Code2,
   GitBranch,
-  Fingerprint,
-  GraduationCap,
-  Rocket,
 } from '@lucide/vue';
 import { withBase } from 'vitepress';
 import { computed, ref } from 'vue';
@@ -34,33 +30,12 @@ const codeLines = computed(() => activeFile.value === 'developer.ts' ? home.term
   "  permissions: 'read-only',",
   '} as const;',
 ]);
-const highlightedLines = computed(() => codeLines.value.map((line) => {
-  const parts: Array<{ text: string; kind: string }> = [];
-  const pattern = /\/\/.*|'[^']*'|\b(?:export|const|as)\b|\b\d+\b|[{}[\]:,;]/g;
-  let offset = 0;
-  for (const match of line.matchAll(pattern)) {
-    if (match.index! > offset) parts.push({ text: line.slice(offset, match.index), kind: 'plain' });
-    const text = match[0];
-    parts.push({ text, kind: text.startsWith('//') ? 'comment' : text.startsWith("'") ? 'string' : /^[a-z]/.test(text) ? 'keyword' : /^\d/.test(text) ? 'number' : 'punctuation' });
-    offset = match.index! + text.length;
-  }
-  if (offset < line.length) parts.push({ text: line.slice(offset), kind: 'plain' });
-  return parts;
-}));
-
-const moduleIcons = {
-  book: BookOpen,
-  fingerprint: Fingerprint,
-  graduation: GraduationCap,
-  rocket: Rocket,
-};
 </script>
 
 <template>
   <div class="home-page">
     <main class="site-container">
       <section class="home-hero" aria-labelledby="home-title">
-        <div class="hero-orbits" aria-hidden="true"><i /><i /><i /></div>
         <div class="home-hero__content">
           <p class="status-line">
             <span class="status-line__dot" aria-hidden="true" />
@@ -93,16 +68,6 @@ const moduleIcons = {
             </a>
             <a class="button button--secondary" :href="withBase(home.actions.secondary.link)">
               {{ home.actions.secondary.label }}
-            </a>
-            <a
-              class="command-link"
-              href="https://github.com/abinzhao"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <span>在 GitHub 关注我</span>
-              <span class="command-link__short" aria-hidden="true">GitHub</span>
-              <ArrowRight :size="18" aria-hidden="true" />
             </a>
           </div>
 
@@ -137,9 +102,8 @@ const moduleIcons = {
             </button>
           </div>
           <pre class="terminal-window__code" :aria-label="activeFile"><code><span
-            v-for="(line, index) in highlightedLines" :key="index" class="terminal-code-line"
-          ><span class="terminal-line-number" aria-hidden="true">{{ String(index + 1).padStart(2, '0') }}</span><span><span v-for="(part, partIndex) in line" :key="partIndex" :class="`terminal-token--${part.kind}`">{{ part.text }}</span></span>
-</span></code></pre>
+            v-for="(line, index) in codeLines" :key="index" class="terminal-code-line"
+          ><span class="terminal-line-number" aria-hidden="true">{{ String(index + 1).padStart(2, '0') }}</span><span>{{ line }}</span></span></code></pre>
           <p class="terminal-window__ready">
             <CheckCircle2 :size="17" aria-hidden="true" />
             {{ home.terminal.footer }}
@@ -150,33 +114,6 @@ const moduleIcons = {
           </div>
           </div>
         </aside>
-      </section>
-
-      <section class="home-section home-section--modules" aria-labelledby="modules-title">
-        <div class="section-heading section-heading--compact">
-          <div>
-            <p class="technical-label">探索入口</p>
-            <h2 id="modules-title">探索我的构建</h2>
-          </div>
-          <span>从记录到实践</span>
-        </div>
-
-        <div class="module-grid">
-          <a
-            v-for="module in home.modules"
-            :key="module.title"
-            class="module-card"
-            :href="withBase(module.link)"
-          >
-            <component :is="moduleIcons[module.icon]" :size="23" aria-hidden="true" />
-            <h3>{{ module.title }}</h3>
-            <p>{{ module.description }}</p>
-            <footer>
-              <span>{{ module.meta }}</span>
-              <ArrowRight :size="18" aria-hidden="true" />
-            </footer>
-          </a>
-        </div>
       </section>
 
       <section class="home-section home-section--articles" aria-labelledby="articles-title">

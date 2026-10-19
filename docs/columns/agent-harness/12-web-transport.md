@@ -3,7 +3,7 @@ title: 第十二章：把 Harness 接到可取消的 Web 界面
 description: 用同源 POST 与 SSE 展示运行事件，建立 Host 校验、并发锁、文本渲染和慢消费者中止边界。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Node.js, Web 运输层]
+tags: [Node.js, Web 运输层]
 series:
   order: 12
 ---

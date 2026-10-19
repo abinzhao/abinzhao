@@ -3,7 +3,7 @@ title: 第 49 章：Agent 威胁模型与提示注入
 description: 从资产、入口和执行权建立威胁模型，阻止检索内容与子任务报告被升级为授权。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, 提示注入, 威胁模型]
+tags: [提示注入, 威胁模型]
 series:
   order: 49
 ---

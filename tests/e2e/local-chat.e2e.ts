@@ -23,7 +23,6 @@ test.describe('desktop local chat', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'AI 助手' })).toBeVisible();
     await expect(page.locator('.chat-local-status')).toContainText('本地检索');
     await expect(page.locator('.site-footer')).toHaveCount(0);
-    await expect(page.locator('.ai-launcher')).toHaveCount(0);
 
     const workspace = await page.locator('.chat-workspace').boundingBox();
     const composer = await page.locator('.chat-composer').boundingBox();

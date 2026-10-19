@@ -3,7 +3,7 @@ title: '第18章：指令层级、项目规则与环境事实'
 description: 按来源、作用域与生命周期组织指令和运行事实，解释项目规则发现与执行权限为什么必须分离。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, 指令层级, AGENTS.md, 上下文]
+tags: [指令层级, AGENTS.md, 上下文]
 series:
   order: 18
 ---

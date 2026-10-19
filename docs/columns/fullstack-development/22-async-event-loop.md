@@ -2,7 +2,7 @@
 title: "第 22 章：Promise、async/await 与事件循环"
 description: "掌握 Promise 链、异步并发、事件循环以及微任务和宏任务的执行顺序。"
 date: "2026-10-15"
-category: JavaScript 核心
+category: JavaScript
 tags: [Promise, 异步等待, 事件循环]
 series:
   order: 23

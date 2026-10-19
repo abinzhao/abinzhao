@@ -3,7 +3,7 @@ title: 第九章：用结构化事件观察运行
 description: 从 runId、step 和工具结果重建运行路径，区分临时输出、持久化事实与隐私边界。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Node.js, 可观测性]
+tags: [Node.js, 可观测性]
 series:
   order: 9
 ---

@@ -3,7 +3,7 @@ title: 第三十九章：Resume、Fork 与跨会话引用
 description: 用会话身份、继承前缀和捕获修订区分恢复、分支与引用，避免复制历史时继承不存在的运行资源和权限。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Session Fork, Resume]
+tags: [Session Fork, Resume]
 series:
   order: 39
 ---

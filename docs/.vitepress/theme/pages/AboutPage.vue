@@ -5,6 +5,7 @@ import {
   MapPin,
   Rocket,
   ShieldCheck,
+  Sparkles,
 } from '@lucide/vue';
 import { withBase } from 'vitepress';
 import { computed } from 'vue';
@@ -19,6 +20,7 @@ const stats = computed(() => about.stats.map((stat) => ({
 })));
 
 const actionIcons = {
+  assistant: Sparkles,
   github: Code2,
   project: Rocket,
 };
@@ -125,18 +127,6 @@ const actionIcons = {
               <p>{{ skill.detail }}</p>
             </div>
           </section>
-        </div>
-      </section>
-      <section class="about-section" aria-labelledby="practice-title">
-        <div class="section-heading">
-          <div><p class="technical-label">已发布内容</p><h2 id="practice-title">公开实践与学习记录</h2></div>
-          <p class="section-heading__copy">{{ content.blogArticles.length }} 篇博客 · {{ content.columns.length }} 个学习专题</p>
-        </div>
-        <div class="skill-grid">
-          <a v-for="column in content.columns" :key="column.href" class="skill-card" :href="withBase(column.href)">
-            <header><h3>{{ column.title }}</h3><ArrowUpRight :size="18" aria-hidden="true" /></header>
-            <p>{{ column.description }}</p><small>{{ column.articles.length }} 篇已发布教程</small>
-          </a>
         </div>
       </section>
     </main>

@@ -3,7 +3,7 @@ title: 第十一章：把 Harness 组合成 CLI
 description: 用 scope 装配 provider、tools 和 session，明确环境变量、Ollama 前置条件、超时与退出语义。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Node.js, CLI 组合]
+tags: [Node.js, CLI 组合]
 series:
   order: 11
 ---

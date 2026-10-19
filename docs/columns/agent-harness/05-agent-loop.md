@@ -3,7 +3,7 @@ title: 第 05 章：构建有终止条件的 Agent 循环
 description: 用有限步骤连接模型结算、工具执行和完整结果提交，解释成功、工具拒绝、失败与取消的不同语义。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Node.js, 有限循环]
+tags: [Node.js, 有限循环]
 series:
   order: 5
 ---

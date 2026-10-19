@@ -3,7 +3,7 @@ title: '第19章：Skill 规范与渐进式加载'
 description: 从 SKILL.md 的开放格式到宿主加载契约，解释元数据、正文和资源的分层，以及厂商字段的兼容边界。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Agent Skills, SKILL.md, 渐进式加载]
+tags: [Agent Skills, SKILL.md, 渐进式加载]
 series:
   order: 19
 ---

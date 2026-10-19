@@ -3,7 +3,7 @@ title: 第六十六章：Web、IDE、桌面与附件交付
 description: 将多端显示、运行状态与耐久附件分离，用内容身份和授权读取完成可验证交付。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, 客户端, 附件]
+tags: [客户端, 附件]
 series:
   order: 66
 ---

@@ -3,7 +3,7 @@ title: 第六十七章：契约测试、故障注入与回归
 description: 用确定性失败证据检查取消、检查点、权限和资源生命周期，避免将机制测试误报为模型质量。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, 契约测试, 故障注入]
+tags: [契约测试, 故障注入]
 series:
   order: 67
 ---

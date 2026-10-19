@@ -3,7 +3,7 @@ title: 第 52 章：权限策略、审批与 Auto-review
 description: 将执行能力、资源沙箱与一次性审批正交建模，比较不同产品的策略含义和自动审查边界。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, 权限策略, 审批]
+tags: [权限策略, 审批]
 series:
   order: 52
 ---

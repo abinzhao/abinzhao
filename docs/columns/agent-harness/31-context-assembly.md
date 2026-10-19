@@ -3,7 +3,7 @@ title: 第三十一章：完整上下文装配与来源追踪
 description: 从分层贡献到不可变请求，建立来源、作用域、修订号和信任等级共同约束的上下文装配契约。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, 上下文工程, 来源追踪]
+tags: [上下文工程, 来源追踪]
 series:
   order: 31
 ---

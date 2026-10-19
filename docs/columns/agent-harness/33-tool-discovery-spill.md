@@ -3,7 +3,7 @@ title: 第三十三章：工具懒加载与大结果 Spill
 description: 将工具能力发现与执行授权分开，用完整存储、有限预览和可检索定位符控制大结果的上下文成本。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, 工具发现, Spill]
+tags: [工具发现, Spill]
 series:
   order: 33
 ---

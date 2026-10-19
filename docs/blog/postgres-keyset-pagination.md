@@ -2,7 +2,7 @@
 title: PostgreSQL Keyset 分页：复合排序、游标验证与并发边界
 description: 从稳定排序推导 Keyset 查询，实现保留微秒精度的签名游标，并验证索引、NULL、过滤条件和并发变动下的分页语义。
 date: "2026-10-17"
-category: 数据库
+category: 后端工程
 tags: [PostgreSQL, Keyset, 分页, 索引, API设计]
 featured: true
 ---

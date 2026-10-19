@@ -76,7 +76,7 @@ describe('compact site layout', () => {
       '.listing-page__main { padding-top: var(--site-page-top); }',
     );
     expect(styles).toContain(
-      '.home-hero { display: grid; grid-template-columns: minmax(0,1.15fr) minmax(340px,.8fr); align-items: center; gap: clamp(32px,5vw,88px); padding: 28px 0 24px; }',
+      '.home-hero { position: relative; isolation: isolate; display: grid; grid-template-columns: minmax(0,1.15fr) minmax(340px,.8fr); align-items: center; gap: clamp(32px,5vw,88px); padding: 28px 0 24px; }',
     );
     expect(styles).toContain(
       '.about-profile { display: grid; grid-template-columns: minmax(0,1fr) 240px; gap: 24px 36px; margin-top: 28px; padding: 24px; }',
@@ -86,13 +86,15 @@ describe('compact site layout', () => {
     );
   });
 
-  test('keeps ambient animation on home and uses stable solid cards on content pages', () => {
+  test('keeps the static aurora on home and uses stable solid cards on content pages', () => {
     const layout = readSource('docs/.vitepress/theme/Layout.vue');
     const styles = readSource('docs/.vitepress/theme/styles/site.css');
+    const visualEffects = readSource('docs/.vitepress/theme/styles/visual-effects.css');
 
     expect(layout).toContain('<AmbientField v-if="pageKind === \'home\'"');
+    expect(visualEffects).toContain('.aurora-background { position: fixed;');
     expect(styles).toContain('.article-list { display: grid; grid-template-columns: repeat(3,minmax(0,1fr));');
-    expect(styles).not.toContain('backdrop-filter: blur(16px) saturate(140%);');
+    expect(styles).not.toContain('backdrop-filter');
     expect(styles).not.toContain('transform: translateY(-3px);');
   });
 });

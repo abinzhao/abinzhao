@@ -3,7 +3,7 @@ title: 第七十二章：完整项目验收、生产交付与技术地图
 description: 以本地只读证据审查任务串联技能、权限、上下文、恢复和评测，形成产物验收与未实现生产门槛。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, 综合实训, 生产验收]
+tags: [综合实训, 生产验收]
 series:
   order: 72
 ---

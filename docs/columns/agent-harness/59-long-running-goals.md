@@ -3,7 +3,7 @@ title: 第 59 章：长任务、Goal 与跨窗口交接
 description: 分离持久目标与进程内继续资格，用预算、修订、交接证据和可观察完成条件控制长任务。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Goal, 上下文交接]
+tags: [Goal, 上下文交接]
 series:
   order: 59
 ---

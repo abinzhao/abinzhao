@@ -3,7 +3,7 @@ title: '第27章：MCP 传输与协议版本迁移'
 description: 对照现代逐请求协议与旧初始化协议，解释 stdio、Streamable HTTP、版本探测和取消的不同契约。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, MCP, stdio, Streamable HTTP, 协议迁移]
+tags: [MCP, stdio, Streamable HTTP, 协议迁移]
 series:
   order: 27
 ---

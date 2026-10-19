@@ -3,7 +3,7 @@ title: 第十章：用行为测试守住 Harness 契约
 description: 用 node:test、真实 HTTP fixture 和 provider 替身验证协议与状态，避免把确定性测试当成模型效果。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Node.js, 行为测试]
+tags: [Node.js, 行为测试]
 series:
   order: 10
 ---

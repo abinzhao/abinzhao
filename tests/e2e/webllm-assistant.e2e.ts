@@ -33,7 +33,7 @@ test('checks empty model caches without downloading and explains that offline as
   await expect(page.locator('.chat-answer__code').first()).toBeVisible();
 });
 
-test('cancels initialization and pauses background drawing while the worker is loading', async ({ page }) => {
+test('cancels initialization while the worker is loading', async ({ page }) => {
   await page.addInitScript(() => {
     const NativeWorker = window.Worker;
     window.Worker = class extends EventTarget {
@@ -51,26 +51,11 @@ test('cancels initialization and pauses background drawing while the worker is l
       }
       terminate() {}
     } as unknown as typeof Worker;
-    const draw = CanvasRenderingContext2D.prototype.drawImage;
-    let count = 0;
-    Object.defineProperty(window, '__ambientDrawCount', { get: () => count });
-    CanvasRenderingContext2D.prototype.drawImage = function (...args: Parameters<typeof draw>) {
-      count++;
-      return draw.apply(this, args);
-    };
   });
   await page.goto('chat/');
   await page.getByRole('button', { name: '配置本地模型' }).click();
   await page.getByRole('button', { name: '下载并加载模型' }).click();
-  await expect(page.locator('.site-shell')).toHaveClass(/site-shell--inference/);
-  const counts = await page.evaluate(async () => {
-    const counter = () => (window as unknown as { __ambientDrawCount: number }).__ambientDrawCount;
-    const before = counter();
-    for (let frame = 0; frame < 4; frame++) await new Promise(requestAnimationFrame);
-    return [before, counter()];
-  });
-  expect(counts[1]).toBe(counts[0]);
+  await expect(page.getByRole('button', { name: '取消加载' })).toBeVisible();
   await page.getByRole('button', { name: '取消加载' }).click();
-  await expect(page.locator('.site-shell')).not.toHaveClass(/site-shell--inference/);
   await expect(page.getByRole('button', { name: '下载并加载模型' })).toBeEnabled();
 });

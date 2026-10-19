@@ -3,7 +3,7 @@ title: '第20章：技能发现、来源与重名处理'
 description: 为技能目录建立作用域、优先级、完整性和失效规则，避免同名覆盖与短暂发现失败污染模型视图。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Skill, 发现, 缓存]
+tags: [Skill, 发现, 缓存]
 series:
   order: 20
 ---

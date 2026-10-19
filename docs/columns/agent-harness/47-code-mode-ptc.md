@@ -3,7 +3,7 @@ title: 第四十七章：Code Mode 与程序化工具调用
 description: 把程序编排与工具执行权分开，使用受控 RPC、无损 JSON 和分层取消解释 PTC，而非在宿主直接执行模型代码。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, PTC, Code Mode]
+tags: [PTC, Code Mode]
 series:
   order: 47
 ---

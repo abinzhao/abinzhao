@@ -54,10 +54,10 @@ test.describe('desktop layout density', () => {
     const firstCard = page.locator('.article-list-item').first();
     await firstCard.hover();
     await expect(firstCard).toHaveCSS('transform', 'none');
-    await expect(page.locator('.ambient-field')).toHaveCount(0);
+    await expect(page.locator('.aurora-background')).toHaveCount(0);
 
     await page.goto('');
-    await expect(page.locator('.ambient-field')).toHaveCount(1);
+    await expect(page.locator('.aurora-background')).toHaveCount(1);
   });
 
   test('starts article content before the 320px threshold', async ({ page }) => {
@@ -88,8 +88,8 @@ test.describe('desktop layout density', () => {
     expect((await page.locator('.project-card').first().boundingBox())?.y).toBeLessThan(320);
 
     await page.goto('');
-    const moduleTop = (await page.locator('.home-section--modules').boundingBox())?.y;
-    expect(moduleTop).toBeLessThan(900);
+    const articlesTop = (await page.locator('.home-section--articles').boundingBox())?.y;
+    expect(articlesTop).toBeLessThan(900);
 
     await page.goto('about');
     await expect(page.locator('.about-profile')).toBeVisible();
@@ -133,9 +133,8 @@ test.describe('mobile layout density', () => {
     await expectNoHorizontalOverflow(page);
   });
 
-  test('folds the terminal and shows modules and a recent article in the first viewport', async ({ page }) => {
+  test('folds the terminal and shows a recent article in the first viewport', async ({ page }) => {
     await page.goto('');
-    expect((await page.locator('.home-section--modules').boundingBox())?.y).toBeLessThanOrEqual(600);
     expect((await page.locator('.home-section--articles .article-card').first().boundingBox())?.y).toBeLessThan(844);
     const toggle = page.getByRole('button', { name: '展开开发终端' });
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
@@ -171,17 +170,7 @@ test.describe('mobile layout density', () => {
     await expectNoHorizontalOverflow(page);
 
     const action = await page.locator('.home-hero__actions .button--primary').boundingBox();
-    const launcher = await page.locator('.ai-launcher').boundingBox();
-    const overlaps =
-      action !== null &&
-      launcher !== null &&
-      !(
-        action.x + action.width < launcher.x ||
-        action.x > launcher.x + launcher.width ||
-        action.y + action.height < launcher.y ||
-        action.y > launcher.y + launcher.height
-      );
-
-    expect(overlaps).toBe(false);
+    expect(action).not.toBeNull();
+    expect(action!.x + action!.width).toBeLessThanOrEqual(390);
   });
 });

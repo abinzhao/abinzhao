@@ -3,7 +3,7 @@ title: 第 58 章：脚本工作流、结果重放与失败语义
 description: 区分脚本编排与耐久工作流，按步骤身份和副作用状态决定结果复用、重试或人工协调。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, 工作流, 幂等]
+tags: [工作流, 幂等]
 series:
   order: 58
 ---

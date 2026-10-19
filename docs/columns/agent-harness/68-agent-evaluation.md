@@ -3,7 +3,7 @@ title: 第六十八章：真实任务、Trajectory 与结果评测
 description: 分离轨迹、最终产物与安全结果，保留缺失样本和测量来源，建立不伪造模型效果的评测流程。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, 评测, Trajectory]
+tags: [评测, Trajectory]
 series:
   order: 68
 ---

@@ -29,10 +29,9 @@ test('finds every public repository by name and resets an empty search', async (
   await expect(page.locator('.project-card')).toHaveCount(repositories.length);
 });
 
-test('shows actual highlighted TypeScript in the workbench', async ({ page }) => {
+test('shows the workbench TypeScript source', async ({ page }) => {
   await page.goto('');
   await expect(page.locator('.terminal-window__code')).toContainText('export const developer');
-  await expect(page.locator('.terminal-token--keyword').first()).toBeVisible();
   await page.getByRole('button', { name: 'harness.config.ts' }).click();
   await expect(page.locator('.terminal-window__code')).toContainText("tools: ['list_files', 'read_file']");
   await expect(page.getByRole('button', { name: 'harness.config.ts' })).toHaveAttribute('aria-pressed', 'true');

@@ -3,7 +3,7 @@ title: '第26章：MCP 工具、资源与提示模板'
 description: 以 2026-07-28 协议区分工具执行、资源读取与提示模板选择，展示完整请求元数据和结果投影边界。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, MCP, Tools, Resources, Prompts]
+tags: [MCP, Tools, Resources, Prompts]
 series:
   order: 26
 ---

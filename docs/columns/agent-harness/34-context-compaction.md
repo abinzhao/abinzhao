@@ -3,7 +3,7 @@ title: 第三十四章：剪枝、摘要压缩与上下文交接
 description: 用工具配对边界、位置范围和可追踪摘要替换控制上下文压力，区分剪枝、压缩与新窗口交接。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Compaction, 上下文交接]
+tags: [Compaction, 上下文交接]
 series:
   order: 34
 ---

@@ -3,7 +3,7 @@ title: '第28章：MCP OAuth 与远程授权'
 description: 按 2026-07-28 授权规范解释资源服务器、发现、PKCE、受众与增量 scope，并标出静态 headers 与 OAuth 实现的区别。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, MCP, OAuth, 授权, 凭据隔离]
+tags: [MCP, OAuth, 授权, 凭据隔离]
 series:
   order: 28
 ---

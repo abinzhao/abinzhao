@@ -3,7 +3,7 @@ title: 第七章：上下文预算，保留完整用户轮
 description: 用 UTF-8 JSON 字节预算选择连续历史，理解工具配对、当前轮超限与模型窗口的区别。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Node.js, 上下文预算]
+tags: [Node.js, 上下文预算]
 series:
   order: 7
 ---

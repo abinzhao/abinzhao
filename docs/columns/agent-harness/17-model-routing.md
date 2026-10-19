@@ -3,7 +3,7 @@ title: '第17章：模型路由、认证与兼容网关'
 description: 把模型选择、协议、端点、凭据引用和数据出域政策绑定成一次请求快照，设计不扩大权限的失败处理。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, 模型路由, 凭据, 网关]
+tags: [模型路由, 凭据, 网关]
 series:
   order: 17
 ---

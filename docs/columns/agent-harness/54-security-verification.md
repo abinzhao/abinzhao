@@ -3,7 +3,7 @@ title: 第 54 章：安全探针、对抗评测与降级处理
 description: 把安全承诺转成可观察探针，区分策略拒绝、基础设施故障、未支持平台与主动降级。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, 安全验收, 故障注入]
+tags: [安全验收, 故障注入]
 series:
   order: 54
 ---

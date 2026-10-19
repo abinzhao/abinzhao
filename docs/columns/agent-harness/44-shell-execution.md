@@ -3,7 +3,7 @@ title: 第四十四章：Shell、argv、环境与退出语义
 description: 用显式进程参数、工作目录和环境构造区分直接执行与 shell 解释，并正确处理退出码、信号、超时与截断。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Shell, Subprocess]
+tags: [Shell, Subprocess]
 series:
   order: 44
 ---

@@ -3,7 +3,7 @@ title: 第 50 章：文件系统沙箱与平台原语
 description: 区分路径校验与系统强制隔离，理解符号链接竞争、执行完整性和失败关闭。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, 文件系统沙箱, TOCTOU]
+tags: [文件系统沙箱, TOCTOU]
 series:
   order: 50
 ---

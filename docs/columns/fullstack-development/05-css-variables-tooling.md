@@ -2,7 +2,7 @@
 title: "第 5 章：CSS 变量与工程化"
 description: "用自定义属性、原生嵌套和预处理工具组织可维护的样式代码。"
 date: "2026-10-15"
-category: CSS3
+category: CSS
 tags: [CSS3, 自定义属性, PostCSS]
 series:
   order: 6

@@ -3,7 +3,7 @@ title: '第13章：Agent、Workflow 与 Harness 的边界'
 description: 从决策权、执行权与事实记录出发，区分智能体循环、确定性工作流和运行宿主，建立可验证的职责边界。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Agent, Workflow, 运行时契约]
+tags: [Agent, Workflow, 运行时契约]
 series:
   order: 13
 ---

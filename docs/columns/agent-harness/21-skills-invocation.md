@@ -3,7 +3,7 @@ title: '第21章：技能触发、权限与生命周期'
 description: 以真实 skills 实验解释加载身份和摘要校验，再区分显式调用、模型选择、内容生命周期与执行授权。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Skill, 调用控制, 生命周期]
+tags: [Skill, 调用控制, 生命周期]
 series:
   order: 21
 ---

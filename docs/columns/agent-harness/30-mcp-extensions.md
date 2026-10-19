@@ -3,7 +3,7 @@ title: '第30章：MCP Apps、Tasks 与 Skills 扩展'
 description: 按官方扩展原文分别说明 UI、耐久任务和远程技能的协商、来源与安全契约，避免混用旧版任务语义及厂商 SDK。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, MCP Apps, MCP Tasks, Skills over MCP]
+tags: [MCP Apps, MCP Tasks, Skills over MCP]
 series:
   order: 30
 ---

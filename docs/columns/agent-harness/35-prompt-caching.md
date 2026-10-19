@@ -3,7 +3,7 @@ title: 第三十五章：稳定前缀与 Prompt Cache
 description: 从请求序列和供应商 usage 理解前缀缓存，避免把缓存命中误认为语义记忆或上下文容量扩展。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Prompt Cache, 请求优化]
+tags: [Prompt Cache, 请求优化]
 series:
   order: 35
 ---

@@ -3,7 +3,7 @@ title: 第三十七章：事件日志、模型表面与请求回放
 description: 区分耐久事实、模型可见表面和临时流，按修订号重建请求并保持工具身份与失败尝试可审计。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Event Sourcing, 请求回放]
+tags: [Event Sourcing, 请求回放]
 series:
   order: 37
 ---

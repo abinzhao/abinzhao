@@ -27,7 +27,7 @@ describe('custom page routing', () => {
     expect(getCustomPageKind('/blog/post', undefined, { date: '2026-10-15' })).toBe(
       'article',
     );
-    expect(getCustomPageKind('/columns/harmonyos-engineering', undefined, {
+    expect(getCustomPageKind('/columns/agent-harness', undefined, {
       status: 'ongoing',
     })).toBe('column');
   });

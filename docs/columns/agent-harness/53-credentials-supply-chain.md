@@ -3,7 +3,7 @@ title: 第 53 章：凭据隔离、插件与 MCP 供应链
 description: 用凭据引用和 secret broker 收窄授权，审查安装脚本、插件激活与远程工具的供应链边界。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, 凭据隔离, 供应链]
+tags: [凭据隔离, 供应链]
 series:
   order: 53
 ---

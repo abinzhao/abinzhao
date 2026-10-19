@@ -3,7 +3,7 @@ title: 第 56 章：子 Agent 消息、等待与取消
 description: 区分消息接纳、任务结算与资源静止，建立可等待且不越权的子任务控制协议。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, 取消, 子任务控制]
+tags: [取消, 子任务控制]
 series:
   order: 56
 ---

@@ -3,7 +3,7 @@ title: 第 01 章：用服务契约拆分 Agent Harness
 description: 从零建立 Node.js ESM 项目，用明确的输入、输出和副作用边界组合本地工作区助手。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Node.js, 服务契约]
+tags: [Node.js, 服务契约]
 series:
   order: 1
 ---

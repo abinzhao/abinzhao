@@ -3,7 +3,7 @@ title: 第六十五章：ACP、A2A 与 Agent 互操作
 description: 区分编辑器与智能体协议、跨智能体任务协议和工具协议，设计不会扩大权限的适配边界。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, ACP, A2A]
+tags: [ACP, A2A]
 series:
   order: 65
 ---

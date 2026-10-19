@@ -3,7 +3,7 @@ title: 第 03 章：把模型增量结算成完整回复
 description: 用 Node.js Web Streams 解码 SSE，组装分片工具参数，并明确显示增量与可执行回复的边界。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Node.js, 流式结算]
+tags: [Node.js, 流式结算]
 series:
   order: 3
 ---

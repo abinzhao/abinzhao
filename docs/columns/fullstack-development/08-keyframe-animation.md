@@ -2,7 +2,7 @@
 title: "第 8 章：关键帧动画"
 description: "使用关键帧和 animation 子属性实现可控、可复用的连续动画。"
 date: "2026-10-15"
-category: CSS 动画
+category: CSS
 tags: [CSS3, 关键帧, 动画]
 series:
   order: 9

@@ -6,7 +6,7 @@ import { validateConfig } from './config-validation';
 
 export interface AboutData {
   actions: Array<{
-    kind: 'github' | 'project';
+    kind: 'assistant' | 'github' | 'project';
     label: string;
     link: string;
   }>;
@@ -53,7 +53,7 @@ export default defineLoader({
     const parsed = parse(readFileSync(configPath, 'utf8'));
     validateConfig(parsed, {
       identity: { avatar: 'string', bio: 'string', handle: 'string', location: 'string', name: 'string', role: 'string', status: 'string' },
-      actions: [{ kind: 'github|project', label: 'string', link: 'string' }],
+      actions: [{ kind: 'github|project|assistant', label: 'string', link: 'string' }],
       stats: [{ detail: 'string', label: 'string', value: 'string|number' }],
       principles: [{ description: 'string', index: 'string', subtitle: 'string', tags: ['string'], title: 'string' }],
       skills: [{ group: 'string', label: 'string', items: [{ detail: 'string', name: 'string', value: 'number' }] }],

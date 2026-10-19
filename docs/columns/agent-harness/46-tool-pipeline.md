@@ -3,7 +3,7 @@ title: 第四十六章：工具输出契约与执行管线
 description: 从规范 JSON 值到模型展示和最终日志建立工具管线，保持权限拒绝不可被中间件撤销并正确结算失败。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Tool Pipeline, 输出契约]
+tags: [Tool Pipeline, 输出契约]
 series:
   order: 46
 ---

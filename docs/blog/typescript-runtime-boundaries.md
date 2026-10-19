@@ -2,7 +2,7 @@
 title: TypeScript 的运行时边界：把未知 JSON 变成可验证的领域契约
 description: 用原生验证器、判别联合和显式序列化处理外部 JSON，区分结构有效、领域有效与授权有效，避免类型断言掩盖真实输入风险。
 date: "2026-10-17"
-category: 类型系统
+category: 前端工程
 tags: [TypeScript, 运行时验证, JSON, 契约设计]
 featured: false
 ---

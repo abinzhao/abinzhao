@@ -3,7 +3,7 @@ title: 第六十四章：OpenCode、SDK、References 与 Policies
 description: 理解 OpenCode 的服务器客户端架构，区分参考目录、工具权限和提供商策略，并处理版本与错误契约。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, OpenCode, 策略]
+tags: [OpenCode, 策略]
 series:
   order: 64
 ---

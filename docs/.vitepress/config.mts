@@ -88,7 +88,6 @@ export default defineConfig({
       { text: '博客', link: '/blog/' },
       { text: '专题', link: '/columns/' },
       { text: '项目', link: '/projects/' },
-      { text: 'AI 助手', link: '/chat/' },
       { text: '关于', link: '/about' },
     ],
     socialLinks: site.githubUrl ? [{ icon: 'github', link: site.githubUrl }] : [],

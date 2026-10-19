@@ -3,7 +3,7 @@ title: 第 04 章：把模型工具参数当成不可信输入
 description: 为只读文件工具建立运行时参数、路径和大小边界，并解释符号链接与文件系统竞争的限制。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Node.js, 工具边界]
+tags: [Node.js, 工具边界]
 series:
   order: 4
 ---

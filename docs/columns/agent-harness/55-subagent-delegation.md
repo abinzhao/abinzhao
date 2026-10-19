@@ -3,7 +3,7 @@ title: 第 55 章：子 Agent 委派与上下文继承
 description: 用任务契约控制上下文与能力继承，区分新会话、历史分叉和外部单次执行。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, 子 Agent, 委派]
+tags: [子 Agent, 委派]
 series:
   order: 55
 ---

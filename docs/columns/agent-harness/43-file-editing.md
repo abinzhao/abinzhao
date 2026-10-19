@@ -3,7 +3,7 @@ title: 第四十三章：文件编辑、观察新鲜度与 Diff
 description: 从目标身份、版本守卫和原子替换理解编辑工具，防止陈旧观察覆盖用户修改并让 Diff 对应真实执行结果。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, 文件编辑, Freshness]
+tags: [文件编辑, Freshness]
 series:
   order: 43
 ---

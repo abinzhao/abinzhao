@@ -3,7 +3,7 @@ title: 第三十六章：代码检索、RAG 与长期记忆
 description: 用版本、坐标、来源和有效期区分代码证据、检索材料与长期记忆，建立可失效、可纠正的知识使用闭环。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, RAG, 长期记忆]
+tags: [RAG, 长期记忆]
 series:
   order: 36
 ---

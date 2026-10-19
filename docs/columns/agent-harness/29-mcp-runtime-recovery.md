@@ -3,7 +3,7 @@ title: '第29章：MCP 缓存、订阅与故障恢复'
 description: 区分协议缓存提示、资源更新订阅和宿主连接代际，用确定性实验验证过期、授权隔离与迟到结果处理。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, MCP, 缓存, 订阅, 故障恢复]
+tags: [MCP, 缓存, 订阅, 故障恢复]
 series:
   order: 29
 ---

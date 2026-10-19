@@ -3,7 +3,7 @@ title: '第16章：Messages、Responses 与内容块协议'
 description: 通过同一个工具调用比较三种模型消息格式，建立关联标识、流式结算和不透明回放数据的适配边界。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Messages, Responses, 协议适配]
+tags: [Messages, Responses, 协议适配]
 series:
   order: 16
 ---

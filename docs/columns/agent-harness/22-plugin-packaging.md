@@ -3,7 +3,7 @@ title: '第22章：插件格式、市场与版本分发'
 description: 区分技能说明、插件组件、市场目录与运行组合，建立版本、路径、授权和升级验收的分发契约。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, 插件, Marketplace, 供应链]
+tags: [插件, Marketplace, 供应链]
 series:
   order: 22
 ---

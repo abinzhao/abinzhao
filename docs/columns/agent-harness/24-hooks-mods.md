@@ -3,7 +3,7 @@ title: '第24章：Hooks、中间件与 Mods 的执行边界'
 description: 从执行位置、参数身份和失败策略比较 hooks、中间件与 mods，说明兼容桥不能自动继承原宿主的权限与事件。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Hooks, Mods, 中间件]
+tags: [Hooks, Mods, 中间件]
 series:
   order: 24
 ---

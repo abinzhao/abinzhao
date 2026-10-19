@@ -3,7 +3,7 @@ title: 第三十八章：耐久存储、写锁与崩溃恢复
 description: 将内存可见、append 确认与 flush 耐久屏障分开，用单写者所有权和完整前缀恢复避免伪成功。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Durability, 崩溃恢复]
+tags: [Durability, 崩溃恢复]
 series:
   order: 38
 ---

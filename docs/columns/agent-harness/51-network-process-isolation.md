@@ -3,7 +3,7 @@ title: 第 51 章：网络、进程、容器与虚拟机隔离
 description: 用执行世界和访问矩阵审查网络、进程及宿主接口，避免把容器或只读模式当成完整隔离。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, 网络隔离, 进程隔离]
+tags: [网络隔离, 进程隔离]
 series:
   order: 51
 ---

@@ -3,7 +3,7 @@ title: '第15章：模型能力、Token 与推理预算'
 description: 区分能力声明、实测兼容性和预算单位，为模型准入、输出预留及推理参数建立可检查的规则。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, 模型能力, Token, 推理预算]
+tags: [模型能力, Token, 推理预算]
 series:
   order: 15
 ---

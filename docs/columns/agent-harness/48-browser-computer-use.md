@@ -3,7 +3,7 @@ title: 第四十八章：浏览器与 Computer Use 的观察闭环
 description: 用新鲜观察、动作目标、结果验证与资源所有权治理浏览器和桌面工具，避免按过期截图执行或把点击成功当业务成功。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Browser Use, Computer Use]
+tags: [Browser Use, Computer Use]
 series:
   order: 48
 ---

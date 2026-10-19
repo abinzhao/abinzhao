@@ -3,7 +3,7 @@ title: 第四十五章：PTY、后台任务与进程清理
 description: 区分终端会话、单次 send 与后台任务，以所有权、输出游标和进程树清理构建可解释的取消语义。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, PTY, 进程清理]
+tags: [PTY, 进程清理]
 series:
   order: 45
 ---

@@ -3,7 +3,7 @@ title: 第 60 章：定时任务、Webhook 与 Channels
 description: 将定时和外部消息转换成受控输入，区分验签、去重、持久投递与模型执行完成。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Webhook, 定时任务]
+tags: [Webhook, 定时任务]
 series:
   order: 60
 ---

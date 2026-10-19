@@ -3,7 +3,7 @@ title: '第23章：Cordis 服务、事件与配置组合'
 description: 从服务依赖、可逆注册和事件调度理解 Cordis，再用原项目 scope 实验验证生命周期并标出简化边界。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Cordis, 服务组合, 生命周期]
+tags: [Cordis, 服务组合, 生命周期]
 series:
   order: 23
 ---

@@ -3,7 +3,7 @@ title: 第四十二章：Inbox、Steering 与并发调度
 description: 用输入身份、claim 边界和独占调度区分排队、纠正与上下文注入，避免重复消费和误判单条任务完成。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Inbox, 并发调度]
+tags: [Inbox, 并发调度]
 series:
   order: 42
 ---

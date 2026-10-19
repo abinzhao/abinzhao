@@ -3,7 +3,7 @@ title: 第七十一章：性能、限流、资源泄漏与运维
 description: 从准入、排队、执行和清理理解性能，以有界资源、重试纪律和故障恢复建立运维门槛。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, 性能, 运维]
+tags: [性能, 运维]
 series:
   order: 71
 ---

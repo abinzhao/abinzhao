@@ -2,7 +2,7 @@
 title: "第 3 章：盒模型与现代布局"
 description: "系统掌握盒模型、Flexbox、Grid、定位和响应式布局。"
 date: "2026-10-15"
-category: CSS3
+category: CSS
 tags: [CSS3, 弹性布局, 网格布局, 响应式设计]
 series:
   order: 4

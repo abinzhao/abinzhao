@@ -3,7 +3,7 @@ title: 第四十章：检查点、幂等与外部副作用
 description: 区分会话检查点、文件恢复与远端事务，用操作身份、未知状态和对账避免崩溃后重复副作用。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Checkpoint, 幂等]
+tags: [Checkpoint, 幂等]
 series:
   order: 40
 ---

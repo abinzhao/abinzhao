@@ -3,7 +3,7 @@ title: 第 57 章：Teams、任务 DAG 与工作树隔离
 description: 用无环依赖、任务修订和产物所有权组织协作，区分工作树冲突隔离与运行时安全隔离。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, DAG, Git Worktree]
+tags: [DAG, Git Worktree]
 series:
   order: 57
 ---

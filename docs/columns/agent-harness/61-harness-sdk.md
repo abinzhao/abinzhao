@@ -3,7 +3,7 @@ title: 第六十一章：Harness SDK 与可编程宿主
 description: 区分模型客户端、智能体运行时和远程宿主，设计可取消、可鉴权、可追踪的调用契约。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, SDK, 宿主协议]
+tags: [SDK, 宿主协议]
 series:
   order: 61
 ---

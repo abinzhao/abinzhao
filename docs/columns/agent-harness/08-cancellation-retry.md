@@ -3,7 +3,7 @@ title: 第八章：取消传播与受限重试
 description: 把取消信号传到 fetch 和工具，只重试指定的流前 HTTP 拒绝，避免重放部分回答。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Node.js, 取消与重试]
+tags: [Node.js, 取消与重试]
 series:
   order: 8
 ---

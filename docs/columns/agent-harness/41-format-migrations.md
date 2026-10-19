@@ -3,7 +3,7 @@ title: 第四十一章：会话格式、版本迁移与数据生命周期
 description: 将物理 framing、逻辑版本与事件语义分开，以不可变原件、相邻迁移和只读预检保护会话历史。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, 格式迁移, 数据生命周期]
+tags: [格式迁移, 数据生命周期]
 series:
   order: 41
 ---

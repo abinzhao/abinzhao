@@ -1,0 +1,7 @@
+/* The single decorative layer: a static aurora backdrop, home page only. */
+.aurora-background { position: fixed; inset: 0; z-index: -2; width: 100%; height: 100svh; pointer-events: none; overflow: hidden; background: var(--site-bg); }
+.aurora-background::after { position: absolute; inset: 0; content: ''; background-image: linear-gradient(var(--site-grid) 1px, transparent 1px), linear-gradient(90deg, var(--site-grid) 1px, transparent 1px); background-size: 72px 72px; mask-image: linear-gradient(#000, transparent 90%); }
+.aurora-background i { position: absolute; width: 72vw; height: 65vw; max-height: 920px; border-radius: 50%; background: radial-gradient(ellipse, color-mix(in srgb, var(--site-accent) 22%, transparent), transparent 66%); }
+.aurora-background i:nth-child(1) { top: -45%; left: -25%; }
+.aurora-background i:nth-child(2) { top: -5%; right: -30%; background: radial-gradient(ellipse, color-mix(in srgb, var(--site-signal) 19%, transparent), transparent 65%); }
+.aurora-background i:nth-child(3) { bottom: -65%; left: 5%; background: radial-gradient(ellipse, color-mix(in srgb, var(--site-accent) 16%, transparent), transparent 66%); }

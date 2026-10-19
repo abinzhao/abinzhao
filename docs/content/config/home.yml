@@ -7,13 +7,6 @@ profile:
   status: 持续构建本地优先的工具与智能体
   intro: 从界面到系统，把想法写成可靠的软件。
   description: 全栈工程师与独立开发者。写可维护的前端，设计可验证的服务，构建用户可控的智能体。源码公开，经验成文。
-  metrics:
-    - value: "4"
-      label: 系统专题
-    - value: "12"
-      label: 开源仓库
-    - value: "10"
-      label: 技术博客
 actions:
   primary:
     label: 阅读博客
@@ -36,24 +29,3 @@ terminal:
     - "  },"
     - "} as const;"
   footer: 让代码可读，让结果可验证。
-modules:
-  - icon: book
-    title: 技术博客
-    description: 架构、数据、性能与全栈工程实践
-    meta: 持续更新
-    link: /blog/
-  - icon: graduation
-    title: 系列专栏
-    description: 从 Web 基础到 Agent Harness 完整项目
-    meta: 深度写作
-    link: /columns/
-  - icon: rocket
-    title: 开源项目
-    description: 检索全部公开仓库，直接阅读源码
-    meta: GitHub 公开
-    link: /projects/
-  - icon: fingerprint
-    title: 数字花园
-    description: 工作方法、笔记与独立开发日志
-    meta: 关于我
-    link: /about.html

@@ -9,20 +9,12 @@ export interface HomeData {
     primary: { label: string; link: string };
     secondary: { label: string; link: string };
   };
-  modules: Array<{
-    description: string;
-    icon: 'book' | 'fingerprint' | 'graduation' | 'rocket';
-    link: string;
-    meta: string;
-    title: string;
-  }>;
   profile: {
     avatar: string;
     description: string;
     handle: string;
     intro: string;
     location: string;
-    metrics: Array<{ label: string; value: string }>;
     name: string;
     role: string;
     status: string;
@@ -45,8 +37,7 @@ export default defineLoader({
     const parsed = parse(readFileSync(configPath, 'utf8'));
     validateConfig(parsed, {
       actions: { primary: { label: 'string', link: 'string' }, secondary: { label: 'string', link: 'string' } },
-      profile: { avatar: 'string', description: 'string', handle: 'string', intro: 'string', location: 'string', name: 'string', role: 'string', status: 'string', metrics: [{ label: 'string', value: 'string' }] },
-      modules: [{ description: 'string', icon: 'book|fingerprint|graduation|rocket', link: 'string', meta: 'string', title: 'string' }],
+      profile: { avatar: 'string', description: 'string', handle: 'string', intro: 'string', location: 'string', name: 'string', role: 'string', status: 'string' },
       terminal: { footer: 'string', label: 'string', lines: ['text'] },
     }, configPath);
     return parsed as HomeData;

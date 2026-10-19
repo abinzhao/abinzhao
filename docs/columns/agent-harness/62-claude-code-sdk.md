@@ -3,7 +3,7 @@ title: 第六十二章：Claude Code 与 Agent SDK 机制
 description: 以官方公开契约解释内置工具循环、配置来源、权限与会话，避免把闭源产品描述成源码审计。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Claude Agent SDK, 权限]
+tags: [Claude Agent SDK, 权限]
 series:
   order: 62
 ---

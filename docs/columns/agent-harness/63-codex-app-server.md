@@ -3,7 +3,7 @@ title: 第六十三章：Codex Rust、SDK 与 App Server
 description: 从固定源码区分 Rust 运行时、TypeScript SDK 和 App Server，建立请求、通知与运行终态的客户端契约。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Codex, JSON-RPC]
+tags: [Codex, JSON-RPC]
 series:
   order: 63
 ---

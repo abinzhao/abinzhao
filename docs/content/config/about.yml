@@ -13,7 +13,11 @@ actions:
   - label: 查看项目
     link: /projects/
     kind: project
+  - label: 本地 AI 助手
+    link: /chat/
+    kind: assistant
 stats:
+  # 开源仓库 / 学习专题 的 value 仅占位，运行时由 content 的实际数量覆盖（见 AboutPage.vue）。
   - value: 12
     label: 开源仓库
     detail: 公开项目与工具

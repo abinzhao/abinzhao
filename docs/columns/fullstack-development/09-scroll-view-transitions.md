@@ -2,7 +2,7 @@
 title: "第 9 章：滚动驱动动画与视图过渡"
 description: "认识滚动时间线、View Transitions API、平滑滚动和渐进增强策略。"
 date: "2026-10-15"
-category: CSS 动画
+category: CSS
 tags: [滚动驱动动画, 视图过渡, 渐进增强]
 series:
   order: 10

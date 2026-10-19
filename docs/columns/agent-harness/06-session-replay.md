@@ -3,7 +3,7 @@ title: 第 06 章：从追加日志回放已完成的会话
 description: 用 NDJSON 保存运行事实，验证完整工具组与状态转换，并仅从已完成运行派生后续模型历史。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Node.js, 会话回放]
+tags: [Node.js, 会话回放]
 series:
   order: 6
 ---

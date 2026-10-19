@@ -3,7 +3,7 @@ title: '第14章：从 ReAct 到可验证控制流程'
 description: 把思考与行动循环变成有阶段、预算、失败语义和证据门的控制器，避免把模型自评当成验收。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, ReAct, 状态机, 验证]
+tags: [ReAct, 状态机, 验证]
 series:
   order: 14
 ---

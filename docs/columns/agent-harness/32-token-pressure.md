@@ -3,7 +3,7 @@ title: 第三十二章：Token 压力、视觉计量与输出预留
 description: 区分字符、字节、启发式估算和供应商 usage，为文本、图片、工具 schema 与输出共同建立预算。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Token 预算, 多模态]
+tags: [Token 预算, 多模态]
 series:
   order: 32
 ---

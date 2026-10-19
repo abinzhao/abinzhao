@@ -3,7 +3,7 @@ title: '第25章：MCP Host、Client 与 Server'
 description: 以连接所有权、命名与授权数据流解释 MCP 三方架构，区分协议互通、宿主适配和实际执行隔离。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, MCP, Host, Client, Server]
+tags: [MCP, Host, Client, Server]
 series:
   order: 25
 ---

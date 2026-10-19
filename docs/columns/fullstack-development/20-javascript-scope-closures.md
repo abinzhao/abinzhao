@@ -2,7 +2,7 @@
 title: "第 20 章：JavaScript 变量、作用域与闭包"
 description: "理解值、引用、词法作用域、暂时性死区与闭包，并用闭包封装博客状态。"
 date: "2026-10-15"
-category: JavaScript 核心
+category: JavaScript
 tags: [JavaScript, 作用域, 闭包]
 series:
   order: 21

@@ -3,7 +3,7 @@ title: 第 02 章：让插件注册拥有完整生命周期
 description: 用所有权作用域管理服务注册，解释初始化失败回滚、反向清理和异步卸载边界。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Node.js, 插件生命周期]
+tags: [Node.js, 插件生命周期]
 series:
   order: 2
 ---

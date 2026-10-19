@@ -3,7 +3,7 @@ title: 第六十九章：Skill、插件评测与消融对比
 description: 通过触发、加载、执行和安全分层评测技能与插件，用独立变量和同任务配对避免错误因果结论。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, Skill 评测, 消融实验]
+tags: [Skill 评测, 消融实验]
 series:
   order: 69
 ---

@@ -3,7 +3,7 @@ title: 第七十章：OpenTelemetry、诊断与成本
 description: 区分追踪、指标、日志与会话内容，控制敏感信息和高基数，并用可核对的测量解释运行成本。
 date: '2026-10-17'
 category: 智能体工程
-tags: [Agent Harness, OpenTelemetry, 成本]
+tags: [OpenTelemetry, 成本]
 series:
   order: 70
 ---
