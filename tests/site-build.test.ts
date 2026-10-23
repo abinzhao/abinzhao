@@ -36,10 +36,11 @@ describe('VitePress static site', () => {
     budgets = contentBudgets(await loadPublishedArticleSources(source));
     const result = await execFileAsync(join(projectRoot, 'node_modules/.bin/vitepress'), ['build', 'docs', '--outDir', distDirectory], {
       cwd: fixtureRoot,
-      timeout: 45_000,
+      // 完整课程增加了渲染页数；共享 runner 的构建仍保持明确时间上限。
+      timeout: 90_000,
     });
     buildLogs = `${result.stdout}\n${result.stderr}`;
-  }, 60_000);
+  }, 120_000);
 
   afterAll(() => rmSync(fixtureRoot, { force: true, recursive: true }));
 
