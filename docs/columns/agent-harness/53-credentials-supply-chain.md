@@ -1,7 +1,7 @@
 ---
 title: 第 53 章：凭据隔离、插件与 MCP 供应链
 description: 用凭据引用和 secret broker 收窄授权，审查安装脚本、插件激活与远程工具的供应链边界。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [凭据隔离, 供应链]
 series:
@@ -85,9 +85,15 @@ npm 官方生命周期文档明确：`npm ci` 与 `npm install` 可运行安装�
 
 完成标准是规划层不获取秘密值，授权只到达规定操作，供应链各阶段有可信来源与副作用证据。内存 broker 只验证决策骨架，不证明秘密已经隔离；未运行的插件不能写成“安全通过”，官方未审计软件也不能被包装成生产级凭据防线。
 
-## 53.6 官方来源与边界
+## 53.6 当前协议元数据的泄露面
 
-DeepSeek Harness 基线为 `0.2.1-alpha.5`、固定提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`；官方产品与 npm 页面核验于 2026-10-17。
+2026-10-23 对照 [MCP 2026-07-28 tools](https://modelcontextprotocol.io/specification/2026-07-28/server/tools)，`x-mcp-header` 可将 primitive 工具参数映射为 `Mcp-Param-*` HTTP 头，中间代理能看到它。Server 不应标记密码、API key、token 和个人信息；Host 也不能因为这些字段存在于 schema 就当成可公开路由元数据。工具参数、HTTP 头、业务日志与模型结果有不同可见范围，需要分别审查，不把结果脱敏当成请求未泄露。
+
+当前插件 manifest 布局见[第 22 章](./22-plugin-packaging)，固定安装身份不等于包已安全审计。对照 [DeepSeek rc.2 Credentials](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/credentials.md)，消费者逐操作重新 resolve，空存储值视为不存在，不能跨操作缓存旧值。正常验收是轮换下一请求生效且 UI 不返回秘密；异常验收是撤销、空值、跨 origin 和敏感 header 映射被阻止。练习给 broker 的 catalog 增加允许路径与方法，证明同 origin 也不能任意选择接口；排错只记录引用和失败阶段，不打印真实秘密。
+
+## 53.7 官方来源与边界
+
+DeepSeek Harness 基线为 `0.2.1-alpha.5`、固定提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`；旧 npm 生命周期资料保留为来源，当前协议和凭据补充按 2026-10-23 复核，不声称运行过真实凭据实验。
 
 - [固定凭据契约](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/credentials.md)
 - [固定 plugin manager 工具说明](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/tool-catalog.md)

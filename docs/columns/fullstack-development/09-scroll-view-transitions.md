@@ -1,7 +1,7 @@
 ---
 title: "第 9 章：滚动驱动动画与视图过渡"
 description: "认识滚动时间线、View Transitions API、平滑滚动和渐进增强策略。"
-date: "2026-10-15"
+date: '2026-10-23'
 category: CSS
 tags: [滚动驱动动画, 视图过渡, 渐进增强]
 series:
@@ -11,7 +11,7 @@ series:
 
 ### 9.1 滚动驱动动画（Scroll-Driven Animations）
 
-传统上滚动动画要靠 `scroll` 事件 + JS 计算，会阻塞主线程。现在可以直接用 CSS。
+滚动事件中的 JavaScript 计算占用主线程，是否阻塞取决于工作量和调度。支持滚动时间线时可以直接用 CSS，但动画属性和绘制成本仍需测量。
 
 ```css
 @keyframes growProgress {
@@ -99,6 +99,8 @@ animation-timeline: scroll(self block);     /* 元素自身可滚动时 */
 #### 用 JS 创建时间线（跨滚动容器共享）
 
 ```js
+if ('ScrollTimeline' in window &&
+    !matchMedia('(prefers-reduced-motion: reduce)').matches) {
 const timeline = new ScrollTimeline({
   source: document.documentElement,
   axis: 'block'
@@ -111,20 +113,23 @@ document.querySelectorAll('.animated').forEach(el => {
     { duration: 1, fill: 'both', timeline }
   );
 });
+}
 ```
 
-**兼容性说明**：截至 2025 年，Chrome/Edge 115+ 支持，Safari 和 Firefox 尚未完全支持。使用时需要降级：
+**兼容性核验（2026-10-23）**：MDN 仍将 `animation-timeline` 标为 Limited availability；CSS 时间线、JavaScript `ScrollTimeline` 和视图过渡是不同能力，不能用一个浏览器版本号代替全部支持判断。按实际 API 检测并保留降级，参考 [当前兼容资料](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/animation-timeline)：
 
 ```css
 /* 默认状态是可见的，避免不支持的浏览器把内容永久隐藏 */
 .reveal { opacity: 1; }
 
 @supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
   .reveal {
     opacity: 0;
     animation: fadeInUp linear both;
     animation-timeline: view();
     animation-range: entry 0% cover 30%;
+  }
   }
 }
 ```
@@ -240,8 +245,7 @@ html { scroll-behavior: smooth; }
 
 /* 滚动容器隐藏滚动条 */
 .no-scrollbar {
-  scrollbar-width: none;        /* Firefox */
-  -ms-overflow-style: none;     /* IE/Edge */
+  scrollbar-width: none;        /* 标准属性；必须保留可发现的滚动入口 */
 }
 .no-scrollbar::-webkit-scrollbar { display: none; }   /* Chrome/Safari */
 
@@ -276,5 +280,29 @@ window.scrollTo({ top, behavior: 'smooth' });
 ```css
 section[id] { scroll-margin-top: 80px; }   /* 锚点跳转时自动留出头部高度 */
 ```
+
+### 验证与官方参考
+
+`animation` 简写会重置 `animation-timeline`，所以时间线应放在简写之后。同文档 `startViewTransition()` 与跨文档 CSS `@view-transition` 是不同机制；路由更新失败时要处理 `updateCallbackDone` 的 rejection，不能让视觉过渡遮住真实错误。减少动画模式应直接更新内容。
+
+### 9.4 先明确进度的分母
+
+阅读进度不是 `scrollY / 页面总高度`，通常应以可滚动距离为分母，即滚动高度减去视口高度。没有滚动距离时需要定义为完成或不展示，避免除零。CSS 时间线也依赖所选滚动容器；祖先加上 `overflow: auto` 后，默认最近容器可能发生变化。调试时先找实际改变 `scrollTop` 的元素，再判断时间线，而不是继续增加监听器。
+
+异步图片、字体和折叠内容会改变滚动范围。同一滚动位置对应的百分比可能因此变化，这不是服务器阅读记录丢失。图片应提供尺寸以减少布局偏移，动态长文则要重新观察尺寸变化。目录高亮也不是进度条的副产品：高亮跟踪章节位置，进度条表达整体滚动，两者应有各自的计算和验收。
+
+滚动驱动效果可逆，用户往回滚时动画也可能倒退。若需求是“出现一次以后一直可见”，应使用显式状态或 IntersectionObserver，而不是误用 view 时间线。短文、比视口还高的元素、嵌套滚动与横向书写方向都能暴露范围理解错误，应分别测试。
+
+### 9.5 导航结果先于视觉过渡
+
+视图过渡的更新回调负责实际 DOM 或应用状态更新，视觉结束 Promise 只表示过渡阶段结束。即使浏览器跳过动画，数据仍应正确更新；发生请求失败时也要保留可读错误和重试入口。框架会批处理更新，需要在回调中等待框架把目标状态提交，不能只触发一个异步更新便立即返回。
+
+共享元素名称必须在一次快照中唯一；列表上给所有图片设置同一个名称会使快照失败。只有当前选中的缩略图与详情图共享名称，其余元素恢复为 `none`。连续两次点击还要处理旧过渡被跳过的情况，并把焦点移到新页面的合理位置；截图动画不能替代焦点和浏览历史管理。
+
+练习用同一篇文章验证根滚动、容器滚动和零滚动距离，再模拟路由请求失败、连续导航和减少动画。记录最终 URL、标题、焦点、错误信息和进度范围。所有情况下内容都可见、导航可恢复，才算完成；平滑滚动不应接管用户的原生滚动，也不要隐藏唯一的滚动提示。
+
+- [Scroll-driven Animations 规范](https://drafts.csswg.org/scroll-animations-1/)
+- [CSS View Transitions](https://drafts.csswg.org/css-view-transitions-1/)
+- [Chrome View Transitions 指南](https://developer.chrome.com/docs/web-platform/view-transitions/)
 
 ---

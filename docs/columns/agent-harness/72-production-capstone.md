@@ -1,7 +1,7 @@
 ---
 title: 第七十二章：完整项目验收、生产交付与技术地图
 description: 以本地只读证据审查任务串联技能、权限、上下文、恢复和评测，形成产物验收与未实现生产门槛。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [综合实训, 生产验收]
 series:
@@ -90,7 +90,7 @@ NODE
 
 ## 技术地图与生产门槛
 
-完整章节、三十八领域和 DeepSeek 六十六子系统的索引已在[教程入口](./index.md)维护。这里按交付决策归纳地图，而不重复全部条目。每条生产门槛都必须有实现和运行证据；阅读过章节只代表理解了问题，不代表项目具备能力。
+完整章节、三十九领域和 DeepSeek alpha.5 历史六十六子系统的索引已在[教程入口](./index.md)维护。这里按交付决策归纳地图，而不重复全部条目。每条生产门槛都必须有实现和运行证据；阅读过章节只代表理解了问题，不代表项目具备能力。
 
 | 能力域 | 教学证据与定位 | 未实现的生产门槛 |
 | --- | --- | --- |
@@ -104,6 +104,14 @@ NODE
 
 原一至十二章仍是单进程只读 Node.js 22 原生 ESM 助手；扩展实验没有把它升级成生产平台。尤其没有真实厂商 SDK、远端认证、强沙箱和多 Agent。生产需求应逐项新增实现、威胁模型与验收，不通过修改 README 的能力描述提前宣称完成。
 
+## 当前产品接入的独立验收
+
+截至 `2026-10-23`，课程的产品发布与协议矩阵见[第七十三章](./73-version-governance.md)。这个 capstone 的内存结果不能证明 MCP SDK v2、ACP、A2A 或任一厂商 SDK 已接入。真实产品应另行提交依赖与制品身份、类型检查、实际握手、权限拒绝、取消清理和恢复证据，再允许使用其生产能力。
+
+尤其要检查当前版本的反直觉行为：Claude 结果 `success` 仍须检查 `is_error`；DeepSeek workflow 的失败 result 不 reject；OpenCode 旧分享 URL 已停用；A2A 1.0 的默认阻塞与中断等待不能按旧接口猜测。每种行为都应有一个正常样例和一个失败样例，不能只提交版本号或健康检查截图。
+
+capstone 交付按四层列结果：确定性机制、真实协议/SDK、真实模型、OS 与存储边界。缺失层保留“未验证”，不使用模型文案替代命令结果，不用合法 citation ID 替代原文事实支撑，不用内存 checkpoint 替代崩溃耐久。升级后再按相同输入和完成标准回归，避免把新增能力视为原结论自然延续。
+
 ## 失败场景与验收执行
 
 输入改变而报告仍引用旧摘要，应失败并重新读取；任务修订改变却恢复旧检查点，应拒绝；首次读取已完成却在恢复时又运行，说明结果复用失效。审批换参数、必需上下文超预算和非安全动作中断分别应拒绝或阻塞，不能统一映射成完成。产物缺少来源或实际文件不存在，也不能交付为成功。
@@ -112,8 +120,11 @@ NODE
 
 教程站点也要验收 frontmatter、章节链接、导航、类型检查和构建；这属于文档交付，不证明智能体运行质量。最终 Diff 应只包含授权文件，无凭据、调试日志或无关改动。需要发布时应先确认部署目标和回滚方式，保持教学产物与生产上线的权限边界。
 
+练习：为只读 capstone 制作四层交付表，填写实际运行命令和证据位置，未运行项保持未知。增加输入修订不一致、错误审批与缺失安全评测三种失败，断言报告不能进入生产就绪；再写升级后允许恢复与必须协调的判定条件。
+
 ## 固定来源与交付限制
 
+- [RC.2 workflow](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/workflow.md)、[SDK 结果参考](https://platform.claude.com/docs/en/agent-sdk/typescript)与[OpenCode 停用分享](https://github.com/anomalyco/opencode/releases/tag/v1.19.1)：当前接入验收边界，核验于 `2026-10-23`。
 - [DeepSeek subsystem index](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/README.md)：六十六子系统的固定基线。
 - [DeepSeek architecture](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/architecture.md)与[tool catalog](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/tool-catalog.md)：职责与工具契约。
 - [Node.js 22 文档](https://nodejs.org/docs/latest-v22.x/api/)：自包含实训运行基础。
@@ -122,4 +133,4 @@ NODE
 
 上一章：[第七十一章：性能、限流、资源泄漏与运维](./71-performance-operations.md)
 
-下一步：[返回教程入口与完整技术地图](./index.md)
+下一章：[第七十三章：版本治理与跨产品兼容验收](./73-version-governance.md)

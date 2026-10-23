@@ -1,7 +1,7 @@
 ---
 title: 第六十六章：Web、IDE、桌面与附件交付
 description: 将多端显示、运行状态与耐久附件分离，用内容身份和授权读取完成可验证交付。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [客户端, 附件]
 series:
@@ -34,6 +34,10 @@ DeepSeek 固定 Web Client 使用 Slots 组织扩展界面。槽位声明属于�
 
 语音识别结果回到草稿时尤其需要修订检查：用户在识别期间已经修改文本，迟到结果不能覆盖新输入。音频是临时输入，并不因为识别成功就自动成为耐久附件。翻译也应由用户明确触发并限制文本范围；客户端展示语言与用户原始内容分别保存，不能让翻译结果改写执行授权。上述语音与翻译服务在固定版本属于实验能力，需按 provider 与当前产品支持验收。
 
+`2026-10-23` 对 `0.2.1-rc.2` 的复核进一步区分临时输入与后台准备：麦克风由浏览器拥有，取消、Escape 或隐藏页面会丢弃录音；模型资源 preparation 则由 Host 拥有，关闭 observer 不等于取消下载。识别回填通过带 revision 的 selection 插入，拒绝时保留 transcript 供显式插入，而不是覆盖新草稿。
+
+翻译也不能一概写成“匿名端点”：当前支持 Bing/Google 匿名路径与明确选择的付费原生 Flash 路由。付费路径需 Session；已有成功翻译可从缓存读取，新的无缓存请求要求 active Session。失败不自动切换提供商，原文始终保留。翻译保留记录、付费 usage 与语音准备需要分别披露，不能用“只是显示功能”免除数据出站和费用确认。
+
 多端体验的最小成功标准是同一任务状态能收敛、草稿不会被过期结果覆盖、资源关闭后不再更新、产物仍可按授权取回。美观界面之外，还应以键盘、屏幕阅读器、移动视口与断线重连测试这些行为；本章的内存实验只检验内容身份。
 
 ## 固定实现中的附件机制
@@ -53,6 +57,14 @@ DeepSeek Harness `0.2.1-alpha.5`、提交 `1517a4dbca0a2789ff1d41ba439600f8547d2
 ```
 
 附件和 deliverable 也不同：附件是可引用的内容对象，交付物是面向任务的产物角色，可能关联多个对象、状态与说明。应先确认最终内容，再登记交付关系，避免模型仅声称“已生成报告”却没有实际文件。客户端可下载只证明运输成功，内容正确还需业务验收。
+
+### rc.2 的变更卡片不是耐久附件
+
+当前固定 `deliverables.md` 还有一个容易被“持久化”概念掩盖的限制：`present` 产生 log-only 的 `deliverables/presented` 事件；工作区变更产生 log-only 的 `workspace/changes`，但变更 summary 本身**不在日志里**，只由 Host 服务提供至 Session dispose。Host 重启后重新打开旧会话，不会自动恢复旧 turn 的 changed-files 卡片。这与附件对象先耐久后引用是两条不同合同。
+
+因此“事件还在”不能证明“变更比较还能下载”。需要长期审计的应用应另行持久保存经过授权的内容和比较证据，不将实时 workspace card 当归档。OpenCode `1.19.1` 以后也已停用 session sharing；旧分享 URL 不应成为跨端交付后备通道，见[第六十四章](./64-opencode-server.md#已停用的分享与残留类型)。
+
+操作验收应将附件读取、present 文件与 changed-files 比较分开：关闭浏览器再打开只测试视图；Session dispose 和 Host 重启才测试服务寿命。某个可视 summary 消失不等于附件丢失；事件存在但对象无法授权取回，也不能宣称交付成功。
 
 ## 自包含内容身份实验
 
@@ -105,8 +117,11 @@ NODE
 
 第十二章的 Web 入口只验证本机文本与 SSE；本章没有给它加入附件、多端同步、远程认证或桌面能力。生产交付测试需要浏览器和目标客户端运行时验证，不能用 Node 内存实验代替。最终报告应同时列出交付身份、内容摘要、实际读取结果和未覆盖的预览类型，不能只贴一个路径。
 
+练习：画出浏览器关闭、Session dispose、Host 重启后三种资源的存活表。给录音期间修改草稿、翻译失败、旧分享 URL 各设计一个失败用例，断言保留原文、不覆盖新输入，也不登记假交付。
+
 ## 固定来源
 
+- [rc.2 附件](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/attachment.md)、[交付与变更卡片](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/deliverables.md)、[Slots](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/slots.md)、[语音](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/voice-input.md)与[翻译](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/translation.md)：当前寿命、修订与 provider 契约，核验于 `2026-10-23`；下列 alpha.5 链接是历史基线。
 - [DeepSeek attachment](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/attachment.md)：对象先耐久、引用后发布及身份边界。
 - [DeepSeek deliverables](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/deliverables.md)：交付角色与能力契约。
 - [DeepSeek web-client](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/web-client.md)：多端投影阅读入口。

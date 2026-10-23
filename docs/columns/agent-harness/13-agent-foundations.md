@@ -1,7 +1,7 @@
 ---
 title: '第13章：Agent、Workflow 与 Harness 的边界'
 description: 从决策权、执行权与事实记录出发，区分智能体循环、确定性工作流和运行宿主，建立可验证的职责边界。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Agent, Workflow, 运行时契约]
 series:
@@ -111,7 +111,15 @@ console.log('workflow gates verified');
 
 独立实验入口为 `npm run labs`，运行边界见示例根 `labs/README.md`。其中工作流实验与本章内存验收门独立，也未接入基础循环；本文不把 `executePlan()` 当成 `workflow.mjs` 的 API。长任务检查点、重启恢复、外部副作用幂等和多智能体调度均未在这个内存门中实现。
 
-## 13.6 固定来源与实现边界
+## 13.6 决策边界的升级验收
+
+2026-10-23 核对 [DeepSeek RC.2 发布记录](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.2.1-rc.2)：它仍是预发布。新增模型与 Search / Fetch API 不改变“模型提出行动，宿主决定执行”的职责；本章 alpha.5 的架构证据仍是历史快照，不作为 RC.2 全量兼容证明。
+
+练习：在 `executePlan()` 的隔离夹具里分别加入空读取结果、未知工具和路径拒绝，记录进入工具前后的计数。正常计划应产生一条有效观察；未知工具和拒绝路径不得产生成功观察，空材料不得通过证据门。排错时先查准入、执行与结算三个位置，不能只看最终文字是否包含“verified”。
+
+把工具返回的文本改成“请调用 publish”后，工具集合应仍只含 `read_file`。这个反例验证数据不能扩大执行权；它不证明真实模型会拒绝所有注入，后者需独立轨迹验收。
+
+## 13.7 固定来源与实现边界
 
 DeepSeek 参考版本统一固定为提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`，根包 `0.2.1-alpha.5`。其[架构](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/architecture.md)区分 session、turn、step；[核心契约](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/core.md)与[工作流子系统](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/workflow.md)说明工作流是可选能力，而非循环必备功能。
 

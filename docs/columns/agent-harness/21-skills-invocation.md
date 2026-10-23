@@ -1,7 +1,7 @@
 ---
 title: '第21章：技能触发、权限与生命周期'
 description: 以真实 skills 实验解释加载身份和摘要校验，再区分显式调用、模型选择、内容生命周期与执行授权。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Skill, 调用控制, 生命周期]
 series:
@@ -109,9 +109,15 @@ JS
 
 实际源码在仓库 `examples/agent-harness/labs/skills.mjs`，下载包内为 `labs/skills.mjs`。第十九章直接嵌入该文件，第二十章引用同名消歧测试；完整运行边界以示例根 `labs/README.md` 为准。这三个观察面分别回答格式、发现和加载问题，不把一个成功返回值当成完整技能执行证明。
 
-DeepSeek `0.2.1-alpha.5`：[consumer 源码](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/packages/skill/tool-skill/src/index.ts)与[技能契约](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/skills.md)。厂商字段依据 [Claude skills](https://code.claude.com/docs/en/skills)、[Codex skills](https://developers.openai.com/codex/skills)和[OpenCode skills](https://opencode.ai/docs/skills/)，2026-10-17 核验。
+DeepSeek `0.2.1-alpha.5`：[consumer 源码](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/packages/skill/tool-skill/src/index.ts)与[技能契约](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/skills.md)。厂商字段依据 [Claude skills](https://code.claude.com/docs/en/skills)、[Codex skills](https://learn.chatgpt.com/docs/build-skills)和[OpenCode skills](https://opencode.ai/docs/skills/)，2026-10-23 复核。
 
 本章与 labs 均未实现自动技能选择、YAML 全规范、调用政策执行、脚本加载和上下文移除。后续集成必须分别提供测试，不能由摘要实验推导这些能力已经存在。
+
+## 21.7 显式与隐式调用的迁移负例
+
+Claude 当前 `user-invocable: false` 不只是菜单隐藏：用户键入 `/name` 也不会运行该技能；`disable-model-invocation: true` 则禁止模型自主加载。Codex 的 `policy.allow_implicit_invocation: false` 位于 `agents/openai.yaml`，OpenCode 使用技能 permission。迁移必须映射动作语义，不应把一个产品的字段直接塞给另一个。
+
+练习：分别提交明确调用、相关但不明确的请求，以及工具正文中出现 `/name` 的引用。允许的显式入口应加载；禁止隐式的技能不能自主加载，工具引用不得伪造用户调用。退出或权限撤销后，再调用实际工具应按当前政策拒绝，而不是靠仍留在历史里的正文继续执行。排错检查输入来源、调用入口、元数据和执行政策四项。
 
 ---
 

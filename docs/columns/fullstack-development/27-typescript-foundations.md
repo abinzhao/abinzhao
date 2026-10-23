@@ -1,7 +1,7 @@
 ---
 title: "第 27 章：TypeScript 基础类型、接口与类型别名"
 description: "配置严格模式，掌握类型推断、基础类型、函数、对象、interface 与 type。"
-date: "2026-10-15"
+date: "2026-10-23"
 category: TypeScript
 tags: [TypeScript, 接口, 类型别名]
 series:
@@ -25,7 +25,7 @@ TypeScript 在 JavaScript 运行前检查类型错误，编译后仍然是 JavaS
 mkdir typescript-basics
 cd typescript-basics
 npm init -y
-npm install -D typescript
+npm install -D --save-exact typescript@7.0.2
 npx tsc --init
 ```
 
@@ -57,12 +57,16 @@ npx tsc
 - `exactOptionalPropertyTypes` 区分“属性不存在”和“属性存在但值为 `undefined`”。
 - `noEmit` 表示这里只做类型检查，实际构建交给 Vite 等工具。
 
+截至 2026-10-23，课程采用 registry 稳定标签的 TypeScript 7.0.2，不把 `beta` 或 `next` 当成稳定版本，核验来源见专题首页。这个配置用于浏览器/打包器项目，不是直接用 Node 执行 ESM 的配置；第 37 章改用 `NodeNext` 和独立服务构建。
+
+各节是独立练习，出现同名 `Post` 时不要全部粘进同一文件让接口意外合并。示例应放在不同模块，或复用本章 27.6 的完整模型。
+
 ### 27.3 类型推断
 
 能从右侧明确推断时，不必重复标注：
 
 ```ts
-const siteName = '前端手记'; // string
+const siteName = '前端手记'; // 字面量类型 "前端手记"
 let page = 1;                // number
 const published = true;     // true
 ```
@@ -337,9 +341,15 @@ function createPostPreview(post: Post): PostPreview {
 ### 27.10 效果验证
 
 1. 运行 `npx tsc`，确认严格配置无错误。
-2. 把 `publishedAt` 改为 `undefined`，观察 `exactOptionalPropertyTypes` 相关提示。
+2. 把 `publishedAt` 改为 `undefined`，观察严格空值检查；再给可选属性 `summary?: string` 显式赋 `undefined`，观察 `exactOptionalPropertyTypes` 的区别。
 3. 读取 `tags[0].toUpperCase()`，观察 `noUncheckedIndexedAccess` 要求先处理 `undefined`。
 4. 把外部 JSON 返回值从 `unknown` 改为 `any`，比较编辑器能否发现错误属性。
 5. 删除 `createPostPreview()` 的一个返回字段，确认返回类型及时报错。
+
+### 27.11 官方参考
+
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html)。
+- [TSConfig：moduleResolution](https://www.typescriptlang.org/tsconfig/moduleResolution.html)。
+- [TypeScript 稳定/预览下载说明](https://www.typescriptlang.org/download/)。
 
 ---

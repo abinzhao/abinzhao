@@ -1,7 +1,7 @@
 ---
 title: 第 59 章：长任务、Goal 与跨窗口交接
 description: 分离持久目标与进程内继续资格，用预算、修订、交接证据和可观察完成条件控制长任务。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Goal, 上下文交接]
 series:
@@ -98,9 +98,15 @@ DeepSeek 固定 Goal 则分开持久 phase 与进程内 activation，正是为�
 
 完成标准是停止与恢复有明确权限、预算不会重置、产物可核对、硬约束不会随压缩丢失。实验不建立后台自治服务，不证明真实产品能恢复所有队友，也不允许借长期目标绕过新的外部操作审批。
 
-## 59.7 官方来源与边界
+## 59.7 当前 Goal 命令与恢复条件
 
-DeepSeek Harness 基线固定为 `0.2.1-alpha.5`、提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`；产品实验特性按 2026-10-17 页面核验，不能推断未经文档确认的新能力。
+2026-10-23 核对 [Claude commands](https://code.claude.com/docs/en/commands)：当前 `/goal [condition|clear]` 设置持续工作目标，`clear`、`stop` 等移除目标。它是产品入口，不是 DeepSeek Goal 的 phase/activation API，也不意味着模型一旦自评达成就有客观交付证据。对持续任务仍需独立时间、费用、工具和外部写授权边界，不能用一句长期目标批准无限后续动作。
+
+对照 [DeepSeek rc.2 Goal](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/goal.md)，activation 明确 never persisted，durable phase 与继续资格仍分开。操作练习在原 resume 中添加 phase 检查，complete/paused/blocked 即使 revision 匹配也不能直接 armed；正常验收是预算累计且最近产物重新核对，异常验收为目标修订变化、恢复后无 live teammate 和 unknown 副作用先阻塞。排错应查看生效目标、累计预算和当前 activation，不能把 active 字样当正在执行的证明。
+
+## 59.8 官方来源与边界
+
+DeepSeek Harness 基线固定为 `0.2.1-alpha.5`、提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`；当前 Goal 与 Team 恢复说明按 2026-10-23 核验，不能推断未承诺的后台恢复和权限继承。
 
 - [固定 Goal 生命周期与 activation](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/goal.md)
 - [固定 compaction 子系统](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/compaction.md)

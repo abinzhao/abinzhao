@@ -1,7 +1,7 @@
 ---
 title: 第 51 章：网络、进程、容器与虚拟机隔离
 description: 用执行世界和访问矩阵审查网络、进程及宿主接口，避免把容器或只读模式当成完整隔离。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [网络隔离, 进程隔离]
 series:
@@ -75,7 +75,7 @@ console.log('world and destination checks passed');
 
 Claude Code 官方 sandboxing 页面指出，`docker` 命令因访问 daemon socket 可能在沙箱中失败，同时指出 hooks 与 MCP 进程运行在 Bash 沙箱之外。由此得到的排查顺序是先确认调用路径，再确认 socket 和进程实际在哪一侧，而不是一遇失败就排除命令、关闭限制。排除命令确实能让任务继续，却改变了执行边界。
 
-Codex 官方安全指南区分 Cloud 容器与本地 CLI、IDE 的系统级约束。本地默认工作区写入与网络限制并不等同于 Cloud 的托管容器；在 Linux 容器里，宿主配置不支持相关系统调用时，本地沙箱也可能不能工作。该页对 Windows 推荐 WSL 或容器，但这不能成为所有发行版本都没有其他 Windows 实现的结论，应核对实际产品版本与对应文档。
+Codex 当前运行安全指南区分 Cloud 容器与本地 CLI、IDE 的系统级约束。Cloud setup 阶段可联网安装配置依赖，agent 阶段默认离线，配置的 secrets 在 setup 后移除；本地默认工作区写入与网络限制并不等同于托管容器。平台实际支持应核对对应版本，不用旧页面的 WSL 建议推导所有 Windows 实现。
 
 ## 51.5 资源与生命周期也是安全状态
 
@@ -93,14 +93,20 @@ Codex 官方安全指南区分 Cloud 容器与本地 CLI、IDE 的系统级约�
 
 完成标准是访问矩阵与探针一致，且失败不会切回宿主执行。内存检查仅验收策略算法，真正网络和进程隔离必须由目标平台证据确认。本章不安装容器、不修改宿主网络，也不宣称已经建立可承载恶意代码的设施。
 
-## 51.7 官方来源与边界
+## 51.7 当前网络开启与约束是两步
+
+2026-10-23 复核 [Codex Agent approvals & security](https://developers.openai.com/codex/agent-approvals-security)：`features.network_proxy` 只约束已开启的命令网络，不自行授予网络访问；`sandbox_workspace_write.network_access` 决定 workspace-write 下是否允许网络。网络关时代理开也仍关闭；网络开但代理关则可能直接出站。域名规则 deny 优先，默认阻断 local/private，精确本地例外与宽泛 `allow_local_binding` 不是同一授权。
+
+操作练习把这两个开关加入原 policy，分别断言三种组合，不执行真实连接。正常验收必须包含允许目的地可用的正向控制；异常验收包括重定向、本地地址、域名解析为私网及代理失效。官方将 DNS 检查称为 best-effort，不能当完全防 rebinding；敌对 DNS 在范围内时还需要下层 egress 控制。排错记录实际连接地址和执行实例，不拿代理环境变量或 web_search 的缓存模式证明子进程网络受控。
+
+## 51.8 官方来源与边界
 
 DeepSeek Harness 固定 `0.2.1-alpha.5`、提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`，平台能力均需按实际后端探测，安全声明仍适用。
 
 - [固定架构与执行世界](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/architecture.md)
 - [固定 sandbox 文件效果范围](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/sandbox.md)
 - [Claude Code 沙箱范围与限制](https://code.claude.com/docs/en/sandboxing)
-- [Codex 本地与 Cloud 安全边界](https://developers.openai.com/codex/security/)
+- [Codex 本地与 Cloud 安全边界](https://developers.openai.com/codex/agent-approvals-security)，核验于 2026-10-23
 - [Git worktree 官方定义](https://git-scm.com/docs/git-worktree)
 
 上一章：[第 50 章：文件系统沙箱与平台原语](./50-filesystem-sandbox)

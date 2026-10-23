@@ -1,7 +1,7 @@
 ---
 title: 第 60 章：定时任务、Webhook 与 Channels
 description: 将定时和外部消息转换成受控输入，区分验签、去重、持久投递与模型执行完成。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Webhook, 定时任务]
 series:
@@ -82,7 +82,7 @@ DeepSeek 固定 Webhook runtime 明确是 fire-and-forget：provider 验证请�
 
 ## 60.5 Channels 的产品边界
 
-所核验的 Claude Code 官方 Channels 页面将其标为 research preview，要求 claude.ai 登录，Console 和 API key 登录不支持；Team 与 Enterprise 还需组织明确启用。事件只在会话打开时进入，配置为普通 MCP server 并不自动获得推送资格。这些边界不能推导成通用后台持久队列或离线自动恢复功能。
+2026-10-23 核验的 Claude Code 官方 Channels 页面仍标为 research preview，但当前支持 claude.ai **或 Claude Console API key** 认证，不支持 Bedrock、Google Cloud Agent Platform 和 Microsoft Foundry。Team、Enterprise 与部署 managed settings 的 Console 组织需相应管理员设置，不能继续使用“只支持 claude.ai”的旧结论。事件只在会话打开时进入，配置为普通 MCP server 并不自动获得推送资格，还需 `--channels` 和有效 allowlist；这些边界不能推导成通用后台持久队列或离线恢复功能。
 
 频道的发送者 allowlist 是入口授权，不表示每段消息都可信。获准联系人也可能转发恶意内容；若启用 permission relay，能够回复者还可能获得批准工具的权力，必须单独评估。具体插件平台与新版功能未核验时不写事实，更不能为了无人值守方便默认绕过所有权限提示。
 
@@ -96,9 +96,17 @@ DeepSeek 固定 Webhook runtime 明确是 fire-and-forget：provider 验证请�
 
 完成标准是来源验证先于处理，授权不由 payload 扩大，回执分层且重放语义明确。离线代码只证明算法分支，不验证公网 TLS、真实厂商登录、耐久队列或业务副作用；本章不部署入口、不创建外部 schedule，也不推送任何消息。
 
-## 60.7 官方来源与边界
+## 60.7 当前 Channels 与 MCP 修订兼容
 
-DeepSeek Harness 固定 `0.2.1-alpha.5`、提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`；动态产品页面核验于 2026-10-17，预览特性不作为稳定契约。
+当前 [Claude MCP 客户端文档](https://code.claude.com/docs/en/mcp#mcp-client-runtimes) 区分 v1 与 v2 runtime；v2 支持 `2026-07-28`，但 channel Server 若协商到该修订就不能投递 channel 消息，Claude 不将其注册为 channel；只支持旧握手修订的 Server 沿旧路径注册。这是 Host 特定限制，不表示新版标准不支持通知，也不能为方便 Channels 将整个课程退回旧 MCP。
+
+操作应分别核对认证、组织开关、插件 allowlist、`--channels` 启用、实际协议修订和运行 Session。正常验收是获准来源进入正确会话且不扩大工具权限；异常验收是 server 连接成功、普通 tools 可用却 channel 未注册，须检查协议兼容而非猜测签名失败。练习给离线 receive 返回值增加 intake/dispatch/completion 分层，确认 202 不表示耐久完成；排错保留原始字节摘要，不输出密钥。新版订阅学习见[第 26 章](./26-mcp-tools-resources#mcp-工具发现)，跨产品验收见[第 73 章](./73-version-governance)。
+
+另对照 [DeepSeek rc.2 Schedule](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/schedule.md)：创建要求明确 title，缺失/空白/不规范的持久 title 会拒绝 domain open，不跳过损坏任务；delegated child 既不看见提醒工具，工具调用也拒绝。验收应加入无 title、DST gap、重复 occurrence 和子调用，不能由一个 HMAC 实验代替。Webhook 仍是 [fire-and-forget](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/webhook.md)，没有内置 durable dedup。
+
+## 60.8 官方来源与边界
+
+DeepSeek Harness 固定 `0.2.1-alpha.5`、提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`；当前 Channels 与 rc.2 定时/Webhook 补充核验于 2026-10-23，预览特性不作为稳定跨产品契约。
 
 - [固定 Schedule 与投递窗口](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/schedule.md)
 - [固定 Webhook fire-and-forget 边界](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/webhook.md)

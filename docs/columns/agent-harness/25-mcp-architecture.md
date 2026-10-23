@@ -1,7 +1,7 @@
 ---
 title: '第25章：MCP Host、Client 与 Server'
 description: 以连接所有权、命名与授权数据流解释 MCP 三方架构，区分协议互通、宿主适配和实际执行隔离。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [MCP, Host, Client, Server]
 series:
@@ -12,7 +12,7 @@ series:
 
 MCP 让智能体宿主连接外部工具和资源，但它不负责把模型的所有请求变成安全操作。理解架构时，要把承载模型的 Host、管理协议通信的 Client，以及提供能力的 Server 分开。连接成功只证明通信链路建立，不证明用户已经批准服务器的所有行为。
 
-本章以 MCP `2026-07-28` 官方规范为协议基线，旧版握手留到第二十七章比较。DeepSeek 参考代码固定为 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`、`0.2.1-alpha.5`。原教学项目没有 MCP 连接，下面内存实验也不冒充完整 MCP 客户端。
+本章以 MCP `2026-07-28` 固定规范为现代学习基线，旧版握手留到第二十七章比较。2026-10-23，官方通用 versioning 页面仍列 `2025-11-25` 为 Current，与固定修订及 v2 SDK README 不一致；部署应记录实际支持版本，不把入口标签当协商结果。DeepSeek 参考代码固定为 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`、`0.2.1-alpha.5`。原教学项目没有 MCP 连接，下面内存实验也不冒充完整 MCP 客户端。
 
 ## 25.1 三方各自拥有哪部分状态
 
@@ -118,7 +118,24 @@ stdio Server 在本机运行，通常拥有进程用户权限。若 Host 用 `np
 
 真实 MCP 验收还需检查发现、调用、错误、取消与卸载，不只截图工具列表。应记录本地服务器身份、raw 名、RPC 标识和工具执行结果，禁止记录认证值。本文没有实际启动 Server，也未测试远端认证或进程隔离。
 
-## 25.7 固定来源
+## 25.7 当前 SDK 与宿主选型
+
+截至 2026-10-23，官方 TypeScript SDK 的稳定线是 v2：新实现优先采用 `@modelcontextprotocol/client` / `@modelcontextprotocol/server` `2.3.1`，而非旧整包 `@modelcontextprotocol/sdk` `1.32.1`。v1 仍有至少六个月的安全兼容支持，保留旧部署有意义，但不能把 v2 称作尚未发布的实验线。
+
+SDK README 声明 v2 实现现代协议；其 first-client 文档仍出现“connect 完成 initialize”的旧措辞。`connect()` 是 SDK API，不代表线上一定发送 initialize。需要按协议探测记录实际 wire；现代无初始化、旧版有初始化，不能照文案发明第三种握手。
+
+| 实施层 | 当前推荐 | 迁移检查 |
+| --- | --- | --- |
+| Host | 保留来源、审批与模型结果投影 | 不向 Server 传全部对话或跨连接凭据 |
+| Client / Server | v2 分包与公开导出入口 | 旧深层导入、handler 与错误类型逐项迁移 |
+| 旧对端兼容 | SDK 的明确版本探测 | 401 / 403 不成为无认证回退理由 |
+| 模型工具目录 | 本地身份映射到原 wire 名 | 无损保存原名，不反向解析公共前缀 |
+
+练习：为两个同名工具分别记录 Host 名、Server 身份、wire 名和协议修订。正常请求应到达选定服务器；删除该连接、撤销授权或更换版本后，不得改发另一个同名工具。排错先查映射与协议证据，再查模型选择，不能把发现成功解释为执行成功。
+
+当前依据：[官方 SDK README](https://github.com/modelcontextprotocol/typescript-sdk)、[v2 迁移指南](https://ts.sdk.modelcontextprotocol.io/v2/migration/upgrade-to-v2)、[first-client 原文](https://github.com/modelcontextprotocol/typescript-sdk/blob/main/docs/get-started/first-client.md)与[通用 versioning](https://modelcontextprotocol.io/specification/versioning)。新 SDK 服务示例从[第 26 章](./26-mcp-tools-resources.md)开始，传输与回退接[第 27 章](./27-mcp-transports-versions.md)。
+
+## 25.8 固定来源
 
 协议依据 [MCP 2026-07-28 specification](https://modelcontextprotocol.io/specification/2026-07-28)与[工具规范](https://modelcontextprotocol.io/specification/2026-07-28/server/tools)。DeepSeek 依据[子系统](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/mcp.md)、[连接配置与边界](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/packages/mcp/mcp-client/README.md)和[工具适配源码](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/packages/mcp/mcp-client/src/tools.ts)。
 

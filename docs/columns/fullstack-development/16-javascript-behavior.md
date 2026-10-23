@@ -1,7 +1,7 @@
 ---
 title: "第 16 章：静态博客 JavaScript 交互"
 description: "实现主题切换、文章加载、Markdown 渲染、表单验证和通用交互。"
-date: "2026-10-15"
+date: '2026-10-23'
 category: 项目实战
 tags: [JavaScript, DOM, 网页存储]
 series:
@@ -23,7 +23,8 @@ series:
 
   function getStoredTheme() {
     try {
-      return localStorage.getItem(STORAGE_KEY);
+      const value = localStorage.getItem(STORAGE_KEY);
+      return value === 'dark' || value === 'light' ? value : null;
     } catch {
       return null;   // 隐私模式等场景
     }
@@ -121,9 +122,9 @@ function createCard(post, index) {
     </h3>
     <p class="post-card__excerpt">${escapeHTML(post.excerpt)}</p>
     <div class="post-card__meta">
-      <time datetime="${post.date}">${formatDate(post.date)}</time>
+      <time datetime="${escapeHTML(post.date)}">${formatDate(post.date)}</time>
       <span aria-hidden="true">·</span>
-      <span>${post.readingTime} 分钟阅读</span>
+      <span>${escapeHTML(String(post.readingTime))} 分钟阅读</span>
     </div>
     ${post.tags?.length
       ? `<div class="post-card__tags">${
@@ -154,7 +155,7 @@ async function loadPosts() {
     // 按日期倒序
     posts.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    // 用 DocumentFragment 一次性插入，只触发一次重排
+    // 用 DocumentFragment 组织批量插入，避免中途读取布局
     const frag = document.createDocumentFragment();
     posts.forEach((p, i) => frag.appendChild(createCard(p, i)));
 
@@ -171,7 +172,7 @@ async function loadPosts() {
 document.addEventListener('DOMContentLoaded', loadPosts);
 ```
 
-**`DocumentFragment` 的意义**：把 N 个节点先挂到游离的 fragment 上，最后一次插入 DOM。如果循环里直接 `appendChild`，每次都要触发一次重排。
+**`DocumentFragment` 的意义**：先组织节点，再一次接入 DOM；直接连续 appendChild 也可能被浏览器批处理，不等于每次都立即重排。真正需要避免的是在插入之间读取失效的布局。
 
 **`escapeHTML`**：即使是自己的 Markdown 文件，也不应该信任其中的内容直接拼进 `innerHTML`。这是养成安全习惯的问题。
 
@@ -249,7 +250,7 @@ function setupTOCHighlight(headings, list) {
   };
 
   const observer = new IntersectionObserver((entries) => {
-    // 取当前可见的所有标题中最靠上的那个
+    // entries 只包含本次状态变化的标题，不是全部可见标题
     const visible = entries
       .filter(e => e.isIntersecting)
       .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
@@ -361,8 +362,8 @@ async function loadPost() {
       header.innerHTML = `
         <h1>${escapeHTML(meta.title)}</h1>
         <p style="color:var(--color-text-muted);font-size:.875rem">
-          <time datetime="${meta.date}">${formatDate(meta.date)}</time>
-          · ${meta.readingTime} 分钟阅读
+          <time datetime="${escapeHTML(meta.date)}">${formatDate(meta.date)}</time>
+          · ${escapeHTML(String(meta.readingTime))} 分钟阅读
           ${meta.tags?.length
             ? ' · ' + meta.tags.map(t => `<span class="tag">${escapeHTML(t)}</span>`).join(' ')
             : ''}
@@ -402,7 +403,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 ```
 
-**`requestAnimationFrame` 节流滚动事件**：`scroll` 事件触发频率远高于屏幕刷新率。直接在里面写 DOM 操作会浪费大量计算。`ticking` 标志保证每帧最多执行一次。
+**`requestAnimationFrame` 合并滚动更新**：ticking 使同帧多次事件只安排一次写入，但 scroll 与渲染可能本来就按近似频率调度；需要降低计算频率时还应使用明确时间节流或 IntersectionObserver。
 
 **`{ passive: true }`**：告诉浏览器这个监听器不会调用 `preventDefault()`。浏览器可以立即滚动而不用等 JS 执行完，滚动更流畅。
 
@@ -516,7 +517,7 @@ function initContactForm() {
 
       await new Promise(r => setTimeout(r, 800));   // 模拟请求
 
-      status.textContent = '留言已发送，我会尽快回复。';
+      status.textContent = '演示提交完成，未发送或保存真实留言。';
       status.style.color = 'var(--color-success)';
       form.reset();
 
@@ -577,5 +578,15 @@ document.addEventListener('click', (e) => {
   history.replaceState(null, '', `#${id}`);
 });
 ```
+
+### 数据校验与后端衔接
+
+HTML 文本转义不能通用于属性、URL 和脚本上下文。示例补齐 date 的属性转义，仍要校验列表为数组、slug 为受限格式、日期有效、readingTime 为正整数；更稳妥的是使用 DOM 属性赋值。`encodeURIComponent('..')` 不会消除路径段含义，文章地址应先验证 slug，例如 `/^[a-z0-9]+(?:-[a-z0-9]+)*$/`，再读取作者维护的白名单。
+
+目录的观察器回调只有发生交叉变化的 entries；复杂目录高亮需要维护每个标题的状态或用滚动位置统一求值，不能把 entries 当成完整可见集合。重复标题还需要唯一 id。hash 解码可能抛 URIError，应明确处理无效链接。
+
+模拟表单不会产生网络失败，不能据此宣称异常路径已验证。真实提交在 [HTTP 契约](./38-http-openapi-contracts) 与 [毕业项目](./54-blog-v3-fullstack-capstone) 接入。原生邮箱校验用于格式辅助，不能证明邮箱存在或属于当前用户。
+
+官方参考：[WHATWG DOM](https://dom.spec.whatwg.org/)、[Intersection Observer](https://www.w3.org/TR/intersection-observer/)、[DOMPurify 安全说明](https://github.com/cure53/DOMPurify)。
 
 ---

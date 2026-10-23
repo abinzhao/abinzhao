@@ -1,7 +1,7 @@
 ---
 title: 第三十四章：剪枝、摘要压缩与上下文交接
 description: 用工具配对边界、位置范围和可追踪摘要替换控制上下文压力，区分剪枝、压缩与新窗口交接。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Compaction, 上下文交接]
 series:
@@ -88,7 +88,7 @@ NODE
 
 假设助手先调用两个工具，结果逆序返回，只保留最后三条消息就可能剩下结果而没有调用。另一种失败是在总结时省掉“只是教学实现”的限制，下一窗口因此宣称已完成生产级沙箱。前者是协议损坏，后者是事实边界损坏，两者需要不同测试。不能用模型不报错来证明配对正确，也不能用摘要更短来证明任务知识被保存。
 
-Claude 官方命令文档说明 `/compact [instructions]` 可指定总结重点；它是公开行为，不足以证明内部存储结构与 DeepSeek 相同。独立 `/docs/en/compact` 页面在核验时返回 404，应引用命令与 context-window 文档。Codex 稳定 `0.163.0` 固定源码有 compacted history metadata 与替换历史构建；OpenCode `1.19.3` 固定源码分别实现 prune、process 和近期材料保留。不能把其中常量当所有产品默认值。
+Claude 官方命令文档说明 `/compact [instructions]` 可指定总结重点；它是公开行为，不足以证明内部存储结构与 DeepSeek 相同。应引用 commands 与单数 `context-window` 文档，不推测一个独立 compact 页面。Codex 稳定 `0.163.0` 固定源码有 compacted history metadata 与替换历史构建；OpenCode `1.19.4` 固定源码分别实现 prune、process 和近期材料保留。不能把其中常量当所有产品默认值。
 
 交接验收应设计一个反例任务：原始历史明确说明某接口尚未确认，摘要后让新窗口回答该接口是否已实现。合格结果仍应表达未确认，并指向待查来源，而不是根据流畅摘要自行补齐。再加入一条最新用户纠正，要求它覆盖旧任务描述；保留一条未结算操作，要求新窗口先对账而不是重做。这样同时检查协议完整性、事实忠实性和行动约束，避免只测摘要字数。摘要生成过程也会消耗模型预算与时间，因此触发阈值、失败重试和人工选择范围都需要独立限额。
 
@@ -98,11 +98,17 @@ Claude 官方命令文档说明 `/compact [instructions]` 可指定总结重点�
 
 原 1–12 章只实现自己的有限历史预算，没有上游摘要模型、表面事务与多窗口生命周期。扩展 `labs/context.mjs` 与 `labs/workflow.mjs` 已经落盘，可通过汇总脚本运行；本章不修改它们，stdin 示例仍自包含。压缩不会回滚文件、取消外部付款或自动重获权限；它改变模型接下来能看到的材料，不能替代检查点与副作用恢复。
 
+## 当前图片卸载与交接验收
+
+2026-10-23 对照 [DeepSeek rc.2 compaction](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/compaction.md)，图片卸载还有独立的 `image/offload` 事件，按原输入节点 seq 与深度优先的 `imageIndexes` 标识精确图片出现位置，保留节点和消息身份，不携带 `surfaceOp`。不能把它当全文摘要替换，也不能仅删除 base64 后让后续请求仍假称看过图片。恢复期间已记录的图片省略可以在摘要失败后继续有效，必须报告真实部分结果。
+
+操作练习可在原内存日志旁增加图片 occurrence 清单，固定 seq 和索引，再对选中图片投影明确的省略标记。正常验收是只卸载指定 occurrence、不改变同消息中的文字和其他图片；异常验收是过期 seq、错误索引、摘要失败或 flush 失败，不能都显示“压缩成功”。Claude 当前 `/rewind` 还区分 “Summarize from here” 与 “Summarize up to here”，前者压缩选中位置之后，后者保留后面的材料，见[当前检查点文档](https://code.claude.com/docs/en/checkpointing)。排错分别看选择范围、替换 generation、图片省略和耐久结算，练习验证最新纠正没有被压缩丢弃。
+
 ## 官方固定来源
 
 - [DeepSeek Harness：Compaction 契约](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/compaction.md)，核对位置范围、锁、剪枝和重试。
-- [Claude Code：官方命令与 compact](https://code.claude.com/docs/en/commands)，动态官方文档，核验日为 2026-10-17，并非固定开源实现。
+- [Claude Code：官方命令与 compact](https://code.claude.com/docs/en/commands)，动态官方文档，核验日为 2026-10-23，并非固定开源实现。
 - [Codex 0.163.0：压缩源码](https://github.com/openai/codex/blob/83086188ae0614bd882818ff1aa23f3194962012/codex-rs/core/src/compact.rs)。
-- [OpenCode 1.19.3：剪枝与压缩源码](https://github.com/anomalyco/opencode/blob/e3c4eb242585dcd77be1a867391b7c25fd47ce52/packages/opencode/src/session/compaction.ts)。
+- [OpenCode 1.19.4：剪枝与压缩源码](https://github.com/anomalyco/opencode/blob/148842ef7cb1bc34192b3fff57d0f9721ab9c801/packages/opencode/src/session/compaction.ts)。
 
 上一章：[第三十三章：工具发现与 Spill](./33-tool-discovery-spill) · 下一章：[第三十五章：Prompt Cache](./35-prompt-caching)

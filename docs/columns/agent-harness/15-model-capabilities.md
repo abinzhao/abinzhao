@@ -1,7 +1,7 @@
 ---
 title: '第15章：模型能力、Token 与推理预算'
 description: 区分能力声明、实测兼容性和预算单位，为模型准入、输出预留及推理参数建立可检查的规则。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [模型能力, Token, 推理预算]
 series:
@@ -109,7 +109,13 @@ console.log('token admission verified');
 
 DeepSeek `0.2.1-alpha.5` 的[LLM 类型源码](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/packages/llm/llm/src/types.ts)、[Token meter](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/token-meter.md)和[模型配置目录](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/config-catalog.md)区分容量、计量及路由声明。配置目录里的默认值不能当作真实模型规格。
 
-[OpenAI Responses API](https://platform.openai.com/docs/api-reference/responses)用于核对输出预算与推理字段的语义，核验日为 2026-10-17。该页面是官方滚动文档，不是本地模型服务的兼容性承诺；具体服务仍需实测。
+[OpenAI Responses API](https://developers.openai.com/api/reference/resources/responses)定义输出预算与推理字段的语义，来源核验日为 `2026-10-23`。该页面是官方滚动文档，不是本地模型服务的兼容性承诺；具体服务仍需实测。
+
+## 15.7 新模型准入与未知容量
+
+2026-10-23 核对 [DeepSeek RC.2 发布记录](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.2.1-rc.2)，可见新增 `DeepSeek-V4.1-Flash-1017`。这个发布事实不能推导窗口、价格、视觉或结构化输出能力；没有对应规格和目标路由测试的字段必须保留“未知”，不能复制旧模型配置补齐。
+
+练习：给能力记录加入模型 ID、端点、协议、规格来源和计量来源，尝试将容量设为未知、输入计量设为负值，再切换到不同路由。正常准入应引用同一版本记录；未知容量和非法计量应拒绝，路由变化后旧预算应失效。排错先对照实际 usage 与停止原因，再查 tokenizer / 工具 schema 开销，不能用正文字符数解释服务端 Token 账单。
 
 ---
 

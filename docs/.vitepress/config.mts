@@ -79,6 +79,11 @@ export default defineConfig({
     if (path === '404.html') page.frontmatter.head.push(['meta', { name: 'robots', content: 'noindex' }]);
   },
   async buildEnd(config) {
+    await writeFile(join(config.outDir, 'release.json'), JSON.stringify({
+      base,
+      sha: process.env.GITHUB_SHA ?? 'local',
+      builtAt: new Date().toISOString(),
+    }) + '\n');
     await writeFile(join(config.outDir, 'robots.txt'), `User-agent: *\nAllow: ${base}\nSitemap: ${siteOrigin}${base}sitemap.xml\n`);
     await writeOfflineAssets(config.outDir, base, modelRuntimeAssets);
   },
@@ -88,7 +93,8 @@ export default defineConfig({
       { text: '博客', link: '/blog/' },
       { text: '专题', link: '/columns/' },
       { text: '项目', link: '/projects/' },
-      { text: '关于', link: '/about' },
+      { text: '关于', link: '/about.html' },
+      { text: '助手', link: '/chat/' },
     ],
     socialLinks: site.githubUrl ? [{ icon: 'github', link: site.githubUrl }] : [],
     outline: { label: '本页目录' },

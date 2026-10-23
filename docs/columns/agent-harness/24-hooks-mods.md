@@ -1,7 +1,7 @@
 ---
 title: '第24章：Hooks、中间件与 Mods 的执行边界'
 description: 从执行位置、参数身份和失败策略比较 hooks、中间件与 mods，说明兼容桥不能自动继承原宿主的权限与事件。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Hooks, Mods, 中间件]
 series:
@@ -117,7 +117,25 @@ DeepSeek 固定版本 mod 桥使用 `defineMod` 挂载，不读取 Claude Code �
 
 DeepSeek 根包 `0.2.1-alpha.5`：[工具管线源码](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/packages/core/tools/src/index.ts)、[mod 兼容差异](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/claude-code-mods.md)、[mod 桥源码](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/packages/experimental/claude-code-mods/src/index.ts)和[命令 hook 桥](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/packages/experimental/hooks-claude-code/README.md)。
 
-厂商行为以 [Claude Code hooks](https://code.claude.com/docs/en/hooks)和[mods reference](https://code.claude.com/docs/en/plugins/mods/reference)为依据，2026-10-17 核验。官方滚动 reference 与上游兼容基线版本不同，差异只按已核对项目说明，不宣称完整兼容。
+厂商行为以 [Claude Code hooks](https://code.claude.com/docs/en/hooks)和[mods reference](https://code.claude.com/docs/en/plugins/mods/reference)为依据。2026-10-23 复核 hooks 与 [2.1.309 发布记录](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md)；官方滚动 reference 与上游兼容基线版本不同，不能由桥接包能导入推断完整兼容。
+
+## 24.8 当前 Hook 决策与失败回归
+
+当前 Claude `PreToolUse` 的拒绝应通过事件对应的结构化决策表达。例如下面只表示决策结果，不是通用 hook 配置：
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "PreToolUse",
+    "permissionDecision": "deny",
+    "permissionDecisionReason": "Action is outside the approved scope"
+  }
+}
+```
+
+2.1.309 包含 PowerShell hook 失败处理修复；不能因此推导每个旧 hook 桥具备相同失败策略。事件 matcher、handler 条件、超时、退出码与 JSON 结果都需要按目标宿主类型核对，旧平铺决策字段不能未经迁移继续使用。
+
+练习：对一个无副作用计数工具分别返回允许、拒绝、非法 JSON 和 handler 失败。正常允许应执行一次；拒绝应零次，失败如何影响执行必须与该事件契约一致。再在子 Agent 中触发同一工具，检查 hook 输入的 agent 身份及政策继承。排错先查事件是否实际触发、matcher 是否适用和决策字段位置，不能只检查脚本退出成功。
 
 ---
 

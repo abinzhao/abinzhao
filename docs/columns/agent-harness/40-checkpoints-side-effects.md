@@ -1,7 +1,7 @@
 ---
 title: 第四十章：检查点、幂等与外部副作用
 description: 区分会话检查点、文件恢复与远端事务，用操作身份、未知状态和对账避免崩溃后重复副作用。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Checkpoint, 幂等]
 series:
@@ -73,7 +73,7 @@ NODE
 
 DeepSeek Harness `0.2.1-alpha.5` 固定提交的 persistence 文档把 flush 明确为耐久屏障，恢复会追加中断事实，不重新执行工具补日志。工具管线则在执行前记录 call，在结算后记录 result。两者使执行可审计，但并没有声称所有外部服务与本地日志共享一个事务。本章的幂等远端仅是教学建议，不能冒充上游自带的通用 exactly-once 功能。
 
-Claude Code 官方 checkpointing 文档描述会话中的文件编辑跟踪与 rewind，并明确 Bash 修改、外部修改等限制；它不是 Git 的替代，也不保证回滚任意系统副作用。文档核验于 2026-10-17，属于动态产品说明，不以公开仓库推断闭源内部实现。Summarize 改变上下文而不改变磁盘文件，restore conversation 与 restore code 也覆盖不同对象。
+Claude Code 官方 checkpointing 文档描述会话中的文件编辑跟踪与 rewind，并明确 Bash 修改、外部修改等限制；它不是 Git 的替代，也不保证回滚任意系统副作用。文档核验于 2026-10-23，属于动态产品说明，不以公开仓库推断闭源内部实现。Summarize 改变上下文而不改变磁盘文件，restore conversation 与 restore code 也覆盖不同对象。
 
 检查点策略必须与工具类型对应。只读检索可以通常重做，但重新检索可能得到新事实，不是原结果重放；文件编辑可以对版本作条件替换，但当前文件已被用户修改时不应覆盖；远端发送必须依据业务幂等或查询能力。把所有工具统一放进“异常就 retry”中间件，缺少副作用分类，会让正常恢复成为风险源。
 
@@ -95,10 +95,16 @@ Claude Code 官方 checkpointing 文档描述会话中的文件编辑跟踪与 r
 
 原 1–12 章独立 Node.js 22 ESM 项目没有外部写入与文件回滚，本章不会扩大其权限。已落盘 `labs/workflow.mjs` 可验证类似状态转换，`labs/policies.mjs` 可验证授权门槛；本文不修改它们。耐久日志、单次结果重放与恢复测试即使通过，仍不得写成“所有工具具有 exactly-once external”。
 
+## 当前检查点不能恢复的对象
+
+2026-10-23 的 [Claude checkpointing](https://code.claude.com/docs/en/checkpointing) 明确：只有启动 turn 的 prompt 产生检查点，处理中途输入可能标为 “No code restore”；symlink 和 hard-linked 路径在代码恢复时会被跳过并警告。子 Agent 编辑一般不属于父检查点恢复范围，但前台运行的 `context: fork` Skill 有明确例外，不能笼统说“所有子 Agent 编辑都可回滚”或“全部不能回滚”。文档还说明仅恢复会话后，若下一次 prompt 前退出，恢复后的会话状态尚未随新 prompt 保存，原消息可能重新出现，文件恢复不受这项会话保存边界影响。
+
+操作应先列出待恢复对象及检查点覆盖范围，再检查是否有用户并发编辑和已送达的外部动作。正常验收分别确认 code、conversation 与 summary 的结果；异常验收是 skipped files、过期快照、子任务未覆盖与 unknown 远端效果，不把这些对象静默标为已撤销。练习为原内存模型加入过期 idempotency key，要求进入对账而非重复发送；排错按“未被跟踪、快照不可读、当前冲突、外部结果未知”分列。上述特定产品行为不扩大原教学远端替身的承诺。
+
 ## 官方固定来源
 
 - [DeepSeek Harness：Persistence 耐久屏障与中断恢复](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/persistence.md)。
 - [DeepSeek Harness：工具执行管线](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/tool-execution-pipeline.md)。
-- [Claude Code：Checkpointing 官方边界](https://code.claude.com/docs/en/checkpointing)，动态文档，核验日 2026-10-17。
+- [Claude Code：Checkpointing 官方边界](https://code.claude.com/docs/en/checkpointing)，动态文档，核验日 2026-10-23。
 
 上一章：[第三十九章：会话分支](./39-session-branching) · 下一章：[第四十一章：格式迁移](./41-format-migrations)

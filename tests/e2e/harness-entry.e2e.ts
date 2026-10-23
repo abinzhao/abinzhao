@@ -18,7 +18,7 @@ test('shows preparation, start and source download before the mobile chapter lis
     expect(bounds.height).toBeGreaterThanOrEqual(44);
   }
   const chapters = page.locator('.column-reading-chapters ol > li');
-  await expect(chapters).toHaveCount(72);
+  await expect(chapters).toHaveCount(73);
   expect((await chapters.first().boundingBox())!.y).toBeLessThan(720);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 

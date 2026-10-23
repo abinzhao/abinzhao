@@ -1,7 +1,7 @@
 ---
 title: "第 29 章：工具类型、类型守卫与严格模式"
 description: "使用工具类型派生模型，控制类型断言，并在严格模式下验证未知数据。"
-date: "2026-10-15"
+date: "2026-10-23"
 category: TypeScript
 tags: [工具类型, 类型守卫, 严格模式]
 series:
@@ -206,7 +206,7 @@ const post = payload as unknown as Post;
 
 ```ts
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function isPostStatus(value: unknown): value is PostStatus {
@@ -419,5 +419,11 @@ async function loadPosts(): Promise<Post[]> {
 - [ ] `switch` 对联合类型有穷尽检查。
 - [ ] 数组索引和查询结果处理了 `undefined`。
 - [ ] 类型错误没有通过 `any`、`@ts-ignore` 或双重断言掩盖。
+
+### 29.10 官方参考
+
+- [TypeScript：工具类型](https://www.typescriptlang.org/docs/handbook/utility-types.html)。
+- [TypeScript：类型谓词与断言函数](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates)。
+- [TSConfig：exactOptionalPropertyTypes](https://www.typescriptlang.org/tsconfig/exactOptionalPropertyTypes.html)。
 
 ---

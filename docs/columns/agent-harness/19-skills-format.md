@@ -1,7 +1,7 @@
 ---
 title: '第19章：Skill 规范与渐进式加载'
 description: 从 SKILL.md 的开放格式到宿主加载契约，解释元数据、正文和资源的分层，以及厂商字段的兼容边界。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Agent Skills, SKILL.md, 渐进式加载]
 series:
@@ -20,7 +20,7 @@ Agent Skills 规范要求目录至少包含 `SKILL.md`，文件前部是 YAML fr
 
 名称、描述的限制用于发现与路由，并不验证流程正确。一个格式合格的 Skill 仍可能要求泄漏数据、无限重试或跳过测试。许可证和兼容性说明帮助使用者判断能否采用，但不应被当作程序权限。宿主需要独立决定文件读取、代码执行及外部调用。
 
-截至 2026-10-17，规范将 `allowed-tools` 标为实验字段，支持因实现而异。不能因为字段出现在开放规范中，就假设所有产品解释相同的工具名称、通配语法或授权效果。格式兼容是最低层，执行语义兼容需要逐产品核对。
+截至 2026-10-23，规范仍将 `allowed-tools` 标为实验字段，支持因实现而异。不能因为字段出现在开放规范中，就假设所有产品解释相同的工具名称、通配语法或授权效果。格式兼容是最低层，执行语义兼容需要逐产品核对。
 
 ## 19.2 写出可以执行的说明
 
@@ -118,7 +118,15 @@ DeepSeek 固定版本本地 provider 既接受目录包，也接受平铺 Markdo
 
 DeepSeek 根包 `0.2.1-alpha.5`：[技能子系统](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/skills.md)、[本地 provider 源码](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/packages/skill/skill-filesystem/src/index.ts)、[consumer 源码](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/packages/skill/tool-skill/src/index.ts)。
 
-开放格式以 [Agent Skills specification](https://agentskills.io/specification) 为准；厂商差异依据 [Claude Code skills](https://code.claude.com/docs/en/skills)、[Codex skills](https://developers.openai.com/codex/skills)和[OpenCode skills](https://opencode.ai/docs/skills/)，均于 2026-10-17 核验。滚动文档不是固定提交，升级宿主应重新核对扩展字段。
+开放格式以 [Agent Skills specification](https://agentskills.io/specification) 为准；厂商差异依据 [Claude Code skills](https://code.claude.com/docs/en/skills)、[Codex skills](https://learn.chatgpt.com/docs/build-skills)和[OpenCode skills](https://opencode.ai/docs/skills/)，均于 2026-10-23 复核。滚动文档不是固定提交，升级宿主应重新核对扩展字段。
+
+## 19.8 开放格式与宿主扩展的当前迁移
+
+Claude Code CLI 支持的 frontmatter 比 Skills API / 技能上传路径更多。当前官方指南明确：上传只接受开放规范的六个字段 `name`、`description`、`license`、`compatibility`、`metadata`、`allowed-tools`；CLI 的 `argument-hint` 等扩展可能使上传直接报错。共享技能先采用上面的开放格式，宿主特定行为再放进该宿主配置，不把 CLI 可加载当成跨产品可发布。
+
+当前 Claude 的技能授权还受 managed policy 约束，`allowManagedPermissionRulesOnly` 可使技能中的授权规则不适用。`disable-model-invocation` 也影响预加载到子 Agent 和以该技能为提示的会话定时任务；不能只理解为隐藏目录名称。
+
+练习：分别用目标 CLI 和目标上传校验器检查一份开放格式与一份带扩展格式。开放格式应被相应解析器接受；不支持字段应按产品规则报错或忽略，必须记录实际行为。再设置禁止隐式调用和 managed policy，确认正文加载与工具执行分别被约束。若限制无效，先检查字段拼写、入口和政策优先级，再检查模型触发质量。
 
 ---
 

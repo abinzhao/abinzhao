@@ -1,7 +1,7 @@
 ---
 title: 第四十七章：Code Mode 与程序化工具调用
 description: 把程序编排与工具执行权分开，使用受控 RPC、无损 JSON 和分层取消解释 PTC，而非在宿主直接执行模型代码。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [PTC, Code Mode]
 series:
@@ -103,6 +103,12 @@ DeepSeek Harness `0.2.1-alpha.5` 固定提交的 PtcRunRequest 携带 program、
 命令应证明允许 binding 返回规范值，未知名称与非 JSON 数字拒绝，取消传播并等在途调用结束，取消后新调用不再准入。继续实验可使用循环对象、超大结果与并发预算，要求边界拒绝；让工具忽略 signal，要求报告仍有活动工作而不是强行通过。真实 runtime 验收还需无限循环硬停止、隔离与 release 故障，本示例不提供这些能力。
 
 原 1–12 章 `local-harness-tutorial` 不执行模型生成代码，没有 PTC sandbox 或受控远端 RPC。已完成 labs 属于确定性实验，不代表全部 runtime/provider 已实现；本章不安装依赖、不增加 eval 入口。任何实际不可信代码执行都需单独授权、明确平台能力与 fail-closed 策略，不能将本章教学 dispatch 直接部署为通用宿主。
+
+## 当前 runtime 能力不能由名称推断
+
+2026-10-23 对照 [DeepSeek rc.2 PTC runtime](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/ptc-runtime.md)：seam 没有统一 binding 字节上限，具体 provider 自行实施传输 cap，应用仍需总调用与结果预算。程序格式、保留 REPL 状态和 sandbox enforcement 也由具体 provider 明示；不能把“支持 PTC”作为支持所有格式、强隔离或无限状态恢复的证明。
+
+操作练习在 dispatch 前增加并发计数与最大调用数，在 finally 释放额度；正常验收是允许的固定作者程序产生正确规范汇总，取消后 pending 归零。异常验收是 runtime 已停但 binding 忽略 signal，宿主必须继续追踪活动工作，不凭清空 Set 声称已结束。排错独立记录程序错误、工具拒绝、RPC 传输失败与在途未知结果；重连不是绕过拒绝或重复写操作的理由。未知程序始终需要可硬停止的真实隔离后端，当前 Node 内存实验不提供该保证。
 
 ## 官方固定来源
 

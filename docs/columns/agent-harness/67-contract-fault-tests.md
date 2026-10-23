@@ -1,7 +1,7 @@
 ---
 title: 第六十七章：契约测试、故障注入与回归
 description: 用确定性失败证据检查取消、检查点、权限和资源生命周期，避免将机制测试误报为模型质量。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [契约测试, 故障注入]
 series:
@@ -20,7 +20,7 @@ series:
 
 ## 故障点来自真实数据流
 
-DeepSeek Harness 固定提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa` 的 workflow 文档区分脚本结果、停止原因和 dispose。非完成结果应映射为错误工具结果，观察事件是数据快照而不是 live handle；订阅者抛错不得破坏后续订阅者。这些契约可以直接转成用例，但教学 `labs/workflow.mjs` 不是其工作流引擎，也没有子 Agent VM。
+`2026-10-23` 复核 DeepSeek Harness RC.2 固定提交 `687f282e8625c6b8d11ff58211a90524be2e4317` 的 workflow 文档：`WorkflowRun.result` **不会 reject**，而是解析为 `stopReason: 'completed' | 'cancelled' | 'error'`；非完成结果应映射为错误工具结果，并在所有路径 await `dispose()`。观察事件是数据快照而不是 live handle；订阅者抛错不得破坏后续订阅者。这些契约可以直接转成用例，但教学 `labs/workflow.mjs` 不是其工作流引擎，也没有子 Agent VM。
 
 本地实验的实际顺序为：校验定义，选择依赖完成的任务，把 running 意图交给 checkpoint，执行动作，编码结果，再提交 completed。失败窗口集中在两次提交前后。第一份提交失败应完全不执行；动作后完成记录失败则不能伪造成功，应从最后耐久快照恢复并协调副作用。
 
@@ -38,6 +38,14 @@ DeepSeek Harness 固定提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa` 的 wor
 | 取消后选择下一步 | 不再调用新任务 | 只停界面动画 |
 
 注入点不是随机抛错。随机故障可用于压力测试，但无法稳定定位契约被破坏的位置。小型回归优先控制提交回调、计时器和 AbortSignal，使失败原因可以重复。涉及真实进程或网络时，再增加集成用例验证终止和关闭，而不把内存测试写成进程隔离证据。
+
+## 当前协议回归不只测 happy path
+
+MCP 测试应至少分为 `2026-07-28` 与旧 `2025-11-25` 两组：现代逐请求 metadata、HTTP 头/body 一致性、`server/discover`、显式订阅与首帧 ack；旧 initialize / initialized 单独保留。不能为了让旧 fixture 通过而给新协议增加一个不存在的 initialize。SDK v2 的 client/server 分包、完整 schema、错误类型和 handler context 也需要以实际安装包测试，内存 JSON 断言不够。
+
+故障分类要按数据性质制定策略：授权策略错误应阻止危险动作；日志耐久写失败不能结算成功；可重建投影缓存写失败则可以记录警告并从日志重建。把所有 checkpoint / cache 都统一为“失败必须停止”会误读真实实现；反过来用缓存的 fail-soft 策略处理业务提交，会丢失动作记录。
+
+取消测试还需拆分“等待取消”“任务取消”“资源清理”。例如 job 的 wait 超时不会 kill job，workflow 的 error outcome 不会抛异常，SDK 流关闭也不保证已发生副作用回滚。每个用例同时检查原始结果分类、下一步是否执行、资源是否释放，避免只用 `assert.rejects()` 漏掉 resolved-error。
 
 ## 可直接运行的失败实验
 
@@ -87,8 +95,12 @@ NODE
 
 教学检查点没有 fsync、跨进程锁或任意任务代码哈希。要证明进程崩溃和掉电恢复，需要独立进程与实际耐久存储实验，不能仅靠回调抛错。本章未对厂商 SDK、真实模型或操作系统沙箱做集成测试；这些属于第七十二章的生产门槛。
 
+练习：增加一个解析为 `{ stopReason: 'error' }` 的结果和一个失败的投影缓存写入，验证前者不结算成功、后者不破坏日志重建。再给现代 MCP 写缺少订阅 ack、错误 subscription ID 和头/body 不一致三组用例。
+
 ## 固定来源
 
+- [RC.2 workflow](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/workflow.md)与[投影缓存](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/session-projection.md)：resolved-error、清理与 fail-soft 缓存的不同契约，核验于 `2026-10-23`。
+- [MCP 现代规范](https://modelcontextprotocol.io/specification/2026-07-28/basic/versioning)：当前 wire 测试入口；旧规范与 SDK 迁移见[第七十三章](./73-version-governance.md)。
 - [DeepSeek workflow](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/workflow.md)：结果、错误和清理契约。
 - [DeepSeek tool execution pipeline](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/tool-execution-pipeline.md)：工具边界阅读入口。
 - [Node.js 22 test runner](https://nodejs.org/docs/latest-v22.x/api/test.html)：本地测试运行器。

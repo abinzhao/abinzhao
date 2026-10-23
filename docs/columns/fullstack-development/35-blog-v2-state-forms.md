@@ -1,7 +1,7 @@
 ---
 title: "第 35 章：博客 v2 状态管理与表单校验"
 description: "为博客加入收藏、搜索筛选和文章反馈表单，并用 Zustand 与 Zod 管理边界。"
-date: "2026-10-15"
+date: "2026-10-23"
 category: 项目实战
 tags: [Zustand, Zod, 表单, 状态管理]
 series:
@@ -44,6 +44,7 @@ series:
 // src/features/favorites/favorite-store.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { z } from 'zod';
 
 interface FavoriteState {
   favoriteSlugs: string[];
@@ -78,6 +79,16 @@ export const useFavoriteStore = create<FavoriteState>()(
     {
       name: 'blog:favorites:v1',
       version: 1,
+      partialize: (state) => ({ favoriteSlugs: state.favoriteSlugs }),
+      merge: (persisted, current) => {
+        const result = z.object({
+          favoriteSlugs: z.array(z.string().min(1)).max(1000),
+        }).safeParse(persisted);
+        return {
+          ...current,
+          favoriteSlugs: result.success ? [...new Set(result.data.favoriteSlugs)] : [],
+        };
+      },
     },
   ),
 );
@@ -122,7 +133,7 @@ export function FavoriteButton({
 
 ```tsx
 // src/features/posts/PostCard.tsx
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { FavoriteButton } from '../favorites/FavoriteButton';
 import type { Post } from './post-schema';
 
@@ -166,7 +177,7 @@ import { useState } from 'react';
 import {
   useLoaderData,
   type LoaderFunctionArgs,
-} from 'react-router-dom';
+} from 'react-router';
 import { PostList } from '../features/posts/PostList';
 import { getPosts } from '../features/posts/post-repository';
 import { postsSchema } from '../features/posts/post-schema';
@@ -266,7 +277,7 @@ export const feedbackSchema = z.object({
     .max(5, '评分不能超过 5'),
   email: z.union([
     z.literal(''),
-    z.string().email('邮箱格式不正确'),
+    z.email('邮箱格式不正确'),
   ]),
   message: z
     .string()
@@ -276,8 +287,8 @@ export const feedbackSchema = z.object({
 });
 
 export const storedFeedbackSchema = feedbackSchema.extend({
-  id: z.string().uuid(),
-  createdAt: z.string().datetime(),
+  id: z.uuid(),
+  createdAt: z.iso.datetime(),
 });
 
 export const storedFeedbackListSchema = z.array(
@@ -331,25 +342,18 @@ export async function saveFeedback(
 }
 
 function readFeedback(): StoredFeedback[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-
-    if (!raw) {
-      return [];
-    }
-
-    const result = storedFeedbackListSchema.safeParse(
-      JSON.parse(raw),
-    );
-
-    return result.success ? result.data : [];
-  } catch {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) {
     return [];
   }
+
+  return storedFeedbackListSchema.parse(JSON.parse(raw));
 }
 ```
 
 这是可运行的前端演示，不代表生产反馈系统。真实反馈需要服务端持久化、限流、鉴权和隐私说明。
+
+已有数据损坏或存储读取失败时，错误传播到 Action 的失败状态，不能把损坏记录悄悄变成空数组后覆盖。生产实现还要限制记录数量、定义清除和保留周期；多个标签页的 `getItem → setItem` 会丢失并发更新，本地存储不是事务数据库。
 
 ### 35.8 Action 与字段错误
 
@@ -363,6 +367,7 @@ import {
 import { useFormStatus } from 'react-dom';
 import { saveFeedback } from './feedback-repository';
 import { feedbackSchema } from './feedback-schema';
+import { z } from 'zod';
 
 interface FeedbackFormState {
   status: 'idle' | 'error' | 'success';
@@ -394,7 +399,7 @@ async function submitFeedback(
     return {
       status: 'error',
       message: '请检查表单内容',
-      fieldErrors: result.error.flatten().fieldErrors,
+      fieldErrors: z.flattenError(result.error).fieldErrors,
       submissionId: previousState.submissionId,
     };
   }
@@ -429,7 +434,7 @@ function SubmitButton() {
 }
 
 export function FeedbackForm() {
-  const [state, action] = useActionState(
+  const [state, action, isPending] = useActionState(
     submitFeedback,
     initialState,
   );
@@ -451,7 +456,7 @@ export function FeedbackForm() {
 
   return (
     <form action={action} className="feedback-form">
-      <fieldset>
+      <fieldset disabled={isPending}>
         <legend>这篇文章有帮助吗？</legend>
         <label htmlFor="feedback-rating">评分</label>
         <select
@@ -573,9 +578,19 @@ export function FeedbackForm() {
 2. 收藏一篇文章，进入详情页，确认按钮仍为“已收藏”。
 3. 刷新页面，确认收藏恢复。
 4. 提交空表单，确认浏览器原生校验阻止提交。
-5. 输入少于 10 个字符，确认 Zod 字段错误可读且输入不丢失。
+5. 浏览器的 `minLength` 会先拦截短文本；在独立 schema 练习中直接调用 `safeParse()` 验证 Zod 错误，不把原生校验提示当成 Zod 的验证结果。
 6. 提交合法反馈，确认按钮显示 pending、成功消息出现、字段清空。
 7. 在 Application 面板检查两个带版本号的 localStorage key。
 8. 清空 localStorage，确认应用回到默认状态且无报错。
+
+9. 将反馈 key 写入损坏 JSON，再提交合法表单，确认提示保存失败且原记录未被覆盖。
+10. 保存期间不要继续编辑会被成功重置的字段；使用 `useActionState` 的第三个 pending 返回值禁用字段，或记录提交快照并仅重置对应版本。
+
+### 35.11 官方参考
+
+- [Zustand persist](https://zustand.docs.pmnd.rs/reference/integrations/persisting-store-data)。
+- [Zod 4 错误格式化](https://zod.dev/error-formatting)。
+- [React：表单 action 与重置](https://react.dev/reference/react-dom/components/form)。
+- [MDN：Storage](https://developer.mozilla.org/en-US/docs/Web/API/Storage)。
 
 ---

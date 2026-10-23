@@ -1,7 +1,7 @@
 ---
 title: 第四十八章：浏览器与 Computer Use 的观察闭环
 description: 用新鲜观察、动作目标、结果验证与资源所有权治理浏览器和桌面工具，避免按过期截图执行或把点击成功当业务成功。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Browser Use, Computer Use]
 series:
@@ -86,6 +86,12 @@ Computer Use 共享注册同样只有一个 provider 槽，但它不为每个 Se
 命令应证明旧 revision 拒绝、未授权动作拒绝、输入送达后仍需要新观察、再次使用旧 snapshot 拒绝。继续实验可修改 URL 或 view，要求动作失败；让输入送达但状态未变，要求业务验收失败；模拟提交后观察断开，要求 unknown 而不是重复提交。真实验收必须在目标浏览器或桌面测试 DOM、截图、导航、共享资源和清理，本章没有运行真实 UI。
 
 原 1–12 章 `local-harness-tutorial` 的 Web 界面只是本地传输层，不是浏览器控制或 Computer Use 产品。本章的自包含实验验证观察闭环模型；下载包 `labs/` 的五组实验不包含浏览器操作，也不能替代 Playwright/CDP/桌面运行验收。真实 provider、用户账号与外部写操作均未在此实验使用。安全威胁模型与实际沙箱将在下一章继续展开。
+
+## 当前浏览器后端的额外模型调用
+
+2026-10-23 对照 [DeepSeek rc.2 Browser Use](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/browser-use.md)：三个 provider 仍为需显式启用的实验集成。Stagehand 的 AI 辅助动作使用它自身明确配置的 native model；DSH 模型路由、凭据复用、底层推理请求/响应捕获及 Session usage 汇总不由共享 seam 自动完成。不能将一次 tool result 当成“没有额外模型请求”，也不能把这部分成本写成已进入总账。
+
+初始化还受 live Session 创建时机约束：provider 加载/重载不自动接管已有 Session；attached browser 忙时该次 activation 可没有浏览器，后来 turn 不自动重试。操作应先确认 activation 的真实工具集合和资源 owner，再开始观察。正常验收是正确 view 的观察-动作-后置条件闭环；异常验收包括额外模型未获授权、attachment busy、刷新导致旧 locator 失效，以及控制资源释放时不关闭用户浏览器。练习给原页面模型增加 document identity 与外部模型调用标记，分别测试导航失效和隐私准入；排错不能仅凭 provider 名称推断实际浏览器状态。
 
 ## 官方固定来源
 

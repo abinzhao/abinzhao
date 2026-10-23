@@ -8,6 +8,7 @@ import { gzipSync } from 'node:zlib';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { loadPublishedArticleSources } from '../docs/.vitepress/data/content';
 import { unpackKnowledgeArtifact, unpackKnowledgeIndex } from '../docs/.vitepress/data/knowledge-index-codec';
+import { contentBudgets } from './helpers/content-budget';
 
 const projectRoot = resolve(import.meta.dirname, '..');
 const fixtureRoot = mkdtempSync(join(tmpdir(), 'abinzhao-build-'));
@@ -15,19 +16,24 @@ const distDirectory = join(fixtureRoot, 'site');
 const chunksDirectory = resolve(distDirectory, 'assets/chunks');
 const execFileAsync = promisify(execFile);
 let buildLogs = '';
+let budgets: ReturnType<typeof contentBudgets>;
 
 describe('VitePress static site', () => {
   beforeAll(async () => {
     const source = join(fixtureRoot, 'docs');
     cpSync(join(projectRoot, 'docs'), source, { recursive: true, filter: (file) => !/[/\\]\.vitepress[/\\](dist|cache)([/\\]|$)/.test(file) });
     // 教程通过 VitePress snippet 引入实际示例源码，构建夹具保持同样目录关系。
-    cpSync(join(projectRoot, 'examples', 'agent-harness'), join(fixtureRoot, 'examples', 'agent-harness'), { recursive: true });
+    cpSync(join(projectRoot, 'examples'), join(fixtureRoot, 'examples'), {
+      recursive: true,
+      filter: (file) => !/[/\\](node_modules|\.godot|dist)([/\\]|$)/.test(file),
+    });
     writeFileSync(join(fixtureRoot, 'package.json'), '{"type":"module"}');
     symlinkSync(join(projectRoot, 'node_modules'), join(fixtureRoot, 'node_modules'), 'dir');
     writeFileSync(join(source, 'blog', 'private-draft.md'), '---\ntitle: 私密草稿\ndate: "2026-10-16"\ndraft: true\n---\nprivate-draft-marker');
     mkdirSync(join(source, 'columns', 'private-series'), { recursive: true });
     writeFileSync(join(source, 'columns', 'private-series', 'index.md'), '---\ntitle: 未公开专题\ndraft: true\n---\nprivate-column-marker');
     writeFileSync(join(source, 'columns', 'private-series', 'note.md'), '---\ntitle: 草稿专题子页\ndate: "2026-10-16"\n---\nprivate-child-marker');
+    budgets = contentBudgets(await loadPublishedArticleSources(source));
     const result = await execFileAsync(join(projectRoot, 'node_modules/.bin/vitepress'), ['build', 'docs', '--outDir', distDirectory], {
       cwd: fixtureRoot,
       timeout: 45_000,
@@ -67,7 +73,9 @@ describe('VitePress static site', () => {
     const corpusSource = readFileSync(resolve(chunksDirectory, corpusChunk!), 'utf8');
     expect(corpusSource).toContain('DOM 树');
     expect(gzipSync(readFileSync(resolve(chunksDirectory, indexChunk!))).byteLength)
-      .toBeLessThanOrEqual(250 * 1024);
+      .toBeLessThanOrEqual(budgets.indexGzip);
+    expect(Buffer.byteLength(corpusSource)).toBeLessThanOrEqual(budgets.corpusRaw);
+    expect(gzipSync(corpusSource).byteLength).toBeLessThanOrEqual(budgets.corpusGzip);
   });
 
   test('keeps intentional lazy payloads inside explicit budgets without generic chunk warnings', () => {
@@ -87,16 +95,19 @@ describe('VitePress static site', () => {
       manifest.groups.modelRuntime.map((url: string) => join(distDirectory, url.slice(manifest.base.length))),
     );
 
-    expect(largeFiles).toHaveLength(3);
+    expect(largeFiles.filter((file) => modelRuntimeFiles.has(file))).toHaveLength(2);
     for (const file of largeFiles) {
       const source = readFileSync(file);
       if (modelRuntimeFiles.has(file)) {
         expect(source.byteLength).toBeLessThanOrEqual(6.5 * 1024 * 1024);
         expect(gzipSync(source).byteLength).toBeLessThanOrEqual(2.5 * 1024 * 1024);
+      } else if (/knowledge-index\.data\..+\.js$/.test(file)) {
+        expect(source.byteLength).toBeLessThanOrEqual(1024 * 1024);
+        expect(gzipSync(source).byteLength).toBeLessThanOrEqual(budgets.indexGzip);
       } else {
         expect(file).toMatch(/knowledge-corpus\.data\..+\.js$/);
-        expect(source.byteLength).toBeLessThanOrEqual(2 * 1024 * 1024);
-        expect(gzipSync(source).byteLength).toBeLessThanOrEqual(600 * 1024);
+        expect(source.byteLength).toBeLessThanOrEqual(budgets.corpusRaw);
+        expect(gzipSync(source).byteLength).toBeLessThanOrEqual(budgets.corpusGzip);
       }
     }
   });

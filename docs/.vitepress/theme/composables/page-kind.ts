@@ -29,12 +29,12 @@ export function getCustomPageKind(
     return layout;
   }
 
-  if (metadata?.date) {
-    return 'article';
-  }
-
   if (metadata?.status) {
     return 'column';
+  }
+
+  if (metadata?.date) {
+    return 'article';
   }
 
   const normalizedPath = path.endsWith('/') && path !== '/' ? path.slice(0, -1) : path;

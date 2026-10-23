@@ -1,7 +1,7 @@
 ---
 title: 第七十一章：性能、限流、资源泄漏与运维
 description: 从准入、排队、执行和清理理解性能，以有界资源、重试纪律和故障恢复建立运维门槛。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [性能, 运维]
 series:
@@ -20,7 +20,7 @@ series:
 
 ## 真实生命周期与资源所有权
 
-DeepSeek Harness 固定提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa` 的 jobs 文档把状态分为 running、stopping、completed、killed、failed。producer 拥有执行资源，runtime 拥有身份、访问控制、生命周期和输出 ring。任务 ID 不是权限秘密，读取与控制依赖 owner 授权；复制会话历史也不转移 live job 所有权。
+DeepSeek Harness RC.2 固定提交 `687f282e8625c6b8d11ff58211a90524be2e4317` 的 jobs 文档把状态分为 running、stopping、completed、killed、failed。producer 拥有执行资源，runtime 拥有身份、访问控制、生命周期和输出 ring。任务 ID 不是权限秘密，owned job 的读取与控制依赖 owner 授权；复制会话历史也不转移 live job 所有权。
 
 该文档明确 turn completion 不表示所有 job 都停止，settlement 记录也不独立证明资源已释放。某些结算可以晚于 turn/end，缺少结算记录仍是未完成证据。运维必须监控实际进程、句柄、订阅和写入器，而不能只数聊天中的完成事件。取消后先进入 stopping，再等待清理，必要时采用受控强制终止。
 
@@ -31,6 +31,14 @@ DeepSeek Harness 固定提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa` 的 job
 ```
 
 背压应一路传播。慢客户端消费 SSE 时，输出缓冲必须有上限；工具输出很大时应截断或 spill，但保留状态和可读取引用。队列不能隐藏等待时间，模型请求和工具请求还可能需要不同池。长任务占满交互池时，应按产品需要拆分调度，而不是无限提高全局并发。
+
+## 当前 jobs 的容量和观察合同
+
+`2026-10-23` 核验的 `LocalJobRegistry` 默认 `maxConcurrentJobsPerOwner: 10`，同时计算 `running + stopping`，不是模型并发限制或跨进程总容量。无 owner 的 job 共用一个桶，并可被任意调用者访问；不能省略 owner 后还声称多租户隔离。启动前先做 owner、controller 和准入检查，失败不得留下已启动却未注册的工作。
+
+默认 live ring 保留 `262144` bytes，结算后保留 `16384` bytes，pull cadence 是 `150` ms；它们是固定实现默认值，不是建议的生产容量或 SLA。读取 offset 落在被淘汰窗口之前，会得到 `lossy: true` 和保留的尾部，不应被解析成完整历史。观察者绝对 offset 不消耗模型 cursor，`wait` 超时或 caller abort 也不自动 kill job。
+
+producer 的 `done` 合同要求释放资源后才解析，但强制 teardown 或 cancel 抛错可让 registry 记录先变终态；`producerReported` 本身不证明 OS 资源已释放。排查泄漏时同时观察 registry 状态、实际句柄/进程和 settlement 日志，不能只检查某个布尔字段。停机可能先关闭 Session writer，缺失最终 `job/settled` 仍必须标不完整，不补造 finishedAt。
 
 ## 自包含资源归还实验
 
@@ -91,8 +99,11 @@ NODE
 
 基础项目只允许单进程会话写入，Web 在进程内拒绝并发；`labs/` 不是生产调度器，也没有远程 job 服务。本章未启动真实 PTY、容器或多 Agent 压测。上线前须验证多租户准入、强隔离、进程树清理和耐久恢复，不能把内存 worker 实验当成这些能力已实现。
 
+练习：模拟两个 running 和一个 stopping 占满三槽，等待超时不能归还仍在清理的槽。为 ring 淘汰写 lossy 断言，确认模型与观察者游标独立；再列出 registry 已终态但进程仍活着时需要的诊断与处置。
+
 ## 固定来源
 
+- [RC.2 jobs](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/jobs.md)：当前默认容量、无 owner 边界、游标与清理合同，核验于 `2026-10-23`。
 - [DeepSeek jobs](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/jobs.md)：状态、所有权和晚于 turn 的结算。
 - [DeepSeek subprocess](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/subprocess.md)与[terminal](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/terminal.md)：真实进程清理阅读入口。
 - [Node.js 22 child_process](https://nodejs.org/docs/latest-v22.x/api/child_process.html)：进程与退出语义。

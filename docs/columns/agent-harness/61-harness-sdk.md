@@ -1,7 +1,7 @@
 ---
 title: 第六十一章：Harness SDK 与可编程宿主
 description: 区分模型客户端、智能体运行时和远程宿主，设计可取消、可鉴权、可追踪的调用契约。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [SDK, 宿主协议]
 series:
@@ -20,7 +20,7 @@ series:
 
 ## 真实宿主的数据流
 
-固定基线 DeepSeek Harness `0.2.1-alpha.5`，提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa` 的 Typert 文档区分本地调用描述与线上请求。`InvocationDescriptor` 是本地反射信息；请求传递 endpoint 与具名 args，取消信号由载体另行提供，不塞进业务参数。共享类型解决表达问题，不能替代运行时参数校验和访问控制。
+本章于 `2026-10-23` 核对 DeepSeek Harness `0.2.1-rc.2` 的固定提交 `687f282e8625c6b8d11ff58211a90524be2e4317`，它仍是预发布版本，不是稳定 SDK 承诺。Typert 文档区分本地调用描述与线上请求：`InvocationDescriptor` 是本地反射信息；请求传递 endpoint 与具名 args，取消信号由载体另行提供，不塞进业务参数。共享类型解决表达问题，不能替代运行时参数校验和访问控制。
 
 Gateway 的顺序尤其重要：载体解码后提交调用及 Peer 身份，宿主校验参数，解析涉及的资源，并在对象 lookup 或 scoped Context 解析之前作访问决策。已经释放的 Peer 必须拒绝。这样未经授权的调用不能借对象解析顺便读取资源；查不到服务也不能悄悄退化成另一个同名方法。对应的边界错误保留结构化 code，未知内部异常才折叠为内部错误。
 
@@ -35,6 +35,14 @@ Gateway 的顺序尤其重要：载体解码后提交调用及 Peer 身份，宿
 ```
 
 订阅还需要所有权。客户端关闭视图只代表它不再消费，不一定代表任务应停止；断开连接后保留任务必须是显式产品语义。取消通常是合作式信号，不能撤销已发生的外部动作。SDK 应分别暴露请求取消、任务终止和结果订阅清理，不能用一个 `close()` 混合三件事。
+
+## rc.2 的身份、授权与流清理
+
+`PeerScope.principal` 在创建 Peer 时固定，不能让客户端参数覆盖；`interactions: 'answer'` 只说明能参与转发交互，不授予业务资源权限。owner 以外的调用，必须在**每个触及的资源**上绑定包含 endpoint action 的角色。资源 reader 抛错、返回空列表或无效身份会拒绝请求；但忘记声明实际访问的某个资源不会被 Gateway 自动发现，这是业务包必须测试的授权缺口。
+
+Gateway 对已释放 Peer 返回 `gateway/peer-disposed`，授权拒绝保留 `remote-access/denied`。普通结构化 `RemoteError` 的 code/details 不应在适配层变成泛化内部错误。`method.input({ strict: true })` 是本地解析视图选择，不改变宿主 dispatch；读取 schema、文档或 JSON Schema 投影也不应发起网络调用。
+
+接入时分别测试本地反射、一次 unary 调用和一个 stream，不能拿 unary 成功证明流协议正确。流的取消要覆盖客户端 cancel、socket close、uplink 失败和 Peer dispose；下行结束还须关闭上行迭代器。退出订阅与业务任务寿命是否绑定，应按实际 method 的拥有者契约记录，不能由外层猜测。
 
 ## 自包含边界实验
 
@@ -91,8 +99,11 @@ NODE
 
 真正接入宿主时还应测连接关闭、服务卸载、身份释放、版本不匹配和迟到响应。每个失败都应得到有界终态，并释放订阅；未知版本不能自动进入宽松模式。只有部署了实际 SDK、完成类型核验和认证测试，才能宣称集成成功。本章没有安装厂商依赖，也没有测任何云端运行效果。
 
+练习：为同时读取两份不同 owner 资源的方法写授权表，分别删除其中一个 resource reader、释放 Peer、取消上行。记录哪种拒绝发生在对象解析前，哪种资源遗漏需要业务测试才能发现；不要使用真实用户资料。
+
 ## 固定来源
 
+- [rc.2 Typert 契约](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/typert.md)：本章当前身份、资源检查、错误与流生命周期的固定证据，核验于 `2026-10-23`。
 - [DeepSeek Typert 契约与 Gateway](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/typert.md)：上述真实调用顺序的固定提交证据。
 - [DeepSeek 架构](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/architecture.md)：宿主、服务和所有权边界。
 - [Node.js 22 AbortController](https://nodejs.org/docs/latest-v22.x/api/globals.html#class-abortcontroller)：教学取消信号。

@@ -1,7 +1,7 @@
 ---
 title: 第六十二章：Claude Code 与 Agent SDK 机制
 description: 以官方公开契约解释内置工具循环、配置来源、权限与会话，避免把闭源产品描述成源码审计。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Claude Agent SDK, 权限]
 series:
@@ -10,13 +10,13 @@ series:
 
 # 第六十二章：Claude Code 与 Agent SDK 机制
 
-应用需要的往往不是一次聊天，而是能读取资料、调用工具并交付结果的运行过程。Claude Agent SDK 的定位是让开发者编程使用 Claude Code 所提供的智能体能力。这里必须先限定证据：本教程记录的 Claude Code 产品版本为 `2.1.302`，其核心实现闭源；发布记录、官方文档和公开类型可以审查，但不能据此声称完成了内部循环的源码审计。
+应用需要的往往不是一次聊天，而是能读取资料、调用工具并交付结果的运行过程。Claude Agent SDK 的定位是让开发者编程使用 Claude Code 所提供的智能体能力。`2026-10-23` npm 核验：CLI `stable` 为 `2.1.308`，`latest/next` 为 `2.1.309`，Agent SDK `latest/next` 为 `0.3.309`。这些是不同包和渠道；核心实现闭源，发布记录、官方文档和公开类型可以审查，但不能据此声称完成了内部循环的源码审计。
 
 ## 概念与能力边界
 
 Anthropic 官方 overview 将 Agent SDK 与普通 Client SDK 分开：后者提供模型 API 调用，应用需要自行执行工具循环；前者提供内置工具执行、agent loop 和上下文管理。官方列出的能力包括读写文件、Shell、Hooks、子 Agent、MCP、权限和会话。能力存在不等于默认授予权限，也不意味着外层应用无需审查每次动作。
 
-还要把三个版本分别记录：Claude Code 产品版本、Agent SDK 包版本和官方文档核验日期。它们不应写成同一个数字。本章读取了 `2026-10-17` 官方 TypeScript API 的 `query`、`Options` 和 `Query` 声明，用它核对接入面；未安装包或编译厂商样例，不宣称完成端到端集成。后面的自包含生命周期实验与厂商接入样例分别标注。
+还要把三个版本分别记录：Claude Code 产品版本、Agent SDK 包版本和官方文档核验日期。它们不应写成同一个数字。本章读取了当前官方 TypeScript API，并从 npm 发布包读取 `0.3.309` 的 `sdk.d.ts`，核对 `query`、`Options`、`Query` 和结果联合类型；未安装包或编译厂商样例，不宣称完成端到端集成。SDK 包的 Node 要求为 `>=18`，CLI 包为 `>=22`，不能用 SDK 的最低要求证明外置 CLI 能启动。
 
 文件配置也是一个信任入口。overview 明确说明，若使用文件系统配置能力，需要显式选择配置来源；TypeScript 名称为 `settingSources`，项目来源示例为 `['project']`。这会引入项目的技能、命令和指令材料，所以先读项目规则、再确认来源与权限。不能把陌生仓库中的配置当作宿主授权，更不能因为允许读取就自动允许执行它引用的脚本。
 
@@ -48,13 +48,14 @@ SDK 负责产生并管理运行过程，业务宿主负责谁能创建运行、�
 | `resume` / `forkSession` | 恢复已有会话 / 恢复时创建新身份 | 把 Fork 当文件与外部操作回滚 |
 | `abortController` / `Query.interrupt()` | 外部取消控制 / 中断当前查询 | 发出取消就声称全部资源已停止 |
 
-以下接入样例仅使用本次官方声明中已核对的字段，需在匹配 SDK 的隔离项目中编译、认证和运行。本教程没有执行它。示例限制为 Read、Glob、Grep 三个工具，不开放 Bash 或编辑；这仍需要目标平台的文件访问边界，不能把工具选择当成目录沙箱。
+以下接入样例使用 SDK `0.3.309` 类型中的字段，需在匹配 SDK 的隔离项目中编译、认证和运行。本教程没有执行它。示例限制为 Read、Glob、Grep 三个工具，不开放 Bash 或编辑；这仍需要目标平台的文件访问边界，不能把工具选择当成目录沙箱。
 
 ```ts
 import { query } from '@anthropic-ai/claude-agent-sdk';
 
 const abortController = new AbortController();
 const timer = setTimeout(() => abortController.abort(), 60_000);
+let confirmed = false;
 try {
   for await (const message of query({
     prompt: '读取 README.md，引用原文解释项目边界。',
@@ -67,10 +68,15 @@ try {
       abortController,
     },
   })) {
-    // 消费实际 SDKMessage 联合类型，按当前包类型解析 result 等终态。
+    if (message.type === 'result') {
+      if (message.subtype !== 'success' || message.is_error) {
+        throw new Error('Agent turn did not succeed');
+      }
+      confirmed = true;
+    }
     // 不将完整消息或文件内容自动写入公共日志。
-    void message;
   }
+  if (!confirmed) throw new Error('No confirmed turn result');
 } finally {
   clearTimeout(timer);
 }
@@ -79,6 +85,14 @@ try {
 样例刻意不打印“成功”。流结束、预算停止、执行错误和合法终态必须从实际结果消息分别判定，随后再核查引用与产物。默认 `settingSources: []` 不加载文件配置；需要 `CLAUDE.md` 与项目技能时，应明确启用 `project` 并核对项目材料。默认系统提示与 `claude_code` preset 也不同，选择哪个应由任务决定，不能悄悄复制 CLI 行为假设。
 
 进程内 MCP 服务可通过 `tool()` 与 `createSdkMcpServer()` 定义，其输入 Schema 使用 Zod，handler 返回 MCP `CallToolResult`。这是一条额外集成路径，本下载包没有安装 Zod 或 SDK。工具 annotations 属于行为提示，不能据 `readOnlyHint` 或 `idempotentHint` 自动授权。需要真实工具时，应先检验 Schema、权限回调、取消与错误结果，再交给模型选择。
+
+## 当前类型里的结果与兼容陷阱
+
+`SDKResultMessage` 每 turn 一条，但其后仍可能有后台任务或提示等 informational 消息。`subtype: 'success'` 也可能伴随 `is_error: true`，因此上例同时检查两者；`error_max_turns`、`error_max_budget_usd`、执行错误和结构化输出重试耗尽不能算业务成功。取消或断线若没有确认结果，只能报告未完成，不得用已显示的文字补造终态。
+
+`Options.maxThinkingTokens` 与 `Query.setMaxThinkingTokens()` 已标为 deprecated，新接入使用 `thinking`，例如 `{ type: 'adaptive' }` 或模型支持的 `{ type: 'enabled', budgetTokens: N }`，不能给所有模型强套同一预算。旧字段仍作为兼容入口讨论，不作为新方案推荐。`persistSession: false` 会禁用磁盘会话持久化，不能再承诺以后按 session ID 恢复。
+
+`total_cost_usd` 是累计估算，不是账单；流式输入会话应读取最新累计值，不能逐条 result 求和。恢复或 Fork 还可能带入已保存历史累计，`/clear` 会改变生命周期。排查成本差异时同时记录 query、会话恢复和清除边界，不能把历史费用算成新 turn 的增量。
 
 ## 自包含生命周期实验
 
@@ -136,10 +150,13 @@ Hooks 与插件也会失败。超时、输出格式错误和异常都应有可�
 
 真实 SDK 验收应在隔离的测试目录完成，固定依赖版本并以安装后的类型定义核对参数。用只读任务检查工具选择与路径引用，再测用户拒绝、取消、Hook 故障和恢复。授权读取之外的写入、Shell 与网络动作必须分别批准。本章未进行这些联网实验，不能据此保证 SDK 端到端可用或特定模型质量。
 
+练习：为结果消费器加入 `success + is_error: true`、预算停止、缺少 result 和多条累计费用四组输入。再在独立接入环境检查 `persistSession: false` 的恢复失败；不要把自定义 reducer 测试当作真实 SDK 集成通过。
+
 ## 官方来源
 
-- [Agent SDK overview](https://platform.claude.com/docs/en/agent-sdk/overview)：本章能力与配置来源说明，核验日期 `2026-10-17`。
+- [Agent SDK overview](https://platform.claude.com/docs/en/agent-sdk/overview)：能力与配置来源说明；当前接入面核验日期 `2026-10-23`。
 - [TypeScript API reference](https://platform.claude.com/docs/en/agent-sdk/typescript)：集成时必须对照实际依赖类型；本章未声称核验全部签名。
+- [SDK 0.3.309 发布元数据](https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk/0.3.309)与[CLI 渠道元数据](https://registry.npmjs.org/@anthropic-ai/claude-code)：版本、Node 前提和发布包 `sdk.d.ts` 的证据，核验于 `2026-10-23`。
 - [Agent SDK permissions](https://platform.claude.com/docs/en/agent-sdk/permissions)：权限设计的官方阅读入口。
 - [Claude Code 公开仓库](https://github.com/anthropics/claude-code)：产品发布证据，不代表核心源码公开。
 

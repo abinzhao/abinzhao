@@ -1,7 +1,7 @@
 ---
 title: "第 23 章：DOM、事件系统与观察器"
 description: "操作 DOM，掌握捕获、冒泡、事件委托，并使用三类 Observer 响应页面变化。"
-date: "2026-10-15"
+date: "2026-10-23"
 category: 浏览器 API
 tags: [DOM, 事件, 观察器]
 series:
@@ -318,11 +318,20 @@ const resizeObserver = new ResizeObserver(([entry]) => {
 
 ```js
 const headings = document.querySelectorAll('article h2[id]');
+const visibleHeadings = new Set();
 
 const intersectionObserver = new IntersectionObserver(
   (entries) => {
-    const visibleHeading = entries
-      .filter((entry) => entry.isIntersecting)
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        visibleHeadings.add(entry.target);
+      } else {
+        visibleHeadings.delete(entry.target);
+      }
+    }
+
+    const visibleHeading = [...visibleHeadings]
+      .map((target) => ({ target, boundingClientRect: target.getBoundingClientRect() }))
       .sort(
         (left, right) =>
           left.boundingClientRect.top - right.boundingClientRect.top,
@@ -343,6 +352,8 @@ for (const heading of headings) {
   intersectionObserver.observe(heading);
 }
 ```
+
+`entries` 只包含本次相交状态变化的元素，不是全部可见元素，因此需要维护集合。这个例子仍是“可见标题”模型：长段落内没有标题相交时会保留上一项。正式 ScrollSpy 还要定义顶部/底部、反向滚动和锚点跳转策略，并与固定导航高度一起验收。
 
 图片进入附近区域后再加载：
 
@@ -384,5 +395,11 @@ const imageObserver = new IntersectionObserver(
 4. 拖动容器宽度，确认 `ResizeObserver` 更新紧凑样式。
 5. 滚动文章，确认目录随可见标题变化。
 6. 移除页面模块时调用 `disconnect()` 或 `AbortController.abort()`，确认不再执行回调。
+
+### 23.12 官方参考
+
+- [MDN：Intersection Observer API](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API)。
+- [MDN：Resize Observer API](https://developer.mozilla.org/en-US/docs/Web/API/Resize_Observer_API)。
+- [DOM 标准：事件](https://dom.spec.whatwg.org/#events)。
 
 ---

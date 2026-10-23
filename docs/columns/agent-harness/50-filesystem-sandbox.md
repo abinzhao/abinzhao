@@ -1,7 +1,7 @@
 ---
 title: 第 50 章：文件系统沙箱与平台原语
 description: 区分路径校验与系统强制隔离，理解符号链接竞争、执行完整性和失败关闭。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [文件系统沙箱, TOCTOU]
 series:
@@ -73,7 +73,7 @@ Linux `openat2` 能基于目录描述符限制路径解析。`RESOLVE_BENEATH` �
 
 另一类真实故障是 sandbox runner 根本没有启动。固定 DeepSeek 契约要求无可用后端时产生 `SANDBOX_UNAVAILABLE`，禁止悄悄原样执行 argv。消费者还要区别“命令因策略被拒绝”和“runner 在命令执行前失败”，因为普通命令也会非零退出，退出码本身无法证明隔离状态。自动以无沙箱方式重试会把基础设施失败转化为权限扩大。
 
-Claude Code 官方页面另有产品特定边界：本地 Bash 沙箱使用 macOS Seatbelt 或 Linux、WSL2 的相关依赖，原生 Windows 不提供同一 Bash 沙箱。其默认不可用处理与强制失败设置应按实际安装版本确认，不能直接套用 DeepSeek 的失败关闭契约。工具文件读取、MCP 和 hooks 也不因 Bash 沙箱启用而自动被包围。
+Claude Code 官方页面另有产品特定边界：本地命令沙箱支持 macOS、Linux 和 WSL2，覆盖 Bash、PowerShell、Monitor 及其子进程，原生 Windows 不提供同一沙箱。默认不可用时仍可无沙箱执行；要求强制边界时应同时设置 `sandbox.enabled: true`、`failIfUnavailable: true`、`allowUnsandboxedCommands: false`，并审查 `excludedCommands`，不能直接套用 DeepSeek 的失败关闭契约。文件工具、MCP 和 hooks 也不因命令沙箱启用而自动被包围。
 
 ## 50.5 实验与可观察验收
 
@@ -87,7 +87,9 @@ Claude Code 官方页面另有产品特定边界：本地 Bash 沙箱使用 macO
 
 ## 50.6 官方来源与边界
 
-DeepSeek Harness 基线固定为 `0.2.1-alpha.5`、提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`，仍是未审计的实验软件。下面的平台资料与产品页面核验日期为 2026-10-17。
+DeepSeek Harness 基线固定为 `0.2.1-alpha.5`、提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`，仍是未审计的实验软件。2026-10-23 对照 [rc.2 sandbox](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/sandbox.md)，Windows ACL、旧 Landlock ABI 的 partial enforcement 仍需明确拒绝或报告，不能把活跃后端当完整强制。
+
+Claude [2.1.309 固定变更记录](https://github.com/anthropics/claude-code/blob/v2.1.309/CHANGELOG.md) 修复启动 shell 配置在沙箱外执行、macOS symlink 实际路径未应用 denyWrite glob，以及 `--mcp-config` 文件可被命令或自动接受编辑修改等问题。升级后的验收仍需在目标平台运行无敏感探针：允许工作区写、拒绝 symlink 实际位置写、缺依赖时启动失败。练习为内存模型添加“解析路径与真实位置”的策略快照；排错区分策略拒绝、partial 和 runner 启动失败。本章没有执行真实内核探针，修复记录不等于本机隔离已验证。
 
 - [固定 sandbox 契约](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/sandbox.md)
 - [Node.js 22 权限模型限制](https://nodejs.org/docs/latest-v22.x/api/permissions.html)

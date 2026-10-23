@@ -1,7 +1,7 @@
 ---
 title: 第三十五章：稳定前缀与 Prompt Cache
 description: 从请求序列和供应商 usage 理解前缀缓存，避免把缓存命中误认为语义记忆或上下文容量扩展。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Prompt Cache, 请求优化]
 series:
@@ -85,10 +85,16 @@ NODE
 
 原 1–12 章连接本地兼容模型，未实现 DeepSeek API 缓存控制或计费对账。扩展 `labs/context.mjs` 与 `labs/eval.mjs` 已落盘，`npm run labs` 使用实际汇总脚本；此处不建立新的网络 API，也不修改实验脚本。生产场景还需要真实 provider 文档、授权后的 usage 采样及隐私边界，才能报告性能收益。
 
+## 当前 cache prefix unit 的命中条件
+
+2026-10-23 复核 [DeepSeek API 当前缓存说明](https://api-docs.deepseek.com/guides/kv_cache)：滑动窗口注意力下，每个已持久化前缀是独立完整单元，必须完整匹配该单元才命中。文档列出请求输入/输出边界持久化、跨请求公共前缀检测持久化，以及长文本固定 token 间隔持久化；不是任意相同字符串都立即有缓存。`A+B` 后请求 `A+C` 未必命中 A；系统检测并持久化 A 后，后续 `A+D` 才可能完整匹配它。构建也有延迟且是 best-effort。
+
+操作上固定 rules/tools 前缀，依次改变尾部，在已授权、去敏的真实请求中读取 hit/miss 字段，而不是从本地 hash 推算命中 token。正常验收是请求内容正确且实际 usage 可关联；异常验收是字段缺失、模型切换、缓存过期时仍能完成任务并显示 unknown，而不是报零成本。练习把内存实验扩展为“已持久化单元”的 Set，分别断言单纯共享 A 不够、明确保存 A 后才能匹配；该 Set 仍只是规则演示，不能冒充真实命中率。排错先查 prefix 单元、构建时机和返回 usage，再比较延迟。
+
 ## 官方固定来源
 
 - [DeepSeek Harness：缓存安全的动态上下文](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/system-prompt.md)，固定上游提交与版本边界。
 - [DeepSeek Harness：系统更新与请求系列](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/architecture.md)，核对适配器能力决定的行为。
-- [DeepSeek API：Context Caching](https://api-docs.deepseek.com/guides/kv_cache)，动态官方供应商说明，核验日 2026-10-17，不作为其他模型的计价规则。
+- [DeepSeek API：Context Caching](https://api-docs.deepseek.com/guides/kv_cache)，动态官方供应商说明，核验日 2026-10-23，不作为其他模型的计价规则。
 
 上一章：[第三十四章：上下文压缩](./34-context-compaction) · 下一章：[第三十六章：检索与长期记忆](./36-retrieval-memory)

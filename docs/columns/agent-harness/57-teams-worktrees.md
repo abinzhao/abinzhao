@@ -1,7 +1,7 @@
 ---
 title: 第 57 章：Teams、任务 DAG 与工作树隔离
 description: 用无环依赖、任务修订和产物所有权组织协作，区分工作树冲突隔离与运行时安全隔离。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [DAG, Git Worktree]
 series:
@@ -99,9 +99,15 @@ Claude Code 官方 Team 文档将其标为实验且默认关闭，列出会话�
 
 完成标准是任务图合法、版本更新可追溯、同文件改动有明确所有权，验证确实对应目标代码。内存 DAG、单进程实验与 worktree 均不构成凭据或进程隔离，不支持未经协调的外部副作用只执行一次。
 
-## 57.7 官方来源与边界
+## 57.7 当前队友继承需要逐维验收
 
-DeepSeek Harness 固定基线 `0.2.1-alpha.5`、提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`；相关功能为实验性，Git 与产品页面核验于 2026-10-17。
+2026-10-23 复核 [Claude Agent Teams](https://code.claude.com/docs/en/agent-teams)：teammates 仍是实验且默认关闭，不继承 lead 对话历史，加载各自项目上下文；permission mode 也有例外，`dontAsk` 不直接继承。split-pane 不继承 `--allowedTools` 所授的预批准，但 [2.1.309](https://github.com/anthropics/claude-code/blob/v2.1.309/CHANGELOG.md) 修复了 CLI deny 与 `--tools` 未传递的问题。这三种 CLI 参数不能合并解释成“全部继承”。
+
+对照 [DeepSeek rc.2 Team](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/agent-team.md)，roster provisioning 结算为 active 或 failed，running/inactive 单独派生，任务板不是成员存活证明。操作练习给 DAG task 增加准确 inputRevision 和产物摘要，只有组合验证通过才解除依赖。正常验收是不同写范围并行、共享文件交给协调者；异常验收是旧 revision 认领、队友失效和新 worktree 缺少脏文件时停止集成。排错先核对实际输入内容，再看任务板 completed，不在验证对象错误时放宽断言。
+
+## 57.8 官方来源与边界
+
+DeepSeek Harness 固定基线 `0.2.1-alpha.5`、提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`；保留原 worktree 实验机制，当前 Team 和版本继承按 2026-10-23 复核，未运行的 Git 或队友操作不写成已测。
 
 - [固定 Team 状态与 DAG](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/agent-team.md)
 - [固定 worktree 创建边界](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/worktrees.md)

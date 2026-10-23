@@ -1,6 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
 
 async function expectNoHorizontalOverflow(page: Page): Promise<void> {
+  // 开发服的 404 在 load 后才挂载主题并注入 CSS，测量需等待实际页面就绪。
+  await expect(page.locator('#app')).toHaveAttribute('data-v-app', '');
+  await expect(page.locator('body')).toHaveCSS('margin', '0px');
   const dimensions = await page.evaluate(() => ({
     clientWidth: document.documentElement.clientWidth,
     scrollWidth: document.documentElement.scrollWidth,

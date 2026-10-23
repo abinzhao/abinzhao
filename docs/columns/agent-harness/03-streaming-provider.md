@@ -1,7 +1,7 @@
 ---
 title: 第 03 章：把模型增量结算成完整回复
 description: 用 Node.js Web Streams 解码 SSE，组装分片工具参数，并明确显示增量与可执行回复的边界。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Node.js, 流式结算]
 series:
@@ -133,6 +133,12 @@ provider 对 HTTP 状态和响应类型先检查，再进入帧循环。错误�
 上游 [BlockAssembler 源码](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/packages/llm/llm/src/assembler.ts) 在 max-token 截断时丢弃工具块，并同步裁剪回放元数据；取消时可提取安全文本和 reasoning 前缀，不保留未执行工具。教学项目更简单：截断或中断直接失败，不提交部分回复，也不保存精确增量时序。
 
 上游还把一次 adapter 调用定义成一次 provider attempt，重试策略位于更外层。教学 provider 自己执行一次有限 HTTP 重试，只适合这里的固定组合，不应称为照搬上游重试架构。
+
+### 当前协议适配不能靠统一终止字符串
+
+2026-10-23 核对 [OpenAI Responses streaming](https://platform.openai.com/docs/guides/streaming-responses) 与 [Anthropic streaming](https://platform.claude.com/docs/en/build-with-claude/streaming)，两者使用自己的事件词汇，不能直接复用本章 Chat Completions 的 `[DONE]` 判断。一个通用 assembler 应由 adapter 提供明确的完成 / 失败语义，保留原始错误，而不是把 EOF 当成功。
+
+练习：分别给现有 SSE 测试加入“完整参数后断线”“usage-only 后终止”和“多个工具交错增量”。前者必须拒绝执行，后两者按本适配器契约结算；迁移 Responses 或 Messages 时另建线级夹具，不能靠更换 endpoint 证明兼容。这里不宣称已经实现这两个新 adapter。
 
 ## 3.9 运行与失败验收
 

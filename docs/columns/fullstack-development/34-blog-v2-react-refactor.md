@@ -1,7 +1,7 @@
 ---
 title: "第 34 章：博客 v2 的 React + TypeScript 重构"
 description: "把静态博客重构为 Vite、React 19、TypeScript、路由和组件驱动的应用。"
-date: "2026-10-15"
+date: "2026-10-23"
 category: 项目实战
 tags: [React, TypeScript, Vite, 博客]
 series:
@@ -26,11 +26,16 @@ series:
 ### 34.2 创建项目
 
 ```bash
-npm create vite@latest blog-v2 -- --template react-ts
+npm create vite@9.3.1 blog-v2 -- --template react-ts
 cd blog-v2
-npm install
-npm install react-router-dom zustand zod react-markdown rehype-sanitize
+npm install --save-exact react@19.3.1 react-dom@19.3.1
+npm install --save-exact react-router@8.5.0 zustand@5.0.16 zod@4.6.7
+npm install --save-exact react-markdown@10.1.0 rehype-sanitize@6.0.0
+npm install -D --save-exact typescript@7.0.2 vite@8.3.5 @vitejs/plugin-react@6.1.2
+npm install -D --save-exact @types/react@19.3.0 @types/react-dom@19.3.0
 ```
+
+本项目使用 Router 8.5.0 Data 模式，不使用已在 v8 移除的 `react-router-dom`。Node 至少 22.22，课程推荐受维护的 24.22.1；React/React DOM 至少 19.2.7，以上同时固定为 19.3.1。若在旧 v7 项目接着做，先完成[第 33 章的迁移步骤](./33-react-router-zustand-zod)，再生成锁文件并运行构建。这里没有引入 React Router Framework 插件，不能把框架服务器部署说明当作 Vite 静态 SPA 配置。
 
 删除模板中不再需要的演示资源和计数器代码，再建立目录：
 
@@ -115,7 +120,7 @@ export const postSchema = z.object({
   content: z.string().min(1),
   tags: z.array(z.string().min(1)),
   featured: z.boolean(),
-  publishedAt: z.string().datetime(),
+  publishedAt: z.iso.datetime(),
 });
 
 export const postsSchema = z.array(postSchema);
@@ -135,7 +140,7 @@ import {
 export async function getPosts(
   signal?: AbortSignal,
 ): Promise<Post[]> {
-  const response = await fetch('/data/posts.json', { signal });
+  const response = await fetch(`${import.meta.env.BASE_URL}data/posts.json`, { signal });
 
   if (!response.ok) {
     throw new Error(`加载文章失败：HTTP ${response.status}`);
@@ -165,7 +170,7 @@ export async function getPostBySlug(
 
 ```tsx
 // src/features/posts/PostCard.tsx
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import type { Post } from './post-schema';
 
 export interface PostCardProps {
@@ -245,7 +250,7 @@ Loader 负责请求，页面负责组合：
 import {
   useLoaderData,
   type LoaderFunctionArgs,
-} from 'react-router-dom';
+} from 'react-router';
 import { PostList } from '../features/posts/PostList';
 import { getPosts } from '../features/posts/post-repository';
 import { postsSchema } from '../features/posts/post-schema';
@@ -280,7 +285,7 @@ import rehypeSanitize from 'rehype-sanitize';
 import {
   useLoaderData,
   type LoaderFunctionArgs,
-} from 'react-router-dom';
+} from 'react-router';
 import { getPostBySlug } from '../features/posts/post-repository';
 import { postSchema } from '../features/posts/post-schema';
 
@@ -325,11 +330,13 @@ export function PostPage() {
 
 `react-markdown` 默认不会把 Markdown 中的原始 HTML 直接当作 HTML 执行；`rehype-sanitize` 为后续扩展插件保留明确净化边界。不要为了支持任意 HTML 轻易加入 `rehype-raw`。
 
+净化器应放在可能产生不可信 HTML 的插件之后；净化后的插件如果重新注入危险属性，仍会破坏边界。外部链接和图片还要定义允许协议、来源与隐私策略，不能仅用“有净化插件”代替整条渲染链的安全检查。
+
 ### 34.8 全局布局
 
 ```tsx
 // src/components/SiteHeader.tsx
-import { NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router';
 
 export function SiteHeader() {
   return (
@@ -350,7 +357,7 @@ export function SiteHeader() {
 import {
   Outlet,
   ScrollRestoration,
-} from 'react-router-dom';
+} from 'react-router';
 import { SiteHeader } from '../components/SiteHeader';
 
 export function RootLayout() {
@@ -377,7 +384,7 @@ import {
   isRouteErrorResponse,
   Link,
   useRouteError,
-} from 'react-router-dom';
+} from 'react-router';
 
 export function RouteErrorPage() {
   const error = useRouteError();
@@ -402,7 +409,7 @@ export function RouteErrorPage() {
 
 ```tsx
 // src/pages/NotFoundPage.tsx
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 
 export function NotFoundPage() {
   return (
@@ -419,7 +426,7 @@ export function NotFoundPage() {
 
 ```tsx
 // src/app/router.tsx
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter } from 'react-router';
 import { RootLayout } from './RootLayout';
 import { RouteErrorPage } from './RouteErrorPage';
 import {
@@ -461,7 +468,7 @@ export const router = createBrowserRouter([
 // src/main.tsx
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { RouterProvider } from 'react-router-dom';
+import { RouterProvider } from 'react-router/dom';
 import { router } from './app/router';
 import './styles/index.css';
 
@@ -550,6 +557,24 @@ a {
 
 .article-content {
   line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+
+.article-content pre {
+  overflow-x: auto;
+}
+
+.article-content img {
+  max-width: 100%;
+  height: auto;
+}
+
+button,
+input,
+select,
+a.site-logo,
+.site-header nav a {
+  min-height: 44px;
 }
 
 .skip-link {
@@ -592,5 +617,14 @@ npm run build
 6. Network 中 `/data/posts.json` 返回 200。
 7. 键盘可以聚焦跳转链接、导航和文章链接。
 8. 390px 宽度无横向滚动。
+
+### 34.13 官方参考与下一步
+
+- [Vite：静态部署](https://vite.dev/guide/static-deploy.html)。
+- [React Router 8.5.0：路由](https://reactrouter.com/8.5.0/start/data/routing)。
+- [react-markdown 安全边界](https://github.com/remarkjs/react-markdown#security)。
+- [rehype-sanitize](https://github.com/rehypejs/rehype-sanitize)。
+
+这里的 `/data/posts.json` 仍是构建产物，不能接收作者保存或管理登录。后端路线从[第 37 章](./37-node-typescript-runtime)开始，[第 54 章](./54-blog-v3-fullstack-capstone)将提供统一源码和前后端连接步骤。
 
 ---

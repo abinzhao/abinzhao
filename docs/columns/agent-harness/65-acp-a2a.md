@@ -1,7 +1,7 @@
 ---
 title: 第六十五章：ACP、A2A 与 Agent 互操作
 description: 区分编辑器与智能体协议、跨智能体任务协议和工具协议，设计不会扩大权限的适配边界。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [ACP, A2A]
 series:
@@ -27,6 +27,46 @@ MCP 则是宿主连接能力服务器的协议，工具、资源和提示模板�
 | MCP：宿主与能力服务器 | 工具、资源、提示模板 | 输入输出与工具权限正确 |
 
 以上比较是职责抽象，不是三个协议的完整 schema。版本、传输绑定和扩展能力需按当前规范核验。不要从一种传输推断所有版本都只支持该传输，也不要根据缩写相似把 Agent Client Protocol 与其他同名协议混为一谈。
+
+## 当前协议与包版本不能混用
+
+`2026-10-23` 核验 ACP 最新 Schema 发布为 `schema-v1.26.0`，TypeScript SDK npm `latest` 为 `2.0.1`。该 SDK 默认导出仍是 `dist/v1/stable`，固定 Schema 的 `schema/v1/meta.json` 线上版本是整数 `1`；`/unstable` 和 `/experimental/v2` 是不同接入面，不因包主版本 2 就自动成为默认稳定线。新接入先明确选哪条协议线，再协商非破坏性能力。
+
+下面是 **ACP v1 的消息样本**，不是 MCP `2026-07-28` 的初始化方式。先 initialize，再创建会话；不支持返回版本就停止连接，不在字段丢失后继续使用危险能力。
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "method": "initialize",
+  "params": {
+    "protocolVersion": 1,
+    "clientCapabilities": {
+      "fs": { "readTextFile": true, "writeTextFile": false },
+      "terminal": false
+    },
+    "clientInfo": { "name": "tutorial-reader", "version": "1.0.0" }
+  }
+}
+```
+
+`session/load` 需 `loadSession: true`，并在响应前通过 `session/update` 重放历史；`session/resume` 需 `sessionCapabilities.resume`，**不重放**历史；`session/close` 又有独立 capability，承担停止与释放。三者不能映射为同一个 resume 按钮。`session/cancel` 是通知，客户端须将未决权限请求回复为 cancelled，仍接收收尾更新，最终以原 `session/prompt` 的 `stopReason: 'cancelled'` 确认取消，而非等待通知回执。
+
+A2A 固定稳定发布为 `v1.0.1`，HTTP 服务版本按 Major.Minor 使用 `A2A-Version: 1.0`，不是 `1.0.1`；缺失版本头按旧 `0.3` 解释，不应依赖隐式默认。1.0 的 JSON-RPC 名称是 `SendMessage`、`GetTask`、`CancelTask` 等，状态使用 ProtoJSON `TASK_STATE_*`，不能直接发送旧 `message/send` 与小写状态。
+
+| A2A 1.0 状态 | 宿主映射 | 后续动作 |
+| --- | --- | --- |
+| `TASK_STATE_SUBMITTED` / `TASK_STATE_WORKING` | 受理 / 执行 | 观察或查询，不结算成功 |
+| `TASK_STATE_INPUT_REQUIRED` / `TASK_STATE_AUTH_REQUIRED` | 中断等待 | 请求输入 / 认证，不重建任务 |
+| `TASK_STATE_COMPLETED` | 协议完成 | 另验收产物与安全 |
+| `TASK_STATE_FAILED` / `TASK_STATE_CANCELED` / `TASK_STATE_REJECTED` | 对应终态 | 不继续向该任务发送消息 |
+| `TASK_STATE_UNSPECIFIED` 或未知值 | 未知 / 不支持 | 协调状态，不默认 completed |
+
+### 规范内部冲突要保留
+
+`v1.0.1` 的说明有两处需要实接入确认：概述写消息操作立即返回，但具体 `SendMessageConfiguration.return_immediately` 及 proto 定义默认 `false`，等待终态或 INPUT/AUTH_REQUIRED；本课程按具体字段设计等待，不把概述当默认异步保证。订阅 REST 总表写 POST，而 `a2a.proto` 的 `SubscribeToTask` HTTP binding 写 GET；不能将两者拼成一个声称实测的请求。固定生成契约、记录差异并验证服务 OpenAPI/一致性结果，再选绑定。
+
+官方 `1.0.1` 变更优先使用 `application/a2a+json`。流订阅的第一帧应是当前 Task，后续才是状态或 Artifact 更新；这能避免“先 Get 再 Subscribe”之间的观察缺口，但不证明通知永久耐久。发送消息的 `messageId` 去重是 MAY，不是所有服务器的 exactly-once 承诺。
 
 ## 适配器的真实数据流
 
@@ -90,10 +130,15 @@ NODE
 
 基础教学项目未实现 ACP、A2A 或真实 MCP server，`labs/` 也没有增加远程认证。自包含示意只能说明适配原则，不能称为协议一致性测试。生产接入需运行官方 schema 或相应一致性套件，并在受控端点上验证真实任务与最终产物。
 
+练习：为 ACP load/resume/cancel 和 A2A INPUT_REQUIRED/AUTH_REQUIRED 各写一个时序验收。让旧 A2A 0.3 状态进入 1.0 解析器、让 ACP 缺少 resume capability，断言不会自动续跑。为订阅 GET/POST 冲突登记真实服务验证结果；没有结果时保留“未确认”。
+
 ## 官方来源
 
-- [ACP introduction](https://agentclientprotocol.com/overview/introduction)：编辑器、Agent 与本地和远程边界，核验于 `2026-10-17`。
-- [A2A key concepts](https://a2a-protocol.org/latest/topics/key-concepts/)：Agent Card、Task 与 Artifact 等概念，同日核验；`latest` 是移动文档入口。
+- [ACP introduction](https://agentclientprotocol.com/overview/introduction)：编辑器、Agent 与本地和远程边界。
+- [ACP Schema v1.26.0](https://github.com/agentclientprotocol/agent-client-protocol/releases/tag/schema-v1.26.0)、[固定 v1 初始化](https://github.com/agentclientprotocol/agent-client-protocol/blob/e2d83349bc9e28a4059ea3acefa1c91c966f74e2/docs/protocol/v1/initialization.mdx)、[会话](https://github.com/agentclientprotocol/agent-client-protocol/blob/e2d83349bc9e28a4059ea3acefa1c91c966f74e2/docs/protocol/v1/session-setup.mdx)与[取消](https://github.com/agentclientprotocol/agent-client-protocol/blob/e2d83349bc9e28a4059ea3acefa1c91c966f74e2/docs/protocol/v1/prompt-turn.mdx)：本章版本和行为核验于 `2026-10-23`。
+- [ACP SDK 2.0.1 元数据](https://registry.npmjs.org/@agentclientprotocol/sdk/2.0.1)：默认稳定与 experimental 导出的区分。
+- [A2A 1.0.1 发布](https://github.com/a2aproject/A2A/releases/tag/v1.0.1)、[固定规范](https://github.com/a2aproject/A2A/blob/v1.0.1/docs/specification.md)与[固定 proto](https://github.com/a2aproject/A2A/blob/v1.0.1/specification/a2a.proto)：版本头、状态、绑定及内部冲突，核验于 `2026-10-23`。
+- [A2A key concepts](https://a2a-protocol.org/latest/topics/key-concepts/)：Agent Card、Task 与 Artifact；`latest` 是移动文档入口。
 - [A2A specification](https://a2a-protocol.org/latest/specification/)：集成时需固定版本与绑定，不将本章夹具冒充规范。
 - [MCP 官方规范](https://modelcontextprotocol.io/specification/)：工具侧协议阅读入口。
 

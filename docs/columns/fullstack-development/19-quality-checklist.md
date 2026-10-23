@@ -1,7 +1,7 @@
 ---
 title: "第 19 章：上线验收与故障排查"
 description: "用 HTML、CSS、JavaScript、性能、无障碍和部署清单完成上线验收。"
-date: "2026-10-15"
+date: '2026-10-23'
 category: 质量保障
 tags: [质量保障, 无障碍, 性能]
 series:
@@ -46,7 +46,7 @@ series:
 - [ ] 首屏外图片 `loading="lazy"`
 - [ ] 首屏大图 `fetchpriority="high"`
 - [ ] CSS/JS 文件数量合理，启用了压缩
-- [ ] Lighthouse Performance ≥ 90
+- [ ] 固定设备与网络条件的 Lighthouse 结果已记录；分数目标由项目预算决定
 
 ### 无障碍
 
@@ -57,7 +57,7 @@ series:
 - [ ] 动态内容区域有 `aria-live`
 - [ ] 弹窗打开、关闭后的焦点位置正确
 - [ ] 使用无障碍树或读屏抽查主流程
-- [ ] Lighthouse Accessibility ≥ 95
+- [ ] 自动审计与键盘、读屏人工验证均有记录，自动分数不作为 WCAG 合规证明
 
 ### 部署
 
@@ -173,4 +173,10 @@ series:
 
 学前端最快的路径是：**打开 DevTools，看别人怎么做，然后自己写一遍。** 遇到问题就按附录 A 的顺序排查——错误信息永远会告诉你答案，只是你需要知道去哪里看。
 
-v1 做完之后不要急着加功能。先用 Lighthouse 跑一遍，把性能和可访问性都做到 95 分以上。这个过程中你会被迫理解渲染流程、资源加载、无障碍语义——这些才是真正拉开水平差距的东西。
+v1 做完后先记录 Lighthouse 的条件与结果，再完成人工键盘、错误恢复和移动端检查。高分不能证明主流程正确，也不能代替真实用户性能。继续按 [JavaScript 核心](./20-javascript-scope-closures) 进入 v2，再按 [后端起步](./37-node-typescript-runtime) 完成 v3。
+
+### 后续全栈验收差异
+
+静态阶段的“Console 无错误”只是浏览器侧证据。接入后端后，还要证明身份失效会拒绝请求、越权用户无法读取资源、事务失败不留下半成品、重复请求不重复产生业务效果，以及备份能恢复。页面、API 和数据库结果应互相印证。
+
+官方参考：[WCAG 2.2](https://www.w3.org/TR/WCAG22/)、[Lighthouse](https://developer.chrome.com/docs/lighthouse/overview/)、[Web Vitals](https://web.dev/articles/vitals)。

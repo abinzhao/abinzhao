@@ -1,7 +1,7 @@
 ---
 title: 第 01 章：用服务契约拆分 Agent Harness
 description: 从零建立 Node.js ESM 项目，用明确的输入、输出和副作用边界组合本地工作区助手。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Node.js, 服务契约]
 series:
@@ -138,13 +138,19 @@ JS
 
 ## 1.7 与固定版本上游准确对照
 
-上游参考固定在 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`，根包版本 `0.2.1-alpha.5`，最新核验日期为 2026-10-17。这是本教程的可复查快照，不承诺 alpha 接口之后保持不变。
+上游参考固定在 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`，根包版本 `0.2.1-alpha.5`，快照核验日期为 2026-10-17。这是历史实现证据，不是当前最高版本，不承诺 alpha 接口之后保持不变。
 
 [上游架构](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/architecture.md) 将 capability 分成定义、提供者和消费者，并通过 Cordis 组织插件。对应到本项目，`complete()` 是模型能力契约，`createProvider()` 提供实现，`runAgent()` 消费它。这个对应是职责对应，不是函数签名兼容。
 
 上游模型采用带身份和来源的内容块消息，可核对 [模型类型源码](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/packages/llm/llm/src/types.ts)。教学项目只保留纯文本和函数工具调用，不实现 reasoning、图像、adapter 私有回放状态等完整词汇。
 
 上游会话从事件派生模型历史，可核对 [会话类型源码](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/packages/core/session/src/types.ts)。教学项目沿用“日志与历史分开”的思想，却没有实现上游全部事件、surface projection 或存储版本迁移。不能直接拿本项目的 NDJSON 导入上游。
+
+### 当前版本怎样影响服务契约
+
+2026-10-23 核对[官方发布记录](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.2.1-rc.2)，可见发布为 RC.2，仍不能称稳定版。更换 provider 时，先对照 `complete(messages, tools, options)` 的输入、结算、取消和副作用，再决定是否需要适配器；不要按同名方法直接替换。
+
+练习：让一个测试 provider 返回缺少工具 ID 的 assistant，检查消费方是否拒绝或需要增加验证；再让合法 provider 通过同一任务。两个结果分别用于识别契约缺口和正常路径，不把上游 release 当作本地兼容测试。Node 的 Current / LTS 状态与下载包基线分开，见[版本治理](./73-version-governance)。
 
 ## 1.8 运行、排错与验收
 

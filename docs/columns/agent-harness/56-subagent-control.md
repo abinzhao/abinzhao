@@ -1,7 +1,7 @@
 ---
 title: 第 56 章：子 Agent 消息、等待与取消
 description: 区分消息接纳、任务结算与资源静止，建立可等待且不越权的子任务控制协议。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [取消, 子任务控制]
 series:
@@ -105,7 +105,13 @@ console.log(JSON.stringify({ state, trace }));
 
 完成标准是回执语义准确、控制权限明确、所有句柄有人等待或释放。`npm run labs` 的独立实验不创建真实子 Agent，此章自包含代码只验证协作式取消；操作系统终止、产品续传与多 Agent 消息仍需目标运行时验证。
 
-## 56.7 官方来源与边界
+## 56.7 当前消息发送与重新激活的边界
+
+2026-10-23 复核 [Claude Agent Teams](https://code.claude.com/docs/en/agent-teams)：消息报告 sent 以写入接收者 mailbox 文件成功为界，写入失败返回错误；sent 仍不是接收者已经处理。当前进程内消息可以重新激活已停止的 in-process teammate 并恢复其保存会话，但 `/resume` 后不按同一路径恢复旧 teammates。定义来自未信任目录时还可能不重新应用，不能由旧名称推断完整工具和指令已经恢复。
+
+对照 [DeepSeek rc.2 Team](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/agent-team.md)，新消息仍没有 outbox 重发去重，历史 mailbox 记录只用于可读 replay，不自动重新投递。操作练习将原 trace 拆成 accepted、processed、settled、cleaned 四项；正常验收是一次取消请求和一次清理，异常验收是接纳后断线、旧 activation 控制与清理失败均不伪造结果。排错先核对消息及 activation 的准确身份，再判定是否可恢复，不能因 wait 超时重新创建未知效果的任务。
+
+## 56.8 官方来源与边界
 
 DeepSeek Harness 固定 `0.2.1-alpha.5`、提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`；下面契约属于该版本，不代表所有 provider 都支持继续会话。
 

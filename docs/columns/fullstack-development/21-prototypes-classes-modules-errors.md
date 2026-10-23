@@ -1,7 +1,7 @@
 ---
 title: "第 21 章：原型、类、ESM 与错误处理"
 description: "理解 JavaScript 的原型委托、class 语法、ESM 模块边界和可恢复的错误处理。"
-date: "2026-10-15"
+date: "2026-10-23"
 category: JavaScript
 tags: [原型, 类, ESM, 错误处理]
 series:
@@ -237,7 +237,7 @@ HTML 入口必须声明模块：
 启动静态服务器：
 
 ```bash
-npx serve .
+npx serve@14.2.6 .
 ```
 
 循环依赖会让初始化顺序难以理解。如果 `a.js` 导入 `b.js`，同时 `b.js` 又导入 `a.js`，应优先提取双方共同依赖的第三个模块。
@@ -309,6 +309,13 @@ async function getPost(slug) {
       throw error;
     }
 
+    if (error instanceof SyntaxError) {
+      throw new PostLoadError('文章数据不是有效 JSON', {
+        code: 'POST_DATA_INVALID',
+        cause: error,
+      });
+    }
+
     throw new PostLoadError('无法连接文章服务', {
       code: 'POST_NETWORK_ERROR',
       cause: error,
@@ -374,5 +381,11 @@ try {
 **为什么不能只 `console.error` 后返回空数组？**
 
 这会把“请求失败”伪装成“没有文章”。错误状态和空数据状态对用户含义不同，应分别处理。
+
+### 21.9 官方参考
+
+- [MDN：JavaScript 模块](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Guide/Modules)。
+- [MDN：Error.cause](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/cause)。
+- [ECMAScript：类定义](https://tc39.es/ecma262/#sec-class-definitions)。
 
 ---

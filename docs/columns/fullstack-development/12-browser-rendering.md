@@ -1,7 +1,7 @@
 ---
 title: "第 12 章：浏览器渲染流程"
 description: "理解解析、样式计算、布局、绘制、合成以及页面生命周期。"
-date: "2026-10-15"
+date: '2026-10-23'
 category: 浏览器原理
 tags: [渲染, 性能, 浏览器]
 series:
@@ -28,11 +28,11 @@ series:
 - `visibility: hidden` 的元素**在** Render Tree 中（占据空间，只是不绘制）
 - `::before` / `::after` 伪元素在 Render Tree 中，但不在 DOM 中
 
-**Layout 一定会触发 Paint，但 Paint 不一定需要 Layout**：
+**布局变化通常使绘制结果失效，但并非任何 Layout 都必然产生新的可见 Paint**；浏览器可能复用绘制或跳过不可见区域。绘制变化则不一定需要重新布局：
 
 - 改变 `width` → Layout → Paint → Composite
 - 改变 `background-color` → Paint → Composite
-- 改变 `transform` → Composite
+- 改变 `transform` → 满足合成条件时可只更新 Composite，仍需核对实际绘制
 
 ### 12.3 重排（Reflow）与重绘（Repaint）
 
@@ -52,8 +52,8 @@ parent.removeChild(child);
 el.style.fontSize = '20px';
 el.style.fontFamily = 'Arial';
 
-// 读取布局属性会强制同步重排（"layout thrashing"）
-const h = el.offsetHeight;      // 浏览器必须立即重排才能给出准确值
+// 在样式/布局已失效时，读取布局属性可能强制同步计算
+const h = el.offsetHeight;      // 已有有效布局时可复用，不一定重新布局
 const w = el.getBoundingClientRect().width;
 const s = getComputedStyle(el).height;
 ```
@@ -94,12 +94,12 @@ items.forEach((el, i) => {
 **批量写 CSS 的更好方式**：
 
 ```js
-// 差：多次触发样式重算
+// 连续写入通常会被浏览器批处理；关键是避免写后立即读取布局
 el.style.width = '100px';
 el.style.height = '200px';
 el.style.background = 'red';
 
-// 好：用 cssText 一次性写
+// cssText 便于成组修改，但 += 会读取并重新解析整段内联样式
 el.style.cssText += 'width:100px;height:200px;background:red;';
 
 // 更好：切换 class
@@ -198,6 +198,30 @@ window.addEventListener('pageshow', (e) => {
 });
 ```
 
-**优先用 `visibilitychange` 而不是 `beforeunload`**：移动端 `beforeunload` 不可靠，`visibilitychange` 在所有平台都触发。
+**优先在 `visibilitychange` 变为 hidden 时保存草稿**，并按需补充 `pagehide`；移动端进程被杀时任何卸载事件都不能保证触发，关键数据应在编辑过程中增量保存。只在有未保存变更时添加 `beforeunload`，避免影响往返缓存。
+
+### 官方参考与验证
+
+`load` 不保证所有延迟加载图片或以后动态加载资源已完成；async 脚本也可能在 DOMContentLoaded 后执行。`requestAnimationFrame` 只安排渲染前回调，并不会自动消除回调中的同步布局。关键 CSS 的 onload 写法是示意，严格 CSP 可能禁止内联事件，应使用允许的外部脚本或 nonce 策略。
+
+### 12.8 理解失效范围与同步读取
+
+这条渲染链路是解释模型，不是浏览器每帧执行的一张固定清单。样式改变会使相关计算失效，浏览器可以在需要时批量更新；读取一个已有有效布局的矩形，不一定重新布局。问题在于写入几何之后立即读取，读取者要求现在就得到准确结果，可能迫使浏览器提前完成计算。`getComputedStyle()` 也不是所有属性、所有情况下都会引起布局，应以实际调用栈和 Forced reflow 证据判断。
+
+读写分离不会消除本来就需要的布局，而是减少同一批数据中反复打断批处理。若计算依赖写入后的新尺寸，必须承认这条依赖：先提交一批变化，再在合理的阶段测量。简单地把每个回调都包进 requestAnimationFrame，仍可能在同一帧中产生多次读写交错。持续监听尺寸可以考虑 ResizeObserver，但回调内再次改变被观察尺寸时要避免反馈循环。
+
+浏览器布局还包括内联文本、匿名盒子、伪元素等结构，因此 Render Tree 不应被理解为“给每个可见 DOM 节点贴一个框”。字体替换、滚动条出现和设备缩放也能改变几何，不只有 JavaScript 写 style 才会重排。排查按钮抖动时同时检查字体、容器约束和异步内容尺寸。
+
+### 12.9 从可观察现象定位阶段
+
+页面空白时先看 HTML 是否成功返回、脚本是否报错和 CSS 是否把内容隐藏；页面已有文字却卡顿时再检查长任务、布局和绘制。错误阶段不同，修复也不同。网络成功不证明脚本完成，脚本完成不证明首屏可交互，`load` 更不是业务初始化成功事件。
+
+练习为一百个元素制作交错读写与批量读写版本，用相同内容录制 Performance，定位调用栈而非只比较总时长。然后设置慢字体和图片、从历史返回、切换后台，观察布局偏移和 `pageshow.persisted`。保存草稿应在编辑中增量执行，页面 hidden 时再补一次；刷新恢复的是内容状态，不是旧页面上的计时器和失效引用。验收时给出瓶颈证据、改动后 trace 和草稿恢复结果，并明确未模拟到的移动端进程终止行为。
+
+练习：录制读写交错与读写分离的两个循环，比较 Forced reflow；切到后台、从 bfcache 返回和强制关闭移动端浏览器，观察哪些保存事件实际触发。
+
+- [WHATWG 文档就绪](https://html.spec.whatwg.org/multipage/parsing.html#the-end)
+- [Page Lifecycle 指南](https://developer.chrome.com/docs/web-platform/page-lifecycle-api)
+- [web.dev 布局抖动](https://web.dev/articles/avoid-large-complex-layouts-and-layout-thrashing)
 
 ---

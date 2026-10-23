@@ -1,0 +1,12 @@
+{
+  "description": "Independent local appointment learning project",
+  "projectname": "local-appointment",
+  "appid": "touristappid",
+  "compileType": "miniprogram",
+  "miniprogramRoot": "./",
+  "setting": {
+    "es6": true,
+    "urlCheck": true,
+    "minified": true
+  }
+}

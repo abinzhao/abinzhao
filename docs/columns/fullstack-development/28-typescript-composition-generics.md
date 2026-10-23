@@ -1,7 +1,7 @@
 ---
 title: "第 28 章：联合、交叉、泛型与类型收窄"
 description: "用联合类型表达状态，用交叉类型组合能力，用泛型保留输入输出关系。"
-date: "2026-10-15"
+date: "2026-10-23"
 category: TypeScript
 tags: [联合类型, 泛型, 类型收窄]
 series:
@@ -270,9 +270,27 @@ async function loadPage<T>(
     throw new TypeError('分页响应格式错误');
   }
 
+  const pageInfo = payload.pageInfo;
+  if (
+    typeof pageInfo !== 'object' ||
+    pageInfo === null ||
+    !('page' in pageInfo) || typeof pageInfo.page !== 'number' ||
+    !('pageSize' in pageInfo) || typeof pageInfo.pageSize !== 'number' ||
+    !('total' in pageInfo) || typeof pageInfo.total !== 'number' ||
+    !Number.isInteger(pageInfo.page) || pageInfo.page < 1 ||
+    !Number.isInteger(pageInfo.pageSize) || pageInfo.pageSize < 1 ||
+    !Number.isInteger(pageInfo.total) || pageInfo.total < 0
+  ) {
+    throw new TypeError('分页元数据格式错误');
+  }
+
   return {
     items: payload.items.map(parseItem),
-    pageInfo: payload.pageInfo as PageInfo,
+    pageInfo: {
+      page: pageInfo.page,
+      pageSize: pageInfo.pageSize,
+      total: pageInfo.total,
+    },
   };
 }
 ```
@@ -385,9 +403,15 @@ await execute(
 ### 28.11 效果验证
 
 1. 给 `PostStatus` 新增 `'archived'`，确认穷尽检查报错。
-2. 尝试构造同时包含成功数据和错误的 `LoadState`，确认类型不允许。
+2. 为新建对象标注 `LoadState<Post>` 后同时写成功数据和错误，观察对象字面量检查；注意 TypeScript 是结构类型系统，不能据此宣称运行时绝不出现多余字段。
 3. 把 `first()` 分别用于字符串数组和文章数组，观察返回类型随输入变化。
 4. 给 `indexById()` 传入没有 `id` 的对象数组，确认泛型约束生效。
 5. 在 `execute()` 的不同状态分支访问不存在字段，确认收窄能阻止错误。
+
+### 28.12 官方参考
+
+- [TypeScript：收窄](https://www.typescriptlang.org/docs/handbook/2/narrowing.html)。
+- [TypeScript：泛型](https://www.typescriptlang.org/docs/handbook/2/generics.html)。
+- [TypeScript：对象类型与多余属性检查](https://www.typescriptlang.org/docs/handbook/2/objects.html#excess-property-checks)。
 
 ---

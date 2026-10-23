@@ -1,7 +1,7 @@
 ---
 title: 第三十二章：Token 压力、视觉计量与输出预留
 description: 区分字符、字节、启发式估算和供应商 usage，为文本、图片、工具 schema 与输出共同建立预算。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Token 预算, 多模态]
 series:
@@ -84,6 +84,12 @@ NODE
 完整命令应输出 passed；路由变更必须失去旧锚，输出预留过大必须拒绝，表情的字符与字节统计必须不同。继续实验时可将 imageTokens 从零改为一个明确的实验值，观察准入变化；把 revision 增加后要求旧快照失效。通过这些断言只证明预算控制契约，不证明估算准确率或视觉 token 数。
 
 原 1–12 章只有独立教学项目的预算与只读工具，不具备上游所有模型定价、真实 tokenizer 或多模态计量。扩展 `labs/context.mjs` 与 `labs/run.mjs` 已落盘，并已配置 `npm run labs`；本章 stdin 程序可独立验证，不要求导入实验模块。生产验收还需要真实 provider 的 usage 对账、最大输出限制和溢出错误归一化。
+
+## 当前路由计量与实验补充
+
+2026-10-23 对照 [DeepSeek rc.2 TokenMeasurement](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/token-meter.md)，仍须同时满足规范请求信封相同和保守 anchor 条件，才复用真实 usage；仅比较模型名称不够。实验的 `anchor.route === route` 是简化，不应直接移植为生产匹配器。模型更新、tools schema 改动、图像定价变化都应重新计量，而不是把旧窗口和价格长期放进配置。
+
+操作练习是在 `anchor` 与请求中增加 `envelopeDigest`，并将匹配条件改为路由与 digest 同时相等。正常验收是相同信封复用 anchor、短摘要产生负 delta；异常验收是在同路由下改变 schema digest，必须退回 estimated。排错同时打印去敏的测量来源、revision、输出预留和缺失的视觉定价，不输出正文或凭据。真实供应商 usage 与图像 token 尚未由这个实验测得，不能把估算偏差填成零。
 
 ## 官方固定来源
 

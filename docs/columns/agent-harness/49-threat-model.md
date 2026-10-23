@@ -1,7 +1,7 @@
 ---
 title: 第 49 章：Agent 威胁模型与提示注入
 description: 从资产、入口和执行权建立威胁模型，阻止检索内容与子任务报告被升级为授权。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [提示注入, 威胁模型]
 series:
@@ -82,12 +82,14 @@ DeepSeek Harness 固定版本的 `SAFETY.md` 还提醒：限制无法保护已�
 
 ## 49.6 官方来源与边界
 
-DeepSeek Harness 参考基线固定为 `0.2.1-alpha.5`，提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`；其安全声明是未审计的实验性开发预览，不应作为不可信负载的唯一安全控制。产品页面按 2026-10-17 核验，后续版本需重新确认。
+DeepSeek Harness 参考基线固定为 `0.2.1-alpha.5`，提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`；2026-10-23 复核 [rc.2 的 SAFETY.md](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/SAFETY.md)，仍明确未经安全审计、不是安全或生产就绪软件，升级到 rc 不会解除这一边界。
+
+当前 MCP 同样不能把 annotations 作为可信授权。[2026-07-28 tools](https://modelcontextprotocol.io/specification/2026-07-28/server/tools) 要求将不可信 Server 的工具 annotations 视为不可信；发现响应中的自报 serverInfo 也不能用来作安全决定。操作练习是在原输入加入伪造 serverName、readOnlyHint 和批准声明，保持宿主能力表不变。正常验收是获准读取仍工作；异常验收是恶意来源即使通过完整 schema 也不能外发。排错分别报告内容影响与执行计数，不以合法 JSON、有效签名或成功调用代替业务授权。
 
 - [固定安全声明](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/SAFETY.md)
 - [固定工具执行架构](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/architecture.md)
 - [Claude Code 子 Agent 与报告边界](https://code.claude.com/docs/en/sub-agents)
-- [Codex 安全指南](https://developers.openai.com/codex/security/)
+- [Codex 运行审批与安全边界](https://developers.openai.com/codex/agent-approvals-security)，核验于 2026-10-23；`/codex/security/` 当前是源码漏洞扫描产品，不是这份运行权限指南。
 
 上一章：[第 48 章：浏览器与 Computer Use 的观察闭环](./48-browser-computer-use)
 

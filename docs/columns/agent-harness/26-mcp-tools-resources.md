@@ -1,7 +1,7 @@
 ---
 title: '第26章：MCP 工具、资源与提示模板'
 description: 以 2026-07-28 协议区分工具执行、资源读取与提示模板选择，展示完整请求元数据和结果投影边界。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [MCP, Tools, Resources, Prompts]
 series:
@@ -29,9 +29,43 @@ series:
 
 ### MCP 工具发现
 
-MCP 工具发现从服务器声明的 `tools` 能力开始：Client 发送 `tools/list`，取得当前授权允许看到的工具名称、描述与 `inputSchema`。列表返回 `nextCursor` 时，Client 带上该 cursor 继续请求下一页，直到取得完整目录；目录供 Host 选择和加载工具定义，真正执行再发送 `tools/call`。发现一个名字不等于获得执行授权，调用前仍需校验参数和权限。
+MCP 工具发现是客户端通过 `tools/list` 取得服务器当前工具目录及其输入契约的过程。目录可以分页并随授权或服务状态变化；发现结果用于选择与展示工具，不能代替执行时的权限检查。
 
-MCP 工具发现还需要处理目录变化。服务器声明 `listChanged` 能力，且 Client 以 `toolsListChanged: true` 打开 `subscriptions/listen` 流时，服务器可发送 `notifications/tools/list_changed`；收到通知后 Client 重新取得目录并更新 Host 的可用工具。分页与缓存不能当作永久能力凭证，重名工具也必须保留所属服务器的身份。这里说明的是本章固定 `2026-07-28` 协议，其他修订需核对各自的订阅机制。
+2026-10-23 核验的推荐路径以固定 `2026-07-28` 修订为准，分为**服务器能力发现、工具目录发现、变化订阅和执行准入**四层，不能用一个方法名概括全部行为。
+
+1. 现代 Server 必须实现 `server/discover`，返回 `supportedVersions`、`capabilities` 和可选的服务器身份。现代 Client 可以先调用它，也可以直接请求并处理 `UnsupportedProtocolVersionError`；双代 stdio Client 应先用它探测年代。它不是 `initialize` 的新别名，不建立旧式握手会话。
+2. Client 在每个请求的 `_meta` 声明版本、身份和能力，再调用 `tools/list` 获取当前授权可见的工具及 `inputSchema`。完成结果有 `resultType: "complete"`；返回 `nextCursor` 时继续分页，直到没有下一游标。`nextCursor` **仍是现代规范字段**，不是废弃 API。
+3. 需要动态更新时，Client 显式发送 `subscriptions/listen`，在 `params.notifications` 设置 `toolsListChanged: true`。Server 的第一条消息必须是 `notifications/subscriptions/acknowledged`，确认实际接受的过滤条件；每条订阅消息通过 `_meta["io.modelcontextprotocol/subscriptionId"]` 关联原请求。
+4. `notifications/tools/list_changed` **也仍有效**，但只对已请求且获确认的订阅接收相应变化通知；收到后失效目录缓存并重新分页。目录发现不授予执行权，真正的 `tools/call` 仍校验参数、当前权限与目标身份。
+
+下面是完整的现代订阅请求，能与第 27 章的逐请求元数据一起学习；它是静态协议样本，不是已经建立的真实连接：
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "tools-sub-1",
+  "method": "subscriptions/listen",
+  "params": {
+    "_meta": {
+      "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+      "io.modelcontextprotocol/clientInfo": {
+        "name": "tutorial-client",
+        "version": "1.0.0"
+      },
+      "io.modelcontextprotocol/clientCapabilities": {}
+    },
+    "notifications": {"toolsListChanged": true}
+  }
+}
+```
+
+正常验收应分别观察 discover 结果、完整分页目录、订阅确认及关联正确的变化通知，再确认更新后的工具集合。异常验收包括确认未接受 `toolsListChanged`、首条消息不是确认、subscriptionId 错配、重复 cursor、授权变化导致缓存失效和未知工具调用。排错时先查请求版本与订阅确认，不把“没有通知”直接判为 Server 没有工具。练习可将目录拆成两页，再撤销一项授权，确认旧目录不能继续当作能力凭证。
+
+#### 旧代兼容路径
+
+`2025-11-25` 及更早修订先 `initialize`，再 `notifications/initialized`，从握手结果取得能力；其 `tools/list` 也可返回 `nextCursor`，声明 `listChanged` 的 Server 使用同名 `notifications/tools/list_changed`。旧代不使用上述现代 `subscriptions/listen` 契约，不能把两代的握手、元数据和通知关联方式混发。资源旧代的 `resources/subscribe` 与旧 HTTP GET 通知流同样应单独兼容，现代则使用显式订阅。
+
+依据：[固定版本能力发现](https://modelcontextprotocol.io/specification/2026-07-28/server/discover)、[订阅及确认规则](https://modelcontextprotocol.io/specification/2026-07-28/basic/patterns/subscriptions)、[现代工具与分页](https://modelcontextprotocol.io/specification/2026-07-28/server/tools)和[旧代 tools](https://modelcontextprotocol.io/specification/2025-11-25/server/tools)。服务器自报 `name` 不保证全局唯一，聚合工具仍使用 Host 配置的稳定服务器身份。
 
 ## 26.2 完整现代工具请求
 
@@ -119,7 +153,39 @@ DeepSeek 固定版本保留 canonical MCP JSON，并准备普通工具文本和�
 
 `npm run labs` 不包含 MCP 协议客户端，不能拿其确定性机制测试当作 MCP 互通证据。原项目也没有 prompt 选择 UI、资源缓存或多模态 MCP 结果适配器。
 
-## 26.6 固定官方来源
+## 26.6 用当前 SDK 注册只读工具
+
+2026-10-23 核对官方 v2 README 与迁移指南：新服务从 server 分包导入，使用 `registerTool()` 与完整 Standard Schema 对象，不继续使用旧 `.tool()` 的重载或散落的 Zod shape。下面服务只返回内存中的授权教学文本，没有网络或文件访问。
+
+在独立实验目录安装依赖后，将代码作为 `server.mjs` 运行。安装会下载并执行包管理流程，需要先批准来源；不要使用浮动 `npx -y` 代替固定服务身份：
+
+```sh
+npm install --save-exact @modelcontextprotocol/server@2.3.1 @modelcontextprotocol/client@2.3.1 zod@4
+```
+
+```js
+import { McpServer } from '@modelcontextprotocol/server';
+import { StdioServerTransport } from '@modelcontextprotocol/server/stdio';
+import * as z from 'zod/v4';
+
+const server = new McpServer({ name: 'evidence-server', version: '1.0.0' });
+server.registerTool('read_guide', {
+  description: 'Read the permitted in-memory guide',
+  inputSchema: z.object({ topic: z.literal('boundaries') }),
+}, async () => ({
+  content: [{ type: 'text', text: 'Only read operations are permitted.' }],
+  isError: false,
+}));
+await server.connect(new StdioServerTransport());
+```
+
+stdio Server 的 stdout 不能打印启动日志；该进程等 Client 启动和关闭，第 27 章给出对应客户端。这里返回的是 SDK handler 结果，wire 的 `resultType` 和元数据由 SDK 按其契约处理，不要把前面的完整 JSON-RPC envelope 再塞进 handler 返回值。
+
+正常验收：发现恰好一个工具，调用 `topic: "boundaries"` 得到文本且不是错误。异常验收：`topic: "other"` 必须在 handler 前被 schema 拒绝，未知工具属于协议错误，不能转成空成功。练习是在内存 handler 加执行计数，确认无效参数计数仍为零；排错区分导入入口、schema 注册、协议错误和工具 `isError`，不以 HTTP / 进程退出码替代工具结算。
+
+依据：[v2 SDK 服务示例](https://github.com/modelcontextprotocol/typescript-sdk#getting-started)与[迁移指南](https://ts.sdk.modelcontextprotocol.io/v2/migration/upgrade-to-v2)。代码展示公开 API，实际 SDK 与 Host 的互通需要运行后记录，不把静态类型核对当成端到端结果。
+
+## 26.7 固定官方来源
 
 协议依据 [2026-07-28 tools](https://modelcontextprotocol.io/specification/2026-07-28/server/tools)、[resources](https://modelcontextprotocol.io/specification/2026-07-28/server/resources)和[prompts](https://modelcontextprotocol.io/specification/2026-07-28/server/prompts)。这些固定版本页与第十九章的 Skill 文件规范不是同一个标准。
 

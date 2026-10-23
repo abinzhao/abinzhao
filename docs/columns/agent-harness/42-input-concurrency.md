@@ -1,7 +1,7 @@
 ---
 title: 第四十二章：Inbox、Steering 与并发调度
 description: 用输入身份、claim 边界和独占调度区分排队、纠正与上下文注入，避免重复消费和误判单条任务完成。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Inbox, 并发调度]
 series:
@@ -87,6 +87,12 @@ DeepSeek Harness `0.2.1-alpha.5` 固定提交将 send 暴露投递边界与唤�
 完整命令应证明不唤醒注入留在队列，用户消息唤醒，重复 pending id 拒绝，claim 后新纠正留待后续消费。继续实验可删除一个特定 id，要求不影响其他 pending；拒绝一个批次后不能自动重跑；在 idle 转换边界插入输入，要求最终仍被执行。真实验收还需多客户端、取消竞态、饥饿与资源清理，内存程序不覆盖这些运行问题。
 
 原 1–12 章 `local-harness-tutorial` 是单进程有限循环，Web 入口采用 busy 拒绝并发，没有全部上游 Inbox、Steering 与 maintenance 语义。本章自包含程序检验消息调度契约；下载包 `labs/workflow.mjs` 只包含顺序 DAG 与检查点机制，不包含 Inbox 或 Steering。生产消息系统还需要容量、背压、访问控制与结果关联，不能由一个数组实验推断完整并发功能已经实现。
+
+## 当前 claim、拒绝与重复输入的证据
+
+2026-10-23 对照 [DeepSeek rc.2 生命周期](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/agent-lifecycle.md)：claim 已取走的候选批次即使 pre-step 拒绝，也保持移除，且不消耗一次模型 step；拒绝不是自动重排队。仍未 claim 的 pending 消息与已 claim 消息必须区分，不能看到 `steer` API 注释中的“parked until next wake”就将已移除批次复活。此处以生命周期及执行路径解释结算，不按方法名推测。
+
+同日核对 [rc.2 Inbox](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/core.md)：跨两列表的重复 pending MessageId 被拒绝，但这不是永久 exactly-once 去重；旧消息已经被消费后，是否可重投及如何关联业务 receipt 需要更高层契约。正常验收记录 inserted/claimed/discarded 和对应身份；异常验收为 claim 后到达的新消息不被旧批次清空、拒绝不热循环。练习在原程序消费 `user` 后重投相同 id，明确 pending 去重与业务幂等的不同范围；排错不要用共享 whenIdle 判断某条输入已经得到正确答案。
 
 ## 官方固定来源
 

@@ -1,7 +1,7 @@
 ---
 title: '第30章：MCP Apps、Tasks 与 Skills 扩展'
 description: 按官方扩展原文分别说明 UI、耐久任务和远程技能的协商、来源与安全契约，避免混用旧版任务语义及厂商 SDK。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [MCP Apps, MCP Tasks, Skills over MCP]
 series:
@@ -12,7 +12,7 @@ series:
 
 扩展并不等于“下一版 MCP 自动拥有的全部功能”。扩展有自己的标识、规范和实现支持，必须由双方明确启用；宿主只会读资源，也不代表能安全渲染 UI、恢复后台任务或激活远程 Skill。判断支持要检查完整链路，而不只看 SDK 包名。
 
-截至 2026-10-17，官方目录列出 Apps、Tasks 和 Skills 扩展；Skills 的 SEP-2640 已为 Final，Tasks 仓库发布 `2026-07-28` Stable schema，Apps 有 `2026-01-26` Stable 规范。本文依据这些实际原文，不把它们笼统称为实验提案，也不声称所有 Host 已支持。
+截至 2026-10-23，官方目录列出 Apps、Tasks 和 Skills 扩展；Skills 的 SEP-2640 已为 Final，Tasks 仓库发布 `2026-07-28` Stable schema，Apps 有 `2026-01-26` Stable 规范。本文依据这些实际原文，不把它们笼统称为实验提案，也不声称所有 Host 已支持。
 
 ## 30.1 三种扩展增加不同责任
 
@@ -108,9 +108,25 @@ console.log('raw size and digest verified');
 
 DeepSeek `0.2.1-alpha.5` 明确不支持 MCP tasks；其技能 registry 和动态 Cordis Web 扩展是不同能力，不能代称 Skills over MCP 或 Apps。其 MCP 桥遇到需要 task 执行的工具会拒绝，不应声称能恢复任务句柄。
 
-## 30.7 固定官方来源
+## 30.7 当前扩展与 SDK 的迁移矩阵
 
-官方总览：[Extensions](https://modelcontextprotocol.io/extensions/overview)、[Apps](https://modelcontextprotocol.io/extensions/apps/overview)、[Tasks](https://modelcontextprotocol.io/extensions/tasks/overview)、[Skills](https://modelcontextprotocol.io/extensions/skills/overview)，核验日 2026-10-17。
+核验日为 2026-10-23。核心 TypeScript SDK v2 已稳定，但旧核心 experimental tasks 已移除；不能继续把旧 `GetTaskRequestSchema` 注册写法当 v2 API。扩展应使用自己的 SDK / 导出入口，并分别验证 requester、receiver、wire 和 Host。
+
+| 扩展 | 当前证据 | 推荐与迁移边界 |
+| --- | --- | --- |
+| Apps | Apps SDK 2.x 保留上一代 wire 兼容 | npm 主版本不是 UI wire 版本；检查 CSP、桥方法与父页面来源 |
+| Tasks | Stable schema `2026-07-28`；官方 SDK receiver 文档仍限定 `2025-11-25` | requester 与 receiver 不对称；根入口不导出不能靠猜路径绕过 |
+| Skills | SEP-2640 Final 与 Stable 规范 | 文件规范兼容不能代替远程清单、来源、批准与资源校验 |
+
+Tasks 的现代规范与 receiver 实现限制并不矛盾于“协议已发布”：它们回答的是不同层的支持。确需现代 receiver 时，必须提供受该修订约束的实现与互通证据，不能将旧 receiver 代码改一个日期就声称支持。
+
+练习：制作三份扩展能力记录，写明对端 wire、协商标识和 SDK 入口；分别注入未协商、任务句柄过期、技能清单改变和 Apps 错误消息来源。正常扩展应保留身份并完整结算；异常应按规则降级或拒绝，不得执行未经批准动作。排错先对照支持矩阵，再查 npm 版本，不从包名推断 Host 已集成。
+
+依据：[Apps SDK](https://github.com/modelcontextprotocol/ext-apps)、[Tasks SDK 支持说明](https://github.com/modelcontextprotocol/ext-tasks)、[Skills 扩展](https://github.com/modelcontextprotocol/ext-skills)与[核心 v2 迁移](https://ts.sdk.modelcontextprotocol.io/v2/migration/upgrade-to-v2)。跨产品验收接[第 73 章](./73-version-governance.md)。
+
+## 30.8 固定官方来源
+
+官方总览：[Extensions](https://modelcontextprotocol.io/extensions/overview)、[Apps](https://modelcontextprotocol.io/extensions/apps/overview)、[Tasks](https://modelcontextprotocol.io/extensions/tasks/overview)、[Skills](https://modelcontextprotocol.io/extensions/skills/overview)，核验日 2026-10-23。
 
 已核对并固定原文：[Apps Stable 规范](https://github.com/modelcontextprotocol/ext-apps/blob/82221c0c8ce7661efa6771c9d461511b1650495f/specification/2026-01-26/apps.mdx)、[Tasks 仓库与版本表](https://github.com/modelcontextprotocol/ext-tasks/blob/899c1bbc869567670093face3591b39c28ce3219/README.md)、[Tasks 2026-07-28 schema](https://github.com/modelcontextprotocol/ext-tasks/blob/899c1bbc869567670093face3591b39c28ce3219/schema/2026-07-28/schema.ts)、[Skills Stable 规范](https://github.com/modelcontextprotocol/ext-skills/blob/c1aa87e4c381c82b99aa37471d0eae4ab50f9985/specification/stable/skills.mdx)。
 

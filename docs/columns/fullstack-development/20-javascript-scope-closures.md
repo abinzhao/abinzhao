@@ -1,7 +1,7 @@
 ---
 title: "第 20 章：JavaScript 变量、作用域与闭包"
 description: "理解值、引用、词法作用域、暂时性死区与闭包，并用闭包封装博客状态。"
-date: "2026-10-15"
+date: "2026-10-23"
 category: JavaScript
 tags: [JavaScript, 作用域, 闭包]
 series:
@@ -300,5 +300,11 @@ node scope.js
 **什么时候不该用闭包？**
 
 数据本来就应被多个模块共享、持久化或响应式更新时，应使用清晰的模块状态或状态管理方案，不要把所有状态都藏进多层闭包。
+
+### 20.9 官方参考
+
+- [MDN：闭包](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Guide/Closures)。
+- [ECMAScript：环境记录](https://tc39.es/ecma262/#sec-environment-records)。
+- [MDN：const](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Statements/const)。不可重新赋值不等于深度不可变。
 
 ---

@@ -9,16 +9,19 @@ import { computed } from 'vue';
 import { Content, useRoute, withBase } from 'vitepress';
 import { data as content } from '../../data/content.data';
 import { normalizeContentHref } from '../composables/article-context';
-import { groupHarnessChapters } from '../composables/harness-navigation';
+import { groupCourseChapters } from '../composables/harness-navigation';
 
 const route = useRoute();
 const contentHref = computed(() => normalizeContentHref(route.path));
 const column = computed(() =>
   content.columns.find((item) => item.href === contentHref.value),
 );
-const chapterGroups = computed(() => column.value?.slug === 'agent-harness'
-  ? groupHarnessChapters(column.value.articles)
-  : [{ id: 'all', title: '', from: 1, to: column.value?.articles.length ?? 0, articles: column.value?.articles ?? [] }]);
+const chapterGroups = computed(() => {
+  if (!column.value) return [];
+  const groups = groupCourseChapters(column.value.slug, column.value.articles);
+  return groups.length ? groups
+    : [{ id: 'all', title: '', from: 1, to: column.value.articles.length, articles: column.value.articles }];
+});
 const firstChapter = computed(() => column.value?.articles[0]);
 </script>
 
@@ -34,12 +37,15 @@ const firstChapter = computed(() => column.value?.articles[0]);
           <span><Layers3 :size="16" aria-hidden="true" /> {{ column.articles.length }} 篇章节</span>
           <span><ListOrdered :size="16" aria-hidden="true" /> 按阅读顺序编排</span>
         </div>
-        <div v-if="column.slug === 'agent-harness' && firstChapter" class="column-reading-start">
-          <p>准备：JavaScript / TypeScript 基础 · Node.js 22+</p>
+        <div v-if="firstChapter" class="column-reading-start">
+          <p v-if="column.slug === 'agent-harness'">准备：JavaScript / TypeScript 基础 · Node.js 22+</p>
           <nav aria-label="教程快速入口">
             <a class="button button--primary" :href="withBase(firstChapter.href)">开始第一章 <ArrowRight :size="17" aria-hidden="true" /></a>
-            <a class="button button--secondary" :href="withBase('/downloads/agent-harness.zip')">下载完整项目源码</a>
-            <a class="column-reading-start__guide" href="#从下载包开始">运行说明</a>
+            <template v-if="column.slug === 'agent-harness'">
+              <a class="button button--secondary" :href="withBase('/downloads/agent-harness.zip')">下载完整项目源码</a>
+              <a class="column-reading-start__guide" href="#从下载包开始">运行说明</a>
+            </template>
+            <a v-else class="button button--secondary" href="#course-guide">学习准备与实践说明</a>
           </nav>
         </div>
       </header>
@@ -79,7 +85,7 @@ const firstChapter = computed(() => column.value?.articles[0]);
           </section>
         </section>
 
-        <article class="reading-prose column-reading-prose vp-doc">
+        <article id="course-guide" class="reading-prose column-reading-prose vp-doc">
           <Content />
         </article>
       </div>

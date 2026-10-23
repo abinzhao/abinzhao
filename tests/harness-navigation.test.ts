@@ -19,4 +19,20 @@ describe('Harness learning units', () => {
       .toEqual([49, 50, 51, 52, 53, 54]);
     expect(groups.at(-1)?.articles.at(-1)?.seriesOrder).toBe(72);
   });
+
+  test('retains chapters added after the original production unit', async () => {
+    const { groupHarnessChapters } = await import('../docs/.vitepress/theme/composables/harness-navigation');
+    const articles = Array.from({ length: 74 }, (_, index) => ({ seriesOrder: index + 1 }));
+    expect(groupHarnessChapters(articles).flatMap((group) => group.articles)).toEqual(articles);
+  });
+
+  test('groups the fullstack course into foundations, frontend and backend without losing chapters', async () => {
+    const module = await import('../docs/.vitepress/theme/composables/harness-navigation');
+    expect(module).toHaveProperty('groupCourseChapters');
+    const articles = Array.from({ length: 55 }, (_, index) => ({ seriesOrder: index + 1 }));
+    const groups = (module as unknown as { groupCourseChapters: (slug: string, items: typeof articles) => Array<{ title: string; articles: typeof articles }> })
+      .groupCourseChapters('fullstack-development', articles);
+    expect(groups.flatMap((group) => group.articles)).toEqual(articles);
+    expect(groups.find((group) => group.title.includes('后端'))?.articles[0].seriesOrder).toBe(38);
+  });
 });

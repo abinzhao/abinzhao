@@ -1,7 +1,7 @@
 ---
 title: 第三十七章：事件日志、模型表面与请求回放
 description: 区分耐久事实、模型可见表面和临时流，按修订号重建请求并保持工具身份与失败尝试可审计。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Event Sourcing, 请求回放]
 series:
@@ -91,6 +91,12 @@ DeepSeek Harness 基线是 `0.2.1-alpha.5`、固定提交 `1517a4dbca0a2789ff1d4
 完整命令应输出 passed，两个修订下首条材料不同，失败尝试不出现，原日志没有删除。继续实验可把替换目标改成不存在的 id，要求拒绝；给日志插入 seq 缺口，要求拒绝；改变 header 中工具集合，要求新旧请求签名不同。真实验收还需错误尝试、空成功输出、工具配对和未知插件投影的兼容行为。
 
 原 1–12 章独立 Node.js 22 ESM 项目只有自己的会话事件与只读工具，不具有全部上游表面替换协议。现有 `labs/context.mjs`、`labs/workflow.mjs` 与汇总 `run.mjs` 属于扩展实验的实际实现，本文不新增或改动它们；本章命令仍可单独运行。已完成实验测试不意味着完整 Session provider、跨进程恢复与供应商轨迹重现已经实现。
+
+## 当前请求重建的完整性检查
+
+2026-10-23 对照 [DeepSeek rc.2 Session](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/session.md)与[请求生命周期](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/agent-lifecycle.md)：成功的 provider 调用包含无文本和 `max-tokens` 结束，不应因为没有最终答案而改写成请求失败；空内容又不必进入派生历史。协议调用成功、业务任务完成、当前表面有可读答案是三项不同事实。
+
+操作上按记录修订重建 history 和最近有效 header，再比较去敏摘要。正常验收是 system 变化只影响对应表面节点，不凭空改写 header；异常验收是 hard crash 发生在 stream 结算前，允许不存在耐久 attempt，但不能从 UI 半句合成成功消息。练习在原实验新增空成功与失败重试样本，分别检查日志计数和表面计数；排错先检查结算事件、投影版本及附件是否可读，再讨论模型再生成，不能用最终回答相同代替完整请求重建。
 
 ## 官方固定来源
 

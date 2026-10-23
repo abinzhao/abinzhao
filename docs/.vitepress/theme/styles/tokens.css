@@ -1,25 +1,26 @@
 :root,
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --site-bg: #07111f;
-  --site-bg-soft: #0d1b2e;
-  --site-surface: #111e32;
-  --site-surface-raised: #172842;
-  --site-border: rgba(151, 192, 234, 0.16);
-  --site-text: #e7eefb;
-  --site-text-muted: #a6b4ca;
-  --site-accent: #78c7ff;
-  --site-accent-strong: #4eade9;
+  --site-bg: #10191c;
+  --site-bg-soft: #172326;
+  --site-surface: #1a272b;
+  --site-surface-raised: #24363a;
+  --site-border: rgba(175, 207, 202, 0.18);
+  --site-text: #e7f0ee;
+  --site-text-muted: #b0c1be;
+  --site-accent: #7bd7c5;
+  --site-accent-strong: #5ec2b0;
   --site-success: #6ae0b5;
   --site-signal: #65e6c4;
   --site-warm: #f4b36c;
   --site-glow: rgba(94, 190, 255, 0.22);
   --site-grid: rgba(120, 199, 255, 0.055);
-  --site-code-bg: #091526;
-  --site-glass: rgba(17, 30, 50, 0.94);
+  --site-code-bg: #122024;
+  --site-glass: #1a272b;
   --site-shadow: 0 8px 24px rgba(0, 6, 18, 0.16);
-  --radius-card: 8px;
-  --radius-panel: 12px;
+  --site-shadow-soft: 0 4px 16px rgba(0, 6, 18, 0.12);
+  --radius-card: 12px;
+  --radius-panel: 16px;
   --site-ease: cubic-bezier(0.22, 0.8, 0.24, 1);
   --site-nav-height: 56px;
   --site-touch-target: 44px;
@@ -36,9 +37,9 @@
   --vp-c-text-2: var(--site-text-muted);
   --vp-c-text-3: #8191aa;
   --vp-c-brand-1: var(--site-accent);
-  --vp-c-brand-2: #a5dcff;
+  --vp-c-brand-2: #a5e6d9;
   --vp-c-brand-3: var(--site-accent-strong);
-  --vp-c-brand-soft: rgba(120, 199, 255, 0.16);
+  --vp-c-brand-soft: rgba(123, 215, 197, 0.12);
   --vp-button-brand-bg: var(--site-accent-strong);
   --vp-button-brand-hover-bg: var(--site-accent);
   --vp-button-brand-text: #04101e;
@@ -48,29 +49,30 @@
   --vp-home-hero-text-color: var(--site-accent);
   --vp-home-hero-image-background-image: none;
   --vp-home-hero-image-filter: none;
-  --vp-font-family-base: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --vp-font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
   --vp-font-family-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
 }
 
 :root[data-theme='light'] {
   color-scheme: light;
-  --site-bg: #f5f8fc;
-  --site-bg-soft: #edf3f9;
+  --site-bg: #f8f9f6;
+  --site-bg-soft: #eff3ee;
   --site-surface: #ffffff;
-  --site-surface-raised: #e6eff8;
-  --site-border: rgba(35, 67, 104, 0.18);
-  --site-text: #102039;
-  --site-text-muted: #52627b;
-  --site-accent: #0d71b4;
-  --site-accent-strong: #075c99;
+  --site-surface-raised: #eaf2ed;
+  --site-border: rgba(36, 63, 53, 0.16);
+  --site-text: #19332a;
+  --site-text-muted: #52685f;
+  --site-accent: #176c55;
+  --site-accent-strong: #125d48;
   --site-success: #0f8062;
   --site-signal: #087d68;
   --site-warm: #a95716;
   --site-glow: rgba(13, 113, 180, 0.14);
   --site-grid: rgba(35, 67, 104, 0.055);
-  --site-code-bg: #eaf1f7;
-  --site-glass: rgba(255, 255, 255, 0.96);
-  --site-shadow: 0 8px 24px rgba(25, 71, 104, 0.07);
+  --site-code-bg: #f0f4f0;
+  --site-glass: #ffffff;
+  --site-shadow: 0 3px 12px rgba(33, 62, 46, 0.04);
+  --site-shadow-soft: 0 4px 16px rgba(33, 62, 46, 0.06);
 
   --vp-c-bg: var(--site-bg);
   --vp-c-bg-alt: var(--site-bg-soft);
@@ -82,9 +84,9 @@
   --vp-c-text-2: var(--site-text-muted);
   --vp-c-text-3: #6d7c93;
   --vp-c-brand-1: var(--site-accent);
-  --vp-c-brand-2: #0b8ad6;
+  --vp-c-brand-2: #247f67;
   --vp-c-brand-3: var(--site-accent-strong);
-  --vp-c-brand-soft: rgba(13, 113, 180, 0.12);
+  --vp-c-brand-soft: rgba(23, 108, 85, 0.08);
   --vp-button-brand-bg: var(--site-accent-strong);
   --vp-button-brand-hover-bg: var(--site-accent);
   --vp-button-brand-text: #ffffff;

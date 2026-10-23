@@ -120,22 +120,42 @@ describe('content index', () => {
     expect(publicIndex).not.toContain('"markdown"');
   });
 
-  test('publishes ten distinct blogs and the complete seventy-two-chapter Harness path', async () => {
+  test('publishes ten distinct blogs and the complete seventy-three-chapter Harness path', async () => {
     const index = await createContentIndex(resolve(import.meta.dirname, '../docs'));
     expect(index.blogArticles).toHaveLength(10);
     expect(new Set(index.blogArticles.map((article) => article.href))).toHaveLength(10);
     const harness = index.columns.find((column) => column.slug === 'agent-harness');
     expect(harness?.articles.map((article) => article.seriesOrder)).toEqual(
-      Array.from({ length: 72 }, (_, index) => index + 1),
+      Array.from({ length: 73 }, (_, index) => index + 1),
     );
     expect(harness?.featured).toBe(true);
-    expect(new Set(harness?.articles.map((article) => article.href)).size).toBe(72);
+    expect(new Set(harness?.articles.map((article) => article.href)).size).toBe(73);
     for (const slug of [
       '01-contracts', '12-web-transport', '19-skills-format', '25-mcp-architecture',
       '31-context-assembly', '50-filesystem-sandbox', '55-subagent-delegation',
-      '63-codex-app-server', '68-agent-evaluation', '72-production-capstone',
+      '63-codex-app-server', '68-agent-evaluation', '72-production-capstone', '73-version-governance',
     ]) {
       expect(harness?.articles.some((article) => article.href.endsWith(`/${slug}.html`))).toBe(true);
+    }
+  });
+
+  test('publishes all six independent curricula with complete, unique chapter sequences', async () => {
+    const index = await createContentIndex(resolve(import.meta.dirname, '../docs'));
+    const chapters = {
+      'fullstack-development': 55,
+      'agent-harness': 73,
+      'wechat-mini-program': 12,
+      'agent-product-manager': 16,
+      'uni-app': 12,
+      godot: 16,
+    };
+    expect(index.columns.map((column) => column.slug).sort()).toEqual(Object.keys(chapters).sort());
+    for (const [slug, count] of Object.entries(chapters)) {
+      const column = index.columns.find((item) => item.slug === slug)!;
+      expect(column.articles.map((article) => article.seriesOrder), slug)
+        .toEqual(Array.from({ length: count }, (_, order) => order + 1));
+      expect(new Set(column.articles.map((article) => article.href)).size, slug).toBe(count);
+      expect(column.articles.every((article) => article.description && article.tags.length), slug).toBe(true);
     }
   });
 });

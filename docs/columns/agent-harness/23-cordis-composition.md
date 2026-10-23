@@ -1,7 +1,7 @@
 ---
 title: '第23章：Cordis 服务、事件与配置组合'
 description: 从服务依赖、可逆注册和事件调度理解 Cordis，再用原项目 scope 实验验证生命周期并标出简化边界。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Cordis, 服务组合, 生命周期]
 series:
@@ -115,6 +115,12 @@ consumer 后挂载、先清理，可以在 teardown 时仍访问其依赖。挂�
 DeepSeek 根包 `0.2.1-alpha.5` 的[Cordis primer](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/cordis-primer.md)、[架构配置层](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/architecture.md)及[scope 子系统](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/scope.md)是本文契约依据。具体服务配置可对照[配置目录](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/config-catalog.md)。
 
 这些链接固定到同一提交，不使用其他 Cordis 版本文档解释本版本行为。教学源码直接位于下载包 `src/scope.mjs`，只验证本文声明的最小所有权子集。
+
+## 23.8 组合契约的当前升级路径
+
+2026-10-23 对照 [DeepSeek RC.2 清单](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/package.json)，上游仍需按自己的依赖与 loader 契约验收。若采用发布包而非 vendored 快照，先核对服务类型、事件 mode 与配置替换规则，不能用“Cordis 同名”推导版本兼容。
+
+练习：在独立组合中模拟依赖消失、旧实例迟到清理和异步请求期间卸载。正常卸载应等待拥有的工作结算并移除自己的注册；旧 disposer 不得删除新实例的同名服务。若服务名存在却调用旧对象，检查 consumer 是否缓存了旧 provider；若配置未更新，检查最终组合来源和整体替换层，不从默认值猜测实际配置。
 
 ---
 

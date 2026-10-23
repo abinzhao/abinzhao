@@ -1,7 +1,7 @@
 ---
 title: 第六十三章：Codex Rust、SDK 与 App Server
 description: 从固定源码区分 Rust 运行时、TypeScript SDK 和 App Server，建立请求、通知与运行终态的客户端契约。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Codex, JSON-RPC]
 series:
@@ -14,7 +14,7 @@ series:
 
 ## 固定证据与审查范围
 
-本章记录产品版本 `0.163.0`，源码快照为 tree `83086188ae0614bd882818ff1aa23f3194962012`。发布版本与源码 tree 是两种记录，不应未经 tag 对账就声称完全等价。缓存中的 `codex-rs/app-server/README.md` 已实际读取；递归 tree 也确认存在 `sdk/typescript/src/codex.ts`、`thread.ts`、`events.ts`、`exec.ts` 及 SDK 测试目录。
+`2026-10-23` 核验的 CLI 与 TypeScript SDK 稳定发布为 `0.163.0`，对应源码快照 `83086188ae0614bd882818ff1aa23f3194962012`。`0.164.0-alpha.12` 是预发布，不代替稳定接入基线。固定 `codex-rs/app-server/README.md` 已实际读取；源码 tree 也确认存在 `sdk/typescript/src/codex.ts`、`thread.ts`、`events.ts`、`exec.ts` 及 SDK 测试目录。
 
 本章进一步读取固定快照的 `codex.ts`、`thread.ts`、`threadOptions.ts` 与 `turnOptions.ts`，核对下面使用的调用和取消字段。未安装厂商包或运行模型；类型来源核验与真实集成验证分别记录。集成时仍应固定实际 SDK 版本，并检查其声明与快照是否一致。
 
@@ -80,6 +80,12 @@ read state 被标记为实验能力。`revision` 是限定在 thread 内的 opaq
 
 请求被接受不等于 turn 完成。通知可能晚于响应到达，也可能在断线期间丢失。客户端应保留 request、thread、turn 的不同身份，在重连后获取权威快照；不能简单重放每个未收到结果的写请求。外部副作用若已发生，超时后重发可能重复动作，详见第四十章的幂等边界。
 
+## 升级时逐层验收
+
+第一层检查安装的 SDK 与实际启动的二进制，不只检查 `package.json`：宿主指定可执行文件路径时可能运行另一版本。第二层校验 App Server 的 initialize 能力，不能把 TypeScript SDK 的单向 exec 流与 App Server 双向 JSON-RPC 混用。第三层测试目录、沙箱、网络和审批的实际执行结果，版本正确不能证明权限正确。
+
+为 `runStreamed()` 单独保留断流用例：出现 `thread.started` 或 assistant 文本后进程异常退出，不允许交付；收到 `turn.failed` 必须保留失败；只在 `turn.completed` 且产物检查通过后结算。App Server 的请求超时则先查询 thread/turn 状态，而不是重发 `turn/start`。诊断字段应分为协议错误、服务关闭、turn 错误和宿主验收失败，避免将所有失败归因于模型。
+
 ## 自包含客户端实验
 
 下面的 reducer 用自定义 `accepted` 和 `terminal` 事件表达控制逻辑，字段不对应 Codex 官方 schema。它不启动 Codex、不认证、不联网，适合在 Node.js 22 中观察“受理不是成功”和“迟到事件不能串线”。
@@ -130,8 +136,11 @@ NODE
 
 本教程未安装 Codex SDK，也未启动 App Server；没有远程认证、实际 JSON-RPC 握手或模型效果证据。`npm run labs` 的工作流恢复可解释完成结果复用，但它不是 Codex thread 恢复实现。生产接入需另开隔离测试并核验真实 schema、进程退出、工作目录与操作系统沙箱。
 
+练习：给客户端实验增加“已受理、文本已显示、旧连接断开、重新读到失败快照”四步，断言期间从未出现 completed。再列出 SDK 升级与 CLI 升级各自影响的类型、进程和权限用例。
+
 ## 固定来源
 
+- [Codex 稳定发布](https://github.com/openai/codex/releases/tag/rust-v0.163.0)与[SDK 0.163.0 元数据](https://registry.npmjs.org/@openai/codex-sdk/0.163.0)：当前稳定基线证据，核验于 `2026-10-23`。
 - [App Server README](https://github.com/openai/codex/blob/83086188ae0614bd882818ff1aa23f3194962012/codex-rs/app-server/README.md)：已读取的协议与错误契约。
 - [TypeScript SDK 目录](https://github.com/openai/codex/tree/83086188ae0614bd882818ff1aa23f3194962012/sdk/typescript)：tree 定位证据；调用前仍需核验具体类型。
 - [SDK thread 源码](https://github.com/openai/codex/blob/83086188ae0614bd882818ff1aa23f3194962012/sdk/typescript/src/thread.ts)、[主入口](https://github.com/openai/codex/blob/83086188ae0614bd882818ff1aa23f3194962012/sdk/typescript/src/codex.ts)、[thread options](https://github.com/openai/codex/blob/83086188ae0614bd882818ff1aa23f3194962012/sdk/typescript/src/threadOptions.ts)与[turn options](https://github.com/openai/codex/blob/83086188ae0614bd882818ff1aa23f3194962012/sdk/typescript/src/turnOptions.ts)：本章已读取使用字段，厂商示例未执行。

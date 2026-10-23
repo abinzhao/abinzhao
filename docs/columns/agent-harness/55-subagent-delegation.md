@@ -1,7 +1,7 @@
 ---
 title: 第 55 章：子 Agent 委派与上下文继承
 description: 用任务契约控制上下文与能力继承，区分新会话、历史分叉和外部单次执行。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [子 Agent, 委派]
 series:
@@ -88,9 +88,15 @@ Fork 的历史必须在合法边界截取，保留工具调用与结果的完整
 
 完成标准是任务自包含、能力与预算显式、结果可复核，且子任务不默认提权。独立 labs 的上下文组由可信装配器划分，不能自动修复错误分组；它们的单进程测试不能证明真实多 Agent 或产品级权限集成。
 
-## 55.7 官方来源与边界
+## 55.7 当前子定义的配置与安全例外
 
-DeepSeek Harness 固定 `0.2.1-alpha.5`、提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`；其架构能力不是基础教学实现。产品页面核验于 2026-10-17，Codex multi-agent 仍按所核验页面标为实验特性。
+2026-10-23 复核 [Claude sub-agents](https://code.claude.com/docs/en/sub-agents)：字段采用精确 camelCase，未知字段可被静默忽略。插件提供的 subagent 不接受 `hooks`、`mcpServers` 和 `permissionMode` frontmatter，这些字段被忽略，不能靠一份插件 agent 文件宣称限制已生效。需要这些字段时应按官方支持的项目/用户定义作用域配置，并核对实际生效工具；共享插件 hooks 和 MCP 配置又有更大的作用域，不能视为只对一个子任务有效。
+
+`maxTurns` 到限的输出被标为 partial，父任务不能把有文字输出当 completed。[2.1.309](https://github.com/anthropics/claude-code/blob/v2.1.309/CHANGELOG.md) 还修复 split-pane teammates 未继承 leader CLI deny/`--tools` 的路径，旧版本不能获得同样保证。操作练习给 delegate 增加 requested 与 effective 能力差异报告；正常验收明确最小权限与完整引用，异常验收为拼错字段、不受支持选项、预算耗尽和无审批通道。排错先核对定义来源和实际 tool pool，不用 YAML 能解析证明配置生效。
+
+## 55.8 官方来源与边界
+
+DeepSeek Harness 固定 `0.2.1-alpha.5`、提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`；其架构能力不是基础教学实现。2026-10-23 对照 [rc.2 subagent](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/subagent.md)，能力验证仍先于启动；其他产品的实验特性按各自版本记录，不从同名概念推断稳定性。
 
 - [固定 subagent 契约](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/subagent.md)
 - [固定 Codex 外部 provider](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/packages/subagent/subagent-codex/README.md)

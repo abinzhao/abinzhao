@@ -1,7 +1,7 @@
 ---
 title: 第三十九章：Resume、Fork 与跨会话引用
 description: 用会话身份、继承前缀和捕获修订区分恢复、分支与引用，避免复制历史时继承不存在的运行资源和权限。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Session Fork, Resume]
 series:
@@ -87,6 +87,12 @@ DeepSeek Harness 基线为 `0.2.1-alpha.5`、固定提交 `1517a4dbca0a2789ff1d4
 命令应证明父会话追加不改变子前缀，子对象修改不污染父对象，非法 cut、自引用与超预算引用都会失败。进一步实验可改变父 format，确保引用仍绑定捕获格式；给 child 增加自己的事件，不能修改 inherited count。真实恢复验收还需写所有权、未知未来格式、作用域初始化失败，以及引用源无权限和已过期 locator 的错误分类。
 
 原 1–12 章 `local-harness-tutorial` 只有自身会话恢复，没有实现全部上游 Fork、Recall 与运行资源重建。已完成的 labs 是独立实验层，本文不修改其文件，也不臆造 CLI 参数。无真实持久后端与授权测试时，只能宣称本章的内存契约通过，不能报告跨进程会话分支、隐私隔离或外部任务恢复已经可用。
+
+## 当前分支入口与重新观察
+
+2026-10-23 核对 [Claude commands](https://code.claude.com/docs/en/commands)：`/branch` 是当前会话分支入口，`/fork` 创建新的后台会话，不应按名称把两者与 DeepSeek 的日志 Fork 一一对应。`claude --continue --fork-session` 也是官方检查点页列出的保留原会话试验路线，具体 CLI 选项仍需跟安装版本核对。任何分支入口都不是文件系统隔离或外部动作重放授权。
+
+对照 [DeepSeek rc.2 session-reference](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/session-reference.md)，`capturedThroughSeq` 与 `capturedFormatVersion` 仍绑定来源 generation，不重新解释成目标 seq。操作练习是捕获引用后继续追加来源，再改变目标目录，确认引用快照固定且运行事实重新观察。正常验收是继承前缀不变化；异常验收是来源无权读取、locator 失效和资源不可恢复，必须报告，不新建同名浏览器或终端假冒原资源。排错分别检查 durable lineage、live parent 与运行资源 owner。
 
 ## 官方固定来源
 

@@ -1,7 +1,7 @@
 ---
 title: "第 3 章：盒模型与现代布局"
 description: "系统掌握盒模型、Flexbox、Grid、定位和响应式布局。"
-date: "2026-10-15"
+date: '2026-10-23'
 category: CSS
 tags: [CSS3, 弹性布局, 网格布局, 响应式设计]
 series:
@@ -53,7 +53,7 @@ series:
 
 #### 外边距折叠（Margin Collapsing）
 
-**只有垂直方向的相邻外边距会折叠**，水平不会。取两者中较大的值。
+普通块流中的上下外边距可能折叠，左右外边距不折叠。均为正值时取较大值；含负值时按最大正值与最小负值组合，不能一概取最大。
 
 三种折叠场景：
 
@@ -86,10 +86,10 @@ series:
 BFC 是一个独立渲染区域，内部布局不影响外部。触发方式：
 
 - `display: flow-root`（推荐）
-- `overflow` 不为 `visible`
+- `overflow: auto / scroll / hidden`（`clip` 本身不建立 BFC）
 - `float` 不为 `none`
 - `position: absolute` / `fixed`
-- `display: inline-block` / `flex` / `grid` / `table-cell`
+- `display: inline-block` / `table-cell`；Flex 与 Grid 建立独立的弹性或网格格式化上下文，不是普通块 BFC
 
 BFC 解决的经典问题：父元素高度塌陷（子元素浮动导致）、外边距穿透、浮动元素环绕文字。
 
@@ -207,7 +207,7 @@ Flex 和 Grid 子项默认有基于内容的最小尺寸。长链接或代码可
 
 **`flex: 1` 与 `flex: auto` 的关键区别**：
 
-`flex: 1` 的 `flex-basis` 是 `0%`，所有项从零开始分配空间，最终宽度**完全相等**。`flex: auto` 的 `flex-basis` 是 `auto`，先按内容宽度分配，再把剩余空间均分，内容多的更宽。
+`flex: 1` 通常展开为 `1 1 0%`，倾向于均分可用空间，但最小尺寸、padding、border 和容器尺寸是否确定仍可能让最终宽度不同。`flex: auto` 为 `1 1 auto`，在内容基准上分配额外空间，也不保证最终等宽。
 
 #### 经典布局
 
@@ -395,7 +395,7 @@ grid-template-areas:
 }
 ```
 
-**`absolute`**：找最近的 `position` 不为 `static` 的祖先。找不到就相对 `<html>` 定位。
+**`absolute`**：常以最近的非 static 定位祖先为包含块，但 transform、contain 等也可能建立包含块；找不到时使用初始包含块，不应简单说成 html 元素本身。
 
 ```css
 /* 绝对居中（尺寸已知） */
@@ -413,7 +413,7 @@ grid-template-areas:
 }
 ```
 
-**`fixed`**：相对视口，常用于顶部导航、悬浮按钮、模态遮罩。
+**`fixed`**：通常相对视口；transform 等祖先可能成为其包含块，造成“固定元素随容器滚动”。模态对话框优先考虑原生 dialog 的顶层机制。
 
 **`sticky`**：`top` 等值必须设置，否则不生效。它在父容器范围内粘住，父容器滚出视口后它也跟着走。
 
@@ -437,7 +437,7 @@ thead th {
 **sticky 失效的常见原因**：
 
 1. 没设置 `top` / `bottom` / `left` / `right` 中的至少一个
-2. 任一祖先元素有 `overflow: hidden` / `auto` / `scroll`（会裁剪 sticky 范围）
+2. 祖先的 `overflow: hidden / auto / scroll` 改变了最近滚动容器，sticky 不再相对预期的页面滚动
 3. 父容器高度等于自身高度，没有滚动空间
 
 #### z-index
@@ -480,7 +480,7 @@ thead th {
 .lvh { height: 100lvh; }   /* 最大视口高度（地址栏收起时） */
 ```
 
-移动端全屏布局用 `dvh` 而不是 `vh`——`100vh` 在 iOS Safari 上会被地址栏挡住底部。
+需要跟随地址栏变化时用 `dvh`；需要避免高度随滚动变化时可用 `svh`。长内容优先 `min-height` 而不是固定 height。软键盘和安全区需要另测，`dvh` 不自动解决所有遮挡。
 
 **`100vw` 的坑**：垂直滚动条占据约 15px 宽度，`100vw` 包含它，所以横向会溢出。用 `width: 100%` 代替。
 
@@ -636,5 +636,14 @@ h1 { font-size: clamp(1.75rem, 1rem + 3vw, 3rem); }
 ```
 
 `minmax(min(280px, 100%), 1fr)` 保证容器比 280px 还窄时列宽等于容器宽，不会溢出。
+
+### 官方参考与验收
+
+- [CSS Display 与格式化上下文](https://drafts.csswg.org/css-display/)
+- [CSS Flexbox](https://drafts.csswg.org/css-flexbox/)
+- [CSS Grid](https://drafts.csswg.org/css-grid/)
+- [CSS Values 视口单位](https://drafts.csswg.org/css-values-4/#viewport-relative-lengths)
+
+把 200 字长链接放进 Flex 子项，再测试 `min-width: 0`；为 fixed 元素的祖先添加 transform，观察定位变化；在真机打开软键盘并切换横屏。完成标准是定位到真实包含块与超宽元素，而不是全局隐藏溢出。
 
 ---

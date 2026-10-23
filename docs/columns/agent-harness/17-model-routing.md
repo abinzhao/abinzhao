@@ -1,7 +1,7 @@
 ---
 title: '第17章：模型路由、认证与兼容网关'
 description: 把模型选择、协议、端点、凭据引用和数据出域政策绑定成一次请求快照，设计不扩大权限的失败处理。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [模型路由, 凭据, 网关]
 series:
@@ -108,9 +108,15 @@ console.log('local route snapshot verified');
 
 运行独立代码，输入对象变更后已绑定模型应不变，远端端点和缺失凭据引用均拒绝。再从原示例根运行 `npm test`，检查 loopback 校验、重定向拒绝与部分流不重试的行为。真实网关端到端测试本章未运行；没有凭据、服务或具体部署时不宣称兼容。
 
-DeepSeek 根包 `0.2.1-alpha.5` 的[凭据子系统](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/credentials.md)、[模型配置目录](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/config-catalog.md)与[官方 wire 扩展说明](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/deepseek-llm-api-wire-extensions.md)用于核对路由和认证所有权。[OpenAI Responses 官方接口](https://platform.openai.com/docs/api-reference/responses)仅提供该服务协议依据，不给其他网关背书。
+DeepSeek 根包 `0.2.1-alpha.5` 的[凭据子系统](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/credentials.md)、[模型配置目录](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/config-catalog.md)与[官方 wire 扩展说明](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/deepseek-llm-api-wire-extensions.md)用于核对路由和认证所有权。[OpenAI Responses 官方接口](https://developers.openai.com/api/reference/resources/responses)仅提供该服务协议依据，不给其他网关背书。
 
 本章未实现凭据存储、OAuth、多提供方 failover 和服务端容量探测。现有 `npm run labs` 不包含模型路由实验，`bindRoute()` 只是本文自包含示例；不能把它当作实验模块的导出函数，也不能把其他机制测试通过当作网关兼容证据。
+
+## 17.7 模型与工具路由不能互相冒充
+
+2026-10-23 核对 [DeepSeek RC.2](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.2.1-rc.2)新增 Search / Fetch API：模型推理路由与外部检索服务应分别记录目的地、数据种类与授权。允许本地模型处理文档，不等于允许检索 API 接收文档全文；“同一个产品提供”也不是共用凭据或出域许可的依据。
+
+练习：建立模型与检索两份非敏感路由记录，注入模型认证失败、检索 403、目的地重定向和能力下降。正常请求应使用原快照；拒绝不能触发账号替换、远端 failover 或正文上传。排错按端点身份、凭据引用、能力准入和服务错误顺序检查，不把所有 4xx 合并成可重试连接故障。
 
 ---
 

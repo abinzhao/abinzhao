@@ -1,7 +1,7 @@
 ---
 title: 第四十六章：工具输出契约与执行管线
 description: 从规范 JSON 值到模型展示和最终日志建立工具管线，保持权限拒绝不可被中间件撤销并正确结算失败。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Tool Pipeline, 输出契约]
 series:
@@ -92,6 +92,12 @@ DeepSeek Harness `0.2.1-alpha.5` 固定提交的 ToolDefinition 要求 output sc
 完整命令应证明 deny 不调用主体，abstain 允许继续，非法 count 变成错误，展示替换不改变规范值，最终对象被冻结。继续实验可让 post 抛错，要求不重做 execute；把返回值改成循环对象，要求在无损边界拒绝；模拟取消时主体还活动，要求不提前报告清理完成。真实验收还需 JSON Schema、guard 身份保护、并发顺序与日志配对。
 
 原 1–12 章独立 Node.js 22 ESM 项目有简单工具边界，但不是上游全部 ToolDefinition、waterfall 与规范输出注册表。扩展 labs 可验证这些小契约，本章不改实际工具实现或依赖。只有最小单元断言通过，不能声称所有插件、MCP、PTC 和浏览器工具都已经具有相同生产结算保证。
+
+## 当前 PTC 子调用仍经过门禁
+
+2026-10-23 对照 [DeepSeek rc.2 工具管线](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/tool-execution-pipeline.md)：保留的 `run_code` 传输及程序内序列化子调用都经过标准管线。子调用携带 parent token，记录 `tool/ptc-dispatch`；拒绝返回 binding rejection，并省去子调用的 `additionalContexts` 以保持调用/结果邻接。不能因为外层 run_code 已获批准，就让内层任何工具自由执行。
+
+操作练习给原 invoke 增加 parent 调用身份，在允许外层但拒绝内层的案例中断言 executions 不增加。正常验收应对齐规范值、模型展示与冻结最终通知；异常验收是 post 或 snapshot 失败发生在主体之后，不重做 execute，不把“输出失败”改写成“没有产生效果”。排错记录阶段身份与主体是否启动，分别定位 pre 改写、guard 拒绝、执行错误和结算错误。若对齐审计与模型投影失败，应明确结果不完整，不能拿 renderer 的成功字样覆盖 canonical 失败。
 
 ## 官方固定来源
 

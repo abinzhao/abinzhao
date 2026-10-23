@@ -1,7 +1,7 @@
 ---
 title: "第 2 章：CSS 选择器、层叠与优先级"
 description: "理解样式如何匹配、竞争并形成最终计算值，建立可预测的层叠规则。"
-date: "2026-10-15"
+date: '2026-10-23'
 category: CSS
 tags: [CSS3, 层叠, 选择器]
 series:
@@ -50,7 +50,7 @@ h1 ~ p { }               /* 通用兄弟：h1 之后所有同级 p */
 :hover
 :active                  /* 激活中（鼠标按下） */
 :focus
-:focus-visible           /* 仅键盘聚焦时（推荐用这个做焦点样式） */
+:focus-visible           /* 浏览器判断需要可见焦点时，不只由键盘输入决定 */
 :focus-within             /* 自身或后代获得焦点 */
 :visited                 /* 只能改颜色相关属性，隐私限制 */
 :link
@@ -118,7 +118,8 @@ h2:has(+ p) { margin-bottom: .5em; }          /* 后面紧跟段落的 h2 */
    - 用户代理普通声明
 2. **@layer 层级**（见 2.4）
 3. **优先级（Specificity）**
-4. **出现顺序**（后出现的赢）
+4. **作用域邻近性**（同等优先级的 scoped 规则比较到 scope 根的距离）
+5. **出现顺序**（前面都相同时后出现的赢）
 
 ### 2.3 优先级计算
 
@@ -197,10 +198,8 @@ input[type="text"]     /* (0,1,1) */
 - **未分层的样式优先级高于所有已分层的样式**（普通声明）。所以第三方库放前面层，自己的样式放后面层或不分层。
 
 ```css
-/* 引第三方 CSS 到指定层 */
+@layer vendor, app;   /* 在导入前建立完整顺序 */
 @import url('bootstrap.css') layer(vendor);
-
-@layer vendor, app;   /* vendor 层优先级低于 app */
 ```
 
 **`!important` 在层里会反转**：带 `!important` 的声明，**层级越靠前优先级越高**。这是为了让低层（如 reset）能强制覆盖高层。
@@ -241,5 +240,12 @@ input[type="text"]     /* (0,1,1) */
 ```
 
 `all: unset` 会同时清除绝大多数属性，包括本来有用的控件样式。它适合边界明确的组件重置，不适合不加判断地用于所有元素。
+
+### 验证与官方参考
+
+在两个 layer 中为同一链接设置颜色，分别增加和移除 `!important`，用 Computed 检查实际胜出来源；再添加两个不同距离的 `@scope`，确认邻近性只在来源、层和优先级都相同后参与比较。`:has()` 改变按钮外观不会真正禁用提交，应设置控件状态并保持服务端校验。
+
+- [CSS Cascade Level 6](https://drafts.csswg.org/css-cascade-6/)
+- [CSS Selectors Level 4](https://drafts.csswg.org/selectors-4/)
 
 ---

@@ -1,7 +1,7 @@
 ---
 title: "第 11 章：Chrome DevTools 调试"
 description: "系统使用 Elements、Console、Sources、Network、Application、Performance 和 Lighthouse。"
-date: "2026-10-15"
+date: '2026-10-23'
 category: 浏览器调试
 tags: [Chrome DevTools, 调试, Lighthouse]
 series:
@@ -265,7 +265,7 @@ Request
 | Waiting (TTFB) | 绿色 | 等待服务器首字节 |
 | Content Download | 蓝色 | 接收响应体 |
 
-**TTFB 过长** = 服务端慢（数据库查询、后端逻辑）。**Content Download 过长** = 响应体太大或带宽不足。
+**TTFB 过长**可能来自网络往返、代理、缓存未命中或服务端处理，应结合服务端时间与链路追踪定位。**Content Download 过长**可能来自体积、带宽或服务端分块发送，不能单凭一个阶段下根因结论。
 
 #### 右键菜单常用项
 
@@ -288,7 +288,7 @@ mime-type:application/json
 is:from-cache                 # 只看缓存命中
 ```
 
-多个条件用空格分隔是 AND，用逗号分隔也是 AND；用 `OR` 可以组合，如 `status-code:404 OR status-code:500`。
+多个属性过滤条件通常同时约束结果；复杂布尔语法随版本变化，排查多个状态时分别筛选并核对可见请求，不能假设所有版本都支持任意 `OR` 表达式。
 
 #### 慢速网络模拟
 
@@ -304,7 +304,7 @@ Network 面板顶部的 **Throttling** 下拉：
 
 也可以点 **Add...** 自定义。测移动端体验时至少用 Slow 4G 过一遍。
 
-**Disable cache** 复选框：勾上后所有请求都不走缓存。**调试样式时必勾**，否则改了 CSS 看不到效果。
+**Disable cache** 通常只在 DevTools 打开时禁用浏览器 HTTP 缓存，不会自动清除 Service Worker 的 Cache Storage、CDN 或服务端缓存。首次加载与缓存后加载都应分别记录。
 
 #### 其他实用功能
 
@@ -385,7 +385,7 @@ Network 面板顶部的 **Throttling** 下拉：
 
 ### 11.7 Lighthouse 面板
 
-一键跑完整审计，输出五个类别的分数。
+运行所选审计类别，现代 Lighthouse 的常见分类为 Performance、Accessibility、Best Practices、SEO；旧版 PWA 分类已移除，PWA 应另行检查 Manifest、Service Worker 和实际安装体验。
 
 #### 配置选项
 
@@ -393,7 +393,7 @@ Network 面板顶部的 **Throttling** 下拉：
 |---|---|
 | Mode | Navigation（加载页面）/ Timespan（一段时间内的交互）/ Snapshot（当前状态） |
 | Device | Mobile（默认，模拟中端手机 + 4G）/ Desktop |
-| Categories | Performance / Accessibility / Best Practices / SEO / PWA |
+| Categories | Performance / Accessibility / Best Practices / SEO |
 | Clear storage | 每次跑之前清空缓存和存储（**测首次加载必勾**） |
 
 #### 各分类关注点
@@ -469,5 +469,16 @@ Coverage 中的“未使用”只代表**本次录制期间**没有执行或匹�
 3. 强制垃圾回收后再获取快照并比较。
 
 如果同类 DOM 节点、监听器或业务对象持续增长且无法被回收，再沿 Retainers 路径查找是谁仍持有引用。
+
+### 官方资料与隐私边界
+
+面板名称、颜色、快捷键和降速预设不是稳定 API，以本机版本界面为准；把旧表中的带宽数值当作示意，不当作当前默认值。Core Web Vitals 使用真实访问第 75 百分位，TBT 是实验室指标，不能替代 INP。
+
+HAR、Copy as cURL 和堆快照可能包含 Cookie、Authorization、请求体和个人数据。分享前脱敏，不能因工具默认隐藏部分敏感头就认为整个文件无敏感内容；不要重放真实支付、删除或发布请求。
+
+- [Chrome Network 参考](https://developer.chrome.com/docs/devtools/network/reference/)
+- [Chrome Performance](https://developer.chrome.com/docs/devtools/performance/)
+- [Lighthouse 官方概览](https://developer.chrome.com/docs/lighthouse/overview/)
+- [Web Vitals](https://web.dev/articles/vitals)
 
 ---

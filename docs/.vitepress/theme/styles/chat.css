@@ -23,8 +23,8 @@
   min-height: 0;
   overflow: hidden;
   border: 1px solid var(--site-border);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--site-bg) 82%, transparent);
+  border-radius: var(--radius-panel);
+  background: var(--site-surface);
   box-shadow: var(--site-shadow-soft);
 }
 
@@ -33,7 +33,7 @@
   min-height: 0;
   padding: 14px 10px;
   border-right: 1px solid var(--site-border);
-  background: color-mix(in srgb, var(--site-bg-soft) 50%, transparent);
+  background: var(--site-bg-soft);
 }
 
 .chat-session-list {
@@ -325,7 +325,7 @@
   border-radius: 8px;
   background: var(--vp-c-brand-soft);
   color: var(--site-accent);
-  box-shadow: 0 0 28px var(--site-glow);
+  box-shadow: var(--site-shadow-soft);
 }
 
 .chat-welcome h2 {

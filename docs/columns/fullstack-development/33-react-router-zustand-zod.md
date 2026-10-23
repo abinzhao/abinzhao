@@ -1,7 +1,7 @@
 ---
 title: "第 33 章：React Router、Zustand 与 Zod"
 description: "使用路由组织页面、Zustand 管理跨页面客户端状态，并用 Zod 验证外部数据。"
-date: "2026-10-15"
+date: "2026-10-23"
 category: React
 tags: [React Router, Zustand, Zod]
 series:
@@ -23,16 +23,29 @@ series:
 ### 33.2 安装依赖
 
 ```bash
-npm install react-router-dom zustand zod
+npm install --save-exact react-router@8.5.0 zustand@5.0.16 zod@4.6.7
 ```
 
 检查实际安装版本：
 
 ```bash
-npm list react-router-dom zustand zod
+npm list react-router zustand zod
 ```
 
-教程使用这些库的稳定公共 API。升级主版本时先查看迁移说明，再运行类型检查和路由回归。
+课程采用 Router **8.5.0** 的 Data 模式、Zustand 5 与 Zod 4 稳定公共 API。核验日为 2026-10-23，Router v8 要求 Node ≥22.22、React/React DOM ≥19.2.7；课程的 Node 24.22.1 与 React 19.3.1 满足要求。Declarative、Data、Framework 三种模式不同，不把 Framework 的服务器、类型生成与 `.data` 请求机制套用到本章纯 Vite SPA。
+
+#### 从 v7 工程迁移
+
+新工程直接安装上面的固定版本。旧工程先在最新 v7 上建立回归基线，再按[官方 v7→v8 指南](https://reactrouter.com/8.5.0/upgrading/v7)逐项迁移，最后才升级依赖。v8 移除了 `react-router-dom` 重导出包；在自己的学习项目中执行：
+
+```bash
+npm uninstall react-router-dom
+npm install --save-exact react-router@8.5.0
+```
+
+把 `Link`、`NavLink`、`Outlet`、`createBrowserRouter`、loader 类型等导入迁到 `react-router`；浏览器 `RouterProvider` 从 `react-router/dom` 导入，让路由使用 DOM 相关能力。不要把所有导入机械改成 `/dom`，该子路径不是整个公共 API 的替代。
+
+本章没有自定义 loader context、`meta` 或 `useMatches()`。有这些代码的工程还需检查 middleware context 的新接口，以及已移除的 `matches[i].data`，改用 `loaderData`。Framework 工程另需处理模块拆分、Vite Environment API、原始请求 URL 与尾斜杠数据请求；这些不是给 SPA 随意复制的 future flags。每迁移一项保留类型检查、深链刷新、取消请求、404 和错误边界的结果，不能以“首页打开了”作为升级完成。
 
 ### 33.3 定义 Zod schema
 
@@ -48,7 +61,7 @@ export const postSchema = z.object({
   content: z.string().min(1),
   tags: z.array(z.string().min(1)),
   featured: z.boolean().default(false),
-  publishedAt: z.string().datetime(),
+  publishedAt: z.iso.datetime(),
 });
 
 export const postsSchema = z.array(postSchema);
@@ -67,7 +80,7 @@ import { postSchema, postsSchema, type Post } from './post-schema';
 export async function getPosts(
   signal?: AbortSignal,
 ): Promise<Post[]> {
-  const response = await fetch('/data/posts.json', { signal });
+  const response = await fetch(`${import.meta.env.BASE_URL}data/posts.json`, { signal });
 
   if (!response.ok) {
     throw new Error(`加载文章失败：HTTP ${response.status}`);
@@ -81,12 +94,12 @@ export async function getPost(
   signal?: AbortSignal,
 ): Promise<Post> {
   const response = await fetch(
-    `/data/posts/${encodeURIComponent(slug)}.json`,
+    `${import.meta.env.BASE_URL}data/posts/${encodeURIComponent(slug)}.json`,
     { signal },
   );
 
   if (!response.ok) {
-    throw new Response('文章不存在', {
+    throw new Response(response.status === 404 ? '文章不存在' : '文章服务暂时不可用', {
       status: response.status,
     });
   }
@@ -101,7 +114,7 @@ export async function getPost(
 const result = postSchema.safeParse(payload);
 
 if (!result.success) {
-  console.error(result.error.flatten());
+  console.error(z.flattenError(result.error));
 } else {
   console.log(result.data.title);
 }
@@ -111,7 +124,7 @@ if (!result.success) {
 
 ```tsx
 // src/app/router.tsx
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter } from 'react-router';
 import { RootLayout } from './RootLayout';
 import { RouteErrorPage } from './RouteErrorPage';
 import { HomePage } from '../pages/HomePage';
@@ -148,7 +161,7 @@ export const router = createBrowserRouter([
 // src/main.tsx
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { RouterProvider } from 'react-router-dom';
+import { RouterProvider } from 'react-router/dom';
 import { router } from './app/router';
 import './styles/index.css';
 
@@ -169,7 +182,7 @@ createRoot(root).render(
 
 ```tsx
 // src/app/RootLayout.tsx
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router';
 
 export function RootLayout() {
   return (
@@ -200,7 +213,7 @@ export function RootLayout() {
 import {
   useLoaderData,
   type LoaderFunctionArgs,
-} from 'react-router-dom';
+} from 'react-router';
 import { getPost } from '../features/posts/post-api';
 import { postSchema } from '../features/posts/post-schema';
 
@@ -238,7 +251,7 @@ Loader 在进入页面前开始数据请求，并接收可取消的 `request.sig
 import {
   isRouteErrorResponse,
   useRouteError,
-} from 'react-router-dom';
+} from 'react-router';
 
 export function RouteErrorPage() {
   const error = useRouteError();
@@ -281,7 +294,7 @@ Vercel 配置：
 不支持回退规则的静态环境可以使用 `createHashRouter`：
 
 ```tsx
-import { createHashRouter } from 'react-router-dom';
+import { createHashRouter } from 'react-router';
 
 export const router = createHashRouter(routes);
 ```
@@ -296,6 +309,7 @@ export const router = createHashRouter(routes);
 // src/features/favorites/favorite-store.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { z } from 'zod';
 
 interface FavoriteState {
   favoriteSlugs: string[];
@@ -327,6 +341,16 @@ export const useFavoriteStore = create<FavoriteState>()(
     {
       name: 'blog:favorites:v1',
       version: 1,
+      partialize: (state) => ({ favoriteSlugs: state.favoriteSlugs }),
+      merge: (persisted, current) => {
+        const parsed = z.object({
+          favoriteSlugs: z.array(z.string().min(1)).max(1000),
+        }).safeParse(persisted);
+        return {
+          ...current,
+          favoriteSlugs: parsed.success ? [...new Set(parsed.data.favoriteSlugs)] : [],
+        };
+      },
     },
   ),
 );
@@ -379,11 +403,17 @@ const favoriteStateSchema = z.object({
 });
 
 export function readFavoriteBackup(raw: string) {
-  return favoriteStateSchema.safeParse(JSON.parse(raw));
+  try {
+    return favoriteStateSchema.safeParse(JSON.parse(raw));
+  } catch {
+    return favoriteStateSchema.safeParse(null);
+  }
 }
 ```
 
 Zustand `persist` 支持 `version` 与 `migrate`。状态结构改变时升级版本，不要假设旧数据自动兼容。
+
+`safeParse()` 不会替你捕获前一步 `JSON.parse()` 的语法错误。上面的 store 通过 `merge` 验证持久化字段并保留可信 action；还应监听 `onRehydrateStorage` 的错误向用户说明“收藏未恢复”，存储不可用时不影响当前会话。持久化不是跨设备同步，也没有多个标签页同时读改写的事务保证。
 
 ### 33.9 职责边界
 
@@ -405,5 +435,11 @@ Zustand `persist` 支持 `version` 与 `migrate`。状态结构改变时升级�
 5. 收藏文章后刷新，确认 Zustand 持久化恢复。
 6. 清除或篡改 localStorage，确认应用能恢复到安全默认值。
 7. 用 React DevTools Profiler 检查只读收藏数量的组件是否因无关 store 字段变化而重渲染。
+
+### 33.11 官方参考
+
+- [React Router 8.5.0：三种模式](https://reactrouter.com/8.5.0/start/modes)、[Data 路由](https://reactrouter.com/8.5.0/start/data/routing)与[v8 迁移](https://reactrouter.com/8.5.0/upgrading/v7)。
+- [Zustand：持久化](https://zustand.docs.pmnd.rs/reference/integrations/persisting-store-data)。
+- [Zod 4：API](https://zod.dev/api)与[错误格式化](https://zod.dev/error-formatting)。
 
 ---

@@ -1,7 +1,7 @@
 ---
 title: 第七章：上下文预算，保留完整用户轮
 description: 用 UTF-8 JSON 字节预算选择连续历史，理解工具配对、当前轮超限与模型窗口的区别。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Node.js, 上下文预算]
 series:
@@ -140,6 +140,12 @@ MODEL=qwen3:4b npm start -- "阅读 guide.md，说明上下文预算的单位并
 需要度量时，可以在本地调试器查看 `messages`、工具定义和 `selected` 的序列化字节数，不必把提示词原文打印进长期日志。会话文件含有真实输入和工具内容，调试时也应保护它。预算问题不能成为上传私密会话到外部系统的理由。
 
 算法不会摘要、不支持检索旧记录、不永久删除历史，也不保证适配任意模型窗口。它的完成标准更具体：系统约束保留，近期用户轮成组且连续，当前轮不能被暗中截断，超限在模型请求前可观察地失败。这是后续做更复杂上下文管理的可靠起点。
+
+## 2026-10-23：预算回归必须固定计量口径
+
+依据 [Node.js 22 Buffer API](https://nodejs.org/docs/latest-v22.x/api/buffer.html#static-method-bufferbytelengthstring-encoding)，本章的 `Buffer.byteLength(JSON.stringify(...))` 仍是字节计量，不应因为新模型窗口变大就改称 token 计量。Provider 更换后重新核对聊天模板、工具 schema 和输出预留；模型 ID 与 tokenizer 身份也应进入[版本记录](./73-version-governance)。
+
+练习：用中文、ASCII、换行和 emoji 构造同字符数但不同字节数的消息，在边界值与边界值减一处分别断言接受和拒绝；再加入两轮工具消息，检查整体淘汰而非拆组。验收需要同时记录本地估算与真实 provider usage，后者没有返回时标为未知，不能用字节估算补写实测 token。
 
 ## 固定来源
 

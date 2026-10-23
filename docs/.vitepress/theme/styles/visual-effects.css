@@ -5,3 +5,5 @@
 .aurora-background i:nth-child(1) { top: -45%; left: -25%; }
 .aurora-background i:nth-child(2) { top: -5%; right: -30%; background: radial-gradient(ellipse, color-mix(in srgb, var(--site-signal) 19%, transparent), transparent 65%); }
 .aurora-background i:nth-child(3) { bottom: -65%; left: 5%; background: radial-gradient(ellipse, color-mix(in srgb, var(--site-accent) 16%, transparent), transparent 66%); }
+:root[data-theme='light'] .aurora-background i { opacity: .3; }
+:root[data-theme='light'] .aurora-background::after { opacity: .3; }

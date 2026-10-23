@@ -1,7 +1,7 @@
 ---
 title: 第六十八章：真实任务、Trajectory 与结果评测
 description: 分离轨迹、最终产物与安全结果，保留缺失样本和测量来源，建立不伪造模型效果的评测流程。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [评测, Trajectory]
 series:
@@ -22,6 +22,8 @@ series:
 
 Trajectory 是带身份、顺序和时间的运行记录，通常包括请求、工具意图、权限决策、工具结果及终态。工具正文可能敏感，记录前应授权与脱敏；只有元信息时要明确无法回放内容。DeepSeek 固定提交的 session 与 session-projection 文档区分日志事实和模型表面，这提醒评测者保存实际发给模型的上下文修订，而不是只保存原始事件列表。
 
+`2026-10-23` 对 RC.2 的复核需要进一步区分三份数据：canonical session log、模型实际请求表面、给客户端的 `ProjectionSnapshot`。投影 `asOfSeq` 说明视图反映到哪条日志，不意味着它就是模型的完整提示；投影缓存也可能落后。评测使用实际请求装配与 serializer 的证据核对上下文，不能把 UI 卡片或导出的遥测当请求回放。
+
 ```text
 任务定义 + 输入快照 + 配置指纹
   -> 实际运行
@@ -38,6 +40,14 @@ Trajectory 是带身份、顺序和时间的运行记录，通常包括请求、
 至少分别报告任务成功、缺失结果、安全失败和安全未知。成功率若按全部分配任务计算，缺失不会凭空消失；若另报可判定样本成功率，必须注明分母。安全失败率应明确是 unsafe 占全部暴露任务，还是占已审查任务，两者不能混用。没有审查的样本不是 safe，拒绝执行也不自动等于业务成功。
 
 耗时和成本同样要保留测量来源。工具运行时间、排队时间和用户审批等待应分别记录。费用未知用 null，不能用零占位；缓存和重试也应纳入实际计费口径。分位数必须报告有效样本数，小样本 p95 不能解释为稳定生产尾延迟，更不能从人工夹具推导模型性能。
+
+## 把拒绝、未知与重试写入评测合同
+
+结果至少有两条互不替代的轴：业务 `passed` 和安全 `safe`。合法拒绝可以是安全成功但业务未完成；实际越权即使产生正确产物也不得记安全成功。尝试越权而被执行器拦截，与真正越界分开记录；安全未知不能通过“没有报警”推导为 safe。
+
+一次任务重试必须保留 attempt 身份与所有尝试的成本，但任务成功分母不能因此膨胀。需要重复测量同一任务时，按 `(taskRevision, repetition, candidate)` 组织配对，再按 repetition 分组调用教学统计器；它的唯一 `taskId` 检查不支持直接塞入重复任务记录。预先固定总期限和重试预算，不能只让表现较差的一组无限重试。
+
+当前 Session telemetry 是 best-effort，可能丢失或重复；它的 handoff cursor 不是送达回执。因此独立验收以真实文件、测试结果、访问和副作用为准，并记录轨迹缺口。终态通知缺失时先查询权威状态，查不到就保留未知，不将观察链断开解释为任务没有执行。
 
 ## 已实现统计器的实验
 
@@ -85,8 +95,11 @@ NODE
 
 开展真实评测时应交付任务版本、配置、运行轨迹、实际产物、验收依据和缺失原因。没有模型运行就明确写“未测”，没有成本记录就保持未知，不填想象的排行榜。本章不提供厂商质量比较，生产决策必须基于实际运行和独立验收。
 
+练习：增加“业务通过但安全失败”“拒绝且没有副作用”“结果缺失且安全未知”三项记录；给重试建立 attempt 到 task 的关联，核对任务分母不变、尝试成本不丢失。说明遥测断线时哪些结论仍有产物证据，哪些必须保留未知。
+
 ## 固定来源
 
+- [RC.2 客户端投影](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/session-projection.md)与[Session telemetry](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/session-telemetry.md)：视图、缓存及 best-effort 记录的限制，核验于 `2026-10-23`。
 - [DeepSeek session](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/session.md)与[session-projection](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/session-projection.md)：日志与模型表面阅读入口。
 - [DeepSeek session telemetry](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/session-telemetry.md)：会话记录的授权与遥测边界。
 - [Node.js 22 assert](https://nodejs.org/docs/latest-v22.x/api/assert.html)：统计器实验断言。

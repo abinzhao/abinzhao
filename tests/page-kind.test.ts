@@ -31,4 +31,11 @@ describe('custom page routing', () => {
       status: 'ongoing',
     })).toBe('column');
   });
+
+  test('keeps a course homepage in the column layout when it also records a verification date', () => {
+    expect(getCustomPageKind('/columns/fullstack-development/', undefined, {
+      status: 'ongoing',
+      date: '2026-10-23',
+    })).toBe('column');
+  });
 });

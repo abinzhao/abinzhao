@@ -1,7 +1,7 @@
 ---
 title: 第 58 章：脚本工作流、结果重放与失败语义
 description: 区分脚本编排与耐久工作流，按步骤身份和副作用状态决定结果复用、重试或人工协调。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [工作流, 幂等]
 series:
@@ -98,7 +98,13 @@ workflow result 区分 completed、cancelled、error，消费者必须调用 dis
 
 完成标准是恢复与当前定义匹配、只复用可信完成结果、不确定副作用不盲目重放。实验只具备 README 声明的单进程恢复能力，既不是完整耐久工作流引擎，也不保证 exactly-once 或断电后数据不丢失。
 
-## 58.7 官方来源与边界
+## 58.7 当前 result 不抛错不表示任务成功
+
+2026-10-23 对照 [DeepSeek rc.2 Workflow](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/workflow.md)，`WorkflowRun.result` 永不 reject：脚本失败以 `stopReason: "error"` 结算，取消以 `"cancelled"` 结算，只有 `"completed"` 时 value 有完成含义。因此必须检查 stopReason，再于 finally 等待 dispose；只有 try/catch 会遗漏合法返回的失败结果。null 可以是正常返回值，不可据此猜测失败。
+
+观察事件为每个 listener 单独克隆且容纳 listener 失败，`workflow/end` 不带结果 value，不传递 live cancel/dispose 权力。操作练习将原 completed 缓存值改成 null，确认仍复用不重算；另添加已结算 error 并显式映射失败。正常验收是身份相同的完成结果复用，异常验收为 fatal 定义错误、未知副作用和清理失败分别保留。排错先分 result outcome 与 JavaScript Promise rejection，再审查定义 revision 和是否真正耐久，不能以事件 end 或脚本文本存在宣称恢复完成。
+
+## 58.8 官方来源与边界
 
 DeepSeek Harness 参考固定为 `0.2.1-alpha.5`、提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`，不得从事件持久化推导未承诺的执行恢复功能。
 

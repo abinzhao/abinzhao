@@ -1,7 +1,7 @@
 ---
 title: 第三十六章：代码检索、RAG 与长期记忆
 description: 用版本、坐标、来源和有效期区分代码证据、检索材料与长期记忆，建立可失效、可纠正的知识使用闭环。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [RAG, 长期记忆]
 series:
@@ -81,11 +81,17 @@ NODE
 
 原 1–12 章 `local-harness-tutorial` 是只读文件助手，没有自动长期记忆、LSP server 或向量存储。扩展 `labs/context.mjs` 与 `labs/eval.mjs` 已经落盘，汇总入口为 `labs/run.mjs`；这些验证确定性契约，不代替真实检索质量评测。本章只交付文稿和自包含实验。Prompt Cache 不执行本章的知识筛选，compaction 不等于长期记忆保存，三者职责需要在实现和文案中持续分开。
 
+## 当前记忆作用域与截断
+
+2026-10-23 复核 [Claude Code memory](https://code.claude.com/docs/en/memory)：auto memory 按 repository 保存、在该仓库的 worktrees 间共享；启动加载 `MEMORY.md` 的前 200 行或 25KB，详细主题文件按需读取。这个装载上限不是模型总窗口，也不意味着被截断部分已经进入本次请求。当前文档也支持 AGENTS.md，但具体选择和加载层级仍需按[第 18 章](./18-instructions-architecture)核对，不能把所有工具的规则优先级视为相同。
+
+对照 [DeepSeek rc.2 LSP](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/lsp.md)，四类查询与 UTF-16 坐标仍是该实现明确边界，不代表所有 LSP server 只支持四种能力。正常验收要记录当前分支/修订、实际加载范围与引用坐标；异常验收是在另一个 worktree 命中共享记忆时仍拒绝旧源码事实。练习在 records 增加 `loadedThroughLine`，确认未装载的主题不能据此宣称已读；排错分别检查候选命中、原文读取与当前代码复核，避免将无命中直接解释为功能不存在。
+
 ## 官方固定来源
 
 - [DeepSeek Harness：LSP 契约](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/lsp.md)，核对操作集合与 UTF-16 坐标。
 - [DeepSeek Harness：会话检索与表面状态](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/session-query.md)。
 - [Codex 0.163.0：Memories 管线](https://github.com/openai/codex/blob/83086188ae0614bd882818ff1aa23f3194962012/codex-rs/memories/README.md)，仅描述此固定树的条件化实现。
-- [Claude Code：Memory 官方文档](https://code.claude.com/docs/en/memory)，动态文档，核验日 2026-10-17，不作为开源内部实现证明。
+- [Claude Code：Memory 官方文档](https://code.claude.com/docs/en/memory)，动态文档，核验日 2026-10-23，不作为开源内部实现证明。
 
 上一章：[第三十五章：Prompt Cache](./35-prompt-caching) · 下一章：[第三十七章：事件与请求回放](./37-event-surface)

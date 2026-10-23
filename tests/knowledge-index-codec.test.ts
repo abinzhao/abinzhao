@@ -10,6 +10,8 @@ import {
   type KnowledgeSearchDocument,
 } from '../docs/.vitepress/data/knowledge';
 import { createKnowledgeSearchRuntime } from '../docs/.vitepress/theme/composables/knowledge-search';
+import { loadPublishedArticleSources } from '../docs/.vitepress/data/content';
+import { contentBudgets } from './helpers/content-budget';
 
 type Codec = typeof import('../docs/.vitepress/data/knowledge-index-codec');
 let codec: Codec | undefined;
@@ -175,9 +177,10 @@ describe('knowledge index codec', () => {
     })).toThrow(/knowledge index.*prefix/iu);
   });
 
-  test('indexes every real article and complete body/code term inside the unchanged gzip budget', async () => {
+  test('indexes every real article and complete body/code term inside the content density budget', async () => {
     const { unpackKnowledgeIndex } = requireCodec();
-    const { blocks, corpus, index } = await buildKnowledgeArtifacts(resolve(import.meta.dirname, '../docs'));
+    const root = resolve(import.meta.dirname, '../docs');
+    const { blocks, corpus, index } = await buildKnowledgeArtifacts(root);
     expect(Array.isArray(index.index.index)).toBe(false);
     const decoded = unpackKnowledgeIndex(index.index);
     const documents = new Set(blocks.map((block) => block.documentId));
@@ -193,7 +196,8 @@ describe('knowledge index codec', () => {
         text: block.text, codeTerms: block.codeTerms, ...(block.language ? { language: block.language } : {}),
       });
     }
-    expect(gzipSync(JSON.stringify(index)).byteLength).toBeLessThanOrEqual(250 * 1024);
+    expect(gzipSync(JSON.stringify(index)).byteLength)
+      .toBeLessThanOrEqual(contentBudgets(await loadPublishedArticleSources(root)).indexGzip);
     expect(Object.keys(corpus.blocks)).toEqual(blocks.map((block) => block.id));
     expect(Object.keys(index.metadata)).toEqual(blocks.map((block) => block.id));
     expect(index.contentVersion).toBe(corpus.contentVersion);

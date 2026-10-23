@@ -1,7 +1,7 @@
 ---
 title: 第 54 章：安全探针、对抗评测与降级处理
 description: 把安全承诺转成可观察探针，区分策略拒绝、基础设施故障、未支持平台与主动降级。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [安全验收, 故障注入]
 series:
@@ -93,9 +93,15 @@ Claude Code hooks 官方文档说明，command hook 的普通错误、无效 JSO
 
 完成标准是既验证正常功能，又验证限制和组件失效路径；任何降级都不增加既有权限。内存实验只验证状态判定，未运行真实模型、操作系统攻击或多平台矩阵时，应明确保留这些限制。
 
-## 54.7 官方来源与边界
+## 54.7 当前安全回归矩阵
 
-DeepSeek Harness `0.2.1-alpha.5` 固定提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa` 未经安全审计；页面核验日期为 2026-10-17，不提供生产安全认证。
+2026-10-23 对照 [Claude Code 2.1.309 变更记录](https://github.com/anthropics/claude-code/blob/v2.1.309/CHANGELOG.md)，回归应覆盖 macOS symlink 真实位置 denyWrite、Linux 后台命令跨 Session 结束后写拒绝仍在、split-pane teammate 继承 leader CLI 的 deny 和 `--tools`，以及 PowerShell hook 退出 2 真正阻止动作。它们是官方修复的具体路径，不应泛化成“升级后所有安全问题都解决”。
+
+[当前 sandboxing](https://code.claude.com/docs/en/sandboxing) 区分 `failIfUnavailable` 与 `allowUnsandboxedCommands`，前者阻止依赖缺失时启动，后者关闭已运行命令的无沙箱重试；只测一个不覆盖另一个。操作练习在 cases 增加缺依赖、排除命令、hook 无效 JSON 和迟到 approval 四类故障，执行计数作为硬验收。正常控制需确认允许命令可用；异常控制需验证调用未启动且无降级扩大。排错记录平台、安装版本、命令是否开始和清理状态，真实 hook、内核和跨平台矩阵未运行时仍标未验证。
+
+## 54.8 官方来源与边界
+
+DeepSeek Harness `0.2.1-alpha.5` 固定提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa` 未经安全审计；2026-10-23 复核的 [rc.2 SAFETY](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/SAFETY.md) 仍保持同一预览边界，不提供生产安全认证。
 
 - [固定 sandbox 错误与执行完整性](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/sandbox.md)
 - [固定 approval 失败关闭](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/approval.md)

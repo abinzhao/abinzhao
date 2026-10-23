@@ -1,7 +1,7 @@
 ---
 title: 第四十四章：Shell、argv、环境与退出语义
 description: 用显式进程参数、工作目录和环境构造区分直接执行与 shell 解释，并正确处理退出码、信号、超时与截断。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Shell, Subprocess]
 series:
@@ -82,6 +82,12 @@ DeepSeek Harness `0.2.1-alpha.5` 固定提交将 shell request 与 fully-resolve
 命令应证明元字符完整作为一个参数，固定子程序退出零，超时标记即使 exitCode 零也不归类成功，截断单独表达。继续实验可传含中文与换行的参数，要求 JSON 往返一致；让固定子程序返回非零，要求分类失败。真实 shell 验收还需平台解释器、PATH 阴影、取消升级、stdio 分流及大输出，不能由 argv 实验推导全部通过。
 
 原 1–12 章 `local-harness-tutorial` 只有只读文件工具，不支持任意 shell。本文仅使用固定 Node 子程序作为教学契约，不增加命令入口或权限。现有 labs 通过不等于实现上游全部 shell provider；真实执行能力必须按平台与授权单独实现，PTY 和进程树将在下一章进一步区分。
+
+## 当前首次停止原因与环境合并
+
+2026-10-23 对照 [DeepSeek rc.2 Subprocess](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/subprocess.md)：环境先清理继承的 `DSH_*`，再合并可信调用者显式值；普通变量可用显式 `undefined` tombstone 删除，刻意传入的凭据形状字符串仍可能保留。因此当前推荐是最小启动环境与精确覆盖，不是“执行器会自动清掉所有秘密”。
+
+前面 classify 的 timeout 优先只是固定案例的简化，真实同时取消/超时必须保存**第一次观察到的停止原因**，不能在结算时按布尔优先级猜测。操作练习为运行记录增加只写一次的 `firstStopCause`，分别测试先 cancel 后 timeout、先 timeout 后 cancel；正常验收保留首次原因并独立记录信号和 exitCode。异常验收是进程捕获信号后退出零仍标 cancelled，以及 spawn 前失败不冒充已执行。排错记录实际解释器、cwd、可执行身份与允许环境字段的存在性，不打印整个 env。
 
 ## 官方固定来源
 

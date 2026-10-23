@@ -1,7 +1,7 @@
 ---
 title: "第 14 章：静态博客 CSS 架构"
 description: "从设计令牌、重置、布局、组件和动画分层搭建完整样式系统。"
-date: "2026-10-15"
+date: '2026-10-23'
 category: 项目实战
 tags: [CSS 架构, 设计变量, 响应式设计]
 series:
@@ -89,6 +89,7 @@ series:
 
 /* ---- 暗色主题 ---- */
 [data-theme="dark"] {
+  color-scheme: dark;
   --color-bg: #0f1419;
   --color-bg-subtle: #171c22;
   --color-bg-elevated: #1d242c;
@@ -310,8 +311,8 @@ main {
 
 /* ---- 主题切换按钮 ---- */
 .theme-toggle {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   display: grid;
   place-items: center;
   border-radius: var(--radius-md);
@@ -335,6 +336,7 @@ main {
 
 /* ---- 文章卡片 ---- */
 .post-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   padding: var(--space-6);
@@ -694,5 +696,37 @@ html.theme-transitioning *::after {
 ```
 
 **注意**：主题切换过渡不能常驻，否则页面首次加载时所有元素都会「闪一下」。用 JS 在切换瞬间加 `.theme-transitioning` 类，过渡结束后移除。
+
+### 样式系统验收与官方参考
+
+`color-scheme: dark` 只帮助原生控件匹配暗色，不会自动重定义自定义颜色；本项目依赖第 15–16 章脚本在首次绘制前设置 `data-theme`。减少动画规则若在更早文件加载，仍可能被后面的 `!important` 主题过渡覆盖，应在 animations.css 末尾补上：
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  html.theme-transitioning *,
+  html.theme-transitioning *::before,
+  html.theme-transitioning *::after { transition: none !important; }
+}
+```
+
+检查浅色/深色下的 muted、faint、按钮文字与状态颜色，不把令牌存在当成对比度通过。卡片大面积伪元素链接需要 relative 包含块；若新增收藏按钮，必须避免伪元素遮挡它。正文链接与导航需键盘可见焦点，主题按钮按本教程采用至少 44px 点击区。
+
+### 14.6 先解释文件职责，再复制代码
+
+样式架构的目标是让一次改动有明确落点。令牌定义颜色、尺寸和运动等可复用值；基础规则处理浏览器默认与通用正文；布局负责容器和网格；组件规则描述卡片、导航和表单；工具类只表达少量明确的单一用途。文件分层不代表浏览器自动知道优先级，仍需核对加载顺序、选择器权重和 cascade layer。
+
+语义令牌比原始色值更适合跨主题。例如 `--color-text-muted` 表示辅助文字，而某个蓝色色值只是实现。深浅主题分别映射同一角色，组件才无需知道自己处于哪种主题。不要让“取消按钮”和“正文链接”因偶然颜色相同而永久共享业务令牌；先确认它们是否具有同一职责，再决定复用。
+
+普通声明的层优先级与选择器权重分开计算：未分层的普通样式优先于命名层中的普通样式；`!important` 的层顺序又会反转。因此引入 `@layer` 时应整体规划入口，不能只给新文件套一层便假设它会覆盖旧规则。浏览器 Computed 面板中的来源与被覆盖声明是定位依据，增加一串选择器或 important 只能暂时掩盖原因。
+
+### 14.7 从组件约束验证响应式
+
+网格列使用 `minmax(0, 1fr)` 能允许轨道收缩，但后代仍可能因为最小内容宽度溢出。长 URL、表格和代码应在自身区域换行或滚动，不用根级 `overflow-x: hidden` 把问题裁掉。卡片正文使用自然高度，按钮区可以通过布局对齐；固定高度在大字号、翻译或错误信息出现时容易丢内容。
+
+练习在同一文章卡片加入长标题、十个标签、缺图和错误说明，再检查 320、390、768 和 1440 像素宽度。随后切换主题、减少动画和 200% 缩放，确认焦点不被裁切、内容完整、操作区不互相覆盖。每个问题记录所属规则和实际覆盖链，而不是为单个页面补任意像素。
+
+维护时先搜索现有语义令牌和组件规则，删除本次造成的重复声明，保留明确的例外原因。完成标准是一个角色的视觉调整可以在正确层中完成，局部组件变化不会改变无关页面，且响应式结果有真实浏览器证据；文件拆得多并不自动意味着架构清晰。
+
+官方参考：[CSS Color Adjustment](https://drafts.csswg.org/css-color-adjust/)、[WCAG 2.2](https://www.w3.org/TR/WCAG22/)。
 
 ---

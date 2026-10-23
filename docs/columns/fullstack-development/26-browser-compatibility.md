@@ -1,7 +1,7 @@
 ---
 title: "第 26 章：Baseline、Browserslist 与特性检测"
 description: "建立浏览器兼容策略，区分 Baseline、构建目标、特性检测、渐进增强与 polyfill。"
-date: "2026-10-15"
+date: "2026-10-23"
 category: 浏览器 API
 tags: [Baseline, Browserslist, 渐进增强]
 series:
@@ -86,13 +86,13 @@ not dead
 查看查询结果：
 
 ```bash
-npx browserslist
+npx browserslist@4.29.4
 ```
 
-查看为什么包含某个版本：
+查看这组浏览器覆盖的统计比例（不是解释每条查询为什么命中）：
 
 ```bash
-npx browserslist --coverage
+npx browserslist@4.29.4 --coverage
 ```
 
 生产和开发环境可分开配置：
@@ -115,6 +115,8 @@ npx browserslist --coverage
 
 不要为了让构建产物更小而随意缩小范围。改变 Browserslist 会影响语法转换、前缀和最终包体，应作为兼容策略变更进行评审。
 
+工具是否读取 Browserslist 必须逐个核对。课程 Vite 8 的 JavaScript 目标主要由 `build.target` 决定，并不会因为存在 `.browserslistrc` 就自动采用其中的范围；其默认值是随主版本固化日期的 `baseline-widely-available`。需要特殊目标时显式配置，旧浏览器支持另评估官方 legacy 插件，不混淆构建目标与 CSS 前缀目标。
+
 ### 26.5 转译不等于 polyfill
 
 构建工具可以把较新的语法转换成较旧语法：
@@ -135,7 +137,7 @@ new ResizeObserver(handleResize);
 
 | 问题 | 解决方式 |
 |---|---|
-| 新 JavaScript 语法无法解析 | Babel、SWC、esbuild 等转译 |
+| 新 JavaScript 语法无法解析 | 构建工具的转译器，例如 Vite 8 使用的 Oxc |
 | 标准内建对象或方法缺失 | 按需 polyfill |
 | 浏览器/设备 API 缺失 | 特性检测、替代流程或禁用增强功能 |
 
@@ -284,11 +286,11 @@ async function ensureResizeObserver() {
 
 ### 26.10 验证流程
 
-1. 执行 `npx browserslist`，把实际输出保存在测试记录中。
+1. 执行 `npx browserslist@4.29.4`，把实际输出保存在测试记录中。
 2. 检查 MDN 或 web.dev 的 Baseline 标记，确认关键 API 状态。
 3. 在目标浏览器真实运行核心流程，不只看兼容表。
 4. 临时禁用 JavaScript，确认文章与导航仍可使用。
-5. 在 DevTools 中删除 `navigator.share` 等能力，验证兜底路径。
+5. 通过能力注入或 DevTools 将 `navigator.share` 覆盖为 `undefined`，验证兜底路径；只 `delete` 实例属性可能仍读到原型上的方法。
 6. 检查构建产物，确认没有为目标浏览器之外的环境引入大量无用 polyfill。
 7. 每次缩小支持范围时记录数据依据、影响用户和回滚方式。
 
@@ -305,5 +307,11 @@ async function ensureResizeObserver() {
 **是否应该加载一个包含全部 polyfill 的包？**
 
 通常不应该。按目标环境和关键流程按需引入，避免让所有用户承担额外体积与执行成本。
+
+### 26.12 官方参考
+
+- [web.dev：Baseline](https://web.dev/baseline)。
+- [Browserslist 官方文档](https://github.com/browserslist/browserslist)与[4.29.4 registry](https://registry.npmjs.org/browserslist/4.29.4)。
+- [Vite：build.target](https://vite.dev/config/build-options.html#build-target)。
 
 ---

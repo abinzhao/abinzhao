@@ -1,7 +1,7 @@
 ---
 title: "第 4 章：文字、颜色与视觉样式"
 description: "使用排版、颜色、背景、边框、阴影与滤镜构建清晰的视觉层级。"
-date: "2026-10-15"
+date: '2026-10-23'
 category: CSS
 tags: [CSS3, 排版, 视觉设计]
 series:
@@ -52,12 +52,12 @@ series:
 
   /* 长单词/URL 换行 */
   overflow-wrap: break-word;
-  word-break: break-word;        /* 中文场景常用 */
+  word-break: normal;            /* 不依赖已弃用的 break-word 值 */
   hyphens: auto;                 /* 连字符断词，需 lang 属性配合 */
 }
 ```
 
-**`line-height` 无单位是唯一正确写法**。`line-height: 1.5` 会被每个子元素按自己的 `font-size` 重新计算；`line-height: 24px` 是固定值，子元素字号变大时会重叠。
+**正文通常优先无单位 line-height**。`1.5` 随子元素字号计算；固定长度也合法，适合尺寸受控的单行控件，但必须检查字号放大后的裁切与重叠。
 
 **`font-smoothing`（macOS 抗锯齿）**：
 
@@ -118,12 +118,12 @@ body {
   color: hsl(24 100% 50% / 0.8);
 
   /* 现代色彩空间 */
-  color: oklch(0.7 0.15 50);   /* 感知均匀，调整亮度不会偏色 */
+  color: oklch(0.7 0.15 50);   /* 感知较均匀，仍需检查色域映射与对比度 */
   color: color(display-p3 1 0.4 0);
 }
 ```
 
-**`hsl` / `oklch` 的实用价值**：想做一组同色系不同深浅的按钮，改 `l`（亮度）即可，`h` 和 `s` 不变。用 HEX 做这个要重新算三个通道。
+**`hsl` / `oklch` 的实用价值**：可固定色相再调整明度，构造同色系层级。HSL 的通道是 `h`、`s`、`l`，OKLCH 是 `l`、`c`、`h`；明度相同不代表颜色的 WCAG 对比度相同。
 
 **用 `color-mix()` 动态调色**：
 
@@ -223,9 +223,11 @@ background: repeating-linear-gradient(45deg, #eee 0 10px, #fff 10px 20px);
   outline: 2px solid #3b82f6;
   outline-offset: 2px;
 }
-/* 鼠标点击不显示，键盘 Tab 才显示 */
-button:focus { outline: none; }
-button:focus-visible { outline: 2px solid #3b82f6; }
+/* 先保证所有焦点可见，再在支持 focus-visible 时渐进收紧 */
+button:focus { outline: 2px solid #3b82f6; }
+@supports selector(:focus-visible) {
+  button:focus:not(:focus-visible) { outline: none; }
+}
 ```
 
 **用 `box-shadow` 替代 `border` 不占空间**：
@@ -316,5 +318,27 @@ button:focus-visible { outline: 2px solid #3b82f6; }
 .avatar { filter: grayscale(1); transition: filter .3s; }
 .avatar:hover { filter: grayscale(0); }
 ```
+
+### 视觉效果的边界与官方参考
+
+OKLCH 的感知均匀性不等于“绝不偏色”或“自动满足对比度”，超出设备色域的颜色会映射。应在实际背景上计算对比度，并检查 forced-colors 与 200% 缩放。字体 smoothing 属性是平台相关非标准能力，不应作为正文可读性必需条件；`font-display: swap` 仍可能产生字体替换布局偏移。
+
+### 4.7 从属性表建立视觉层级
+
+先为正文、标题、辅助文字、链接和危险动作定义语义角色，再分配字号、字重和颜色。一个页面不需要每段都使用阴影或渐变；同一角色保持一致，读者才能从视觉判断哪里能操作、哪里只是说明。品牌色不适合包办成功、错误和选中状态。状态同时提供文字或图标，避免只能依靠红绿区分。
+
+字体栈中的字体通常有不同的字宽和行高。字体替换后标题可能换行，按钮可能变高，原本对齐的数字也可能变化；使用 `tabular-nums` 还要求字体具备对应特性。先让系统字体下的页面完整可用，再测试自定义字体慢加载、失败和缺字回退。`unicode-range` 是选择字体资源的条件，真正的中文子集仍需在字体构建阶段生成，不能靠声明减少已有文件体积。
+
+`cover` 与 `contain` 回答不同问题：前者填满区域并可能裁切，后者保留完整图像但可能留白。头像可以裁切，技术图解若裁掉标签就会丢失信息。内容图用 img 的替代文本和明确尺寸，纯装饰图可使用背景；不要把必须理解的文字只放进背景图。滤镜改变像素表现，不能证明图片仍符合原始颜色语义。
+
+### 4.8 验证主题、缩放和高对比模式
+
+按 WCAG 2.2 检查普通正文至少 4.5:1、大文字至少 3:1 的对比度，并另查必要控件边界与焦点。必须在实际混合后的背景上测量，不能只比较半透明前景的原始色值。阴影不是唯一边界，高对比模式可能不显示背景和阴影，应保留系统可识别的轮廓或边框。
+
+练习制作一张包含长标题、链接、错误说明和两种按钮的文章卡片。分别测试深浅主题、200% 字体或页面缩放、字体加载失败及 forced-colors。允许卡片自然增高，不用固定高度裁掉错误信息。验收应记录可读性、焦点可见性、换行和图片信息是否保留；检查工具通过一项对比度不能证明整页可访问。
+
+- [CSS Color Level 4](https://drafts.csswg.org/css-color-4/)
+- [CSS Fonts](https://drafts.csswg.org/css-fonts-4/)
+- [WCAG 2.2](https://www.w3.org/TR/WCAG22/)
 
 ---

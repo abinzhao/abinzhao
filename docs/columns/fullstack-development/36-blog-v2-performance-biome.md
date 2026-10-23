@@ -1,7 +1,7 @@
 ---
 title: "第 36 章：博客 v2 性能监控与 Biome 检查"
 description: "加入 Web Vitals、路由性能记录、按需加载、Biome 质量门禁和静态部署验证。"
-date: "2026-10-15"
+date: "2026-10-23"
 category: 项目实战
 tags: [Web Vitals, Biome, 性能, 部署]
 series:
@@ -24,8 +24,8 @@ series:
 ### 36.2 安装工具
 
 ```bash
-npm install web-vitals
-npm install -D @biomejs/biome
+npm install --save-exact web-vitals@6.2.3
+npm install -D --save-exact @biomejs/biome@2.6.2
 npx biome init
 ```
 
@@ -53,7 +53,7 @@ function reportMetric(metric: Metric): void {
     rating: metric.rating,
     delta: metric.delta,
     id: metric.id,
-    path: location.pathname,
+    path: location.pathname.includes('/posts/') ? '/posts/:slug' : '/',
   };
 
   if (import.meta.env.DEV) {
@@ -101,13 +101,13 @@ interface ImportMeta {
 }
 ```
 
-入口在首屏渲染后启动监控：
+入口提交 React 挂载请求后尽早启动监控，不能假定 `render()` 返回时首屏已经绘制：
 
 ```tsx
 // src/main.tsx
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { RouterProvider } from 'react-router-dom';
+import { RouterProvider } from 'react-router/dom';
 import { router } from './app/router';
 import { startWebVitals } from './monitoring/web-vitals';
 import './styles/index.css';
@@ -124,18 +124,16 @@ createRoot(root).render(
   </StrictMode>,
 );
 
-if ('requestIdleCallback' in window) {
-  window.requestIdleCallback(() => {
-    void startWebVitals();
-  });
-} else {
-  window.setTimeout(() => {
-    void startWebVitals();
-  }, 0);
-}
+void startWebVitals().catch((error) => {
+  if (import.meta.env.DEV) {
+    console.warn('性能采集初始化失败', error);
+  }
+});
 ```
 
 只发送指标、评级和路径，不发送文章内容、邮箱、搜索词等用户数据。监控端点还应配置采样、保留周期和隐私说明。
+
+路径使用路由模板而非原始 URL，以免动态 slug、用户标识或查询参数进入遥测。`VITE_*` 会打进浏览器产物，不允许放 API 私钥。Beacon 返回 `false` 时不能声称送达；跨源 JSON 上报还受 CORS 与预检约束。默认不配置 endpoint，只做本地诊断。
 
 常用良好阈值：
 
@@ -147,12 +145,14 @@ if ('requestIdleCallback' in window) {
 
 本地 Lighthouse 是实验室数据，真实用户 Web Vitals 是现场数据，两者都要看。
 
+良好阈值通常按现场样本第 75 百分位评估，并区分移动端和桌面端。标准 Web Vitals 以文档导航为主要生命周期，不会因每一次 SPA 路由变化自动重新计量 LCP；不得把初次页面 LCP 当成每条路由独立指标。
+
 ### 36.4 路由切换测量
 
 ```tsx
 // src/monitoring/RoutePerformance.tsx
 import { useEffect, useRef } from 'react';
-import { useLocation, useNavigation } from 'react-router-dom';
+import { useLocation, useNavigation } from 'react-router';
 
 export function RoutePerformance() {
   const navigation = useNavigation();
@@ -160,7 +160,7 @@ export function RoutePerformance() {
   const startedAt = useRef<number | null>(null);
 
   useEffect(() => {
-    if (navigation.state === 'loading') {
+    if (navigation.state !== 'idle' && startedAt.current === null) {
       startedAt.current = performance.now();
       return;
     }
@@ -193,7 +193,7 @@ export function RoutePerformance() {
 <Outlet />
 ```
 
-该指标包含 loader 与页面切换过程，适合比较改动前后趋势，不等于浏览器标准指标。
+该指标近似覆盖观察到的非 idle 导航到恢复 idle 的时间；快速导航可能没有被 Effect 捕获，Effect 调度也不是精确起点，页面绘制完成另需测量。它适合本地趋势比较，不等于完整 loader 延迟或标准 Web Vitals。
 
 ### 36.5 Long Task 观察
 
@@ -236,7 +236,7 @@ Long Task 表示主线程连续占用超过约 50ms。看到记录后，应通�
 
 ```tsx
 // src/app/router.tsx
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter } from 'react-router';
 import { RootLayout } from './RootLayout';
 import { RouteErrorPage } from './RouteErrorPage';
 import {
@@ -291,6 +291,8 @@ npm run build
 - 路由级页面。
 - 大型编辑器、图表、Markdown、代码高亮。
 - 只有用户触发后才出现的重功能。
+
+这里沿用 Router 8.5.0 的 Data 路由 `lazy` 公共 API，不依赖 Framework 模式的自动路由模块拆分。用于匹配的 `path`、`index` 和 `children` 保留为静态定义；懒加载返回命名导出的 `Component` 和 `loader`，不能直接把整个模块命名空间当组件返回。当前例子在同一 chunk 中加载页面和 loader，可能先下载页面再取数据；若测得网络瀑布明显，可把轻量 loader 静态导入，让它与页面 chunk 并行，但应实测而不是假定更快。验证快速连续导航时 `request.signal` 取消、chunk 加载失败进入错误边界，以及部署 base 下的动态资源地址。
 
 ### 36.7 避免常见性能问题
 
@@ -510,5 +512,15 @@ npm run preview
 - [ ] 性能指标可观察，关键流程已在移动端和桌面端回归。
 
 完成这些项目后，阶段 2 的重点不是“会写 React 语法”，而是已经能把浏览器能力、类型边界、组件状态、数据校验和交付质量组织成一个可维护的前端应用。
+
+### 36.12 官方参考与后端路线
+
+- [web.dev：Web Vitals](https://web.dev/articles/vitals)。
+- [web-vitals 官方库与 SPA 限制](https://github.com/GoogleChrome/web-vitals)。
+- [Biome：配置](https://biomejs.dev/reference/configuration/)。
+- [Vite：静态部署](https://vite.dev/guide/static-deploy.html)。
+- [React Router：路由懒加载](https://reactrouter.com/8.5.0/start/data/route-object#lazy)。
+
+到此完成的是前端 v2。接下来从[受维护的 Node 运行时](./37-node-typescript-runtime)构建后端，在[博客 v3 毕业项目](./54-blog-v3-fullstack-capstone)中把数据库、登录与前端页面真正接通。
 
 ---

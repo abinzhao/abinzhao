@@ -1,7 +1,7 @@
 ---
 title: 第七十章：OpenTelemetry、诊断与成本
 description: 区分追踪、指标、日志与会话内容，控制敏感信息和高基数，并用可核对的测量解释运行成本。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [OpenTelemetry, 成本]
 series:
@@ -20,7 +20,7 @@ Trace 表示请求经过组件的路径，适合关联一次运行的模型、�
 
 ## 固定实现的真实遥测边界
 
-DeepSeek Harness 固定提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa` 的 otel 文档说明，共享服务提供独立普通事件与 Session log 通道，通道的传输、资源和 scope 由业务消费者显式选择。仅挂载服务不分配 provider 或网络连接；每个通道拥有独立队列和请求，消费者负责 shutdown，关闭后不得复用。
+DeepSeek Harness RC.2 固定提交 `687f282e8625c6b8d11ff58211a90524be2e4317` 的 otel 文档说明，共享服务提供独立普通事件与 Session log 通道，通道的传输、资源和 scope 由业务消费者显式选择。仅挂载服务不分配 provider 或网络连接；每个通道拥有独立队列和请求，消费者负责 shutdown，关闭后不得复用。
 
 Session 反馈会先经过授权、规范前缀捕获与脱敏，再进入报告通道。共享服务本身不自动决定身份和采集政策。这意味着“接入 OTel”不能作为全量记录聊天的授权，也不能让业务把红线治理推给 exporter。字段选择应在数据离开业务边界之前完成，而不是发送后再希望后端删除。
 
@@ -35,6 +35,14 @@ Session 反馈会先经过授权、规范前缀捕获与脱敏，再进入报告
 ```
 
 Trace span 应围绕真实阶段开始和结束。动作意图生成、实际工具开始与耐久记录提交不是同一时间；一个 turn 结束也不表示后台 job 已释放。记录 duration 时应注明范围，并将用户审批等待与执行耗时分开，否则团队会把正常人工等待误判成模型性能退化。
+
+## 当前 GenAI 约定与 Session 导出限制
+
+截至 `2026-10-23`，旧 OTel GenAI 文档页已标记迁往 `open-telemetry/semantic-conventions-genai`，不再在原仓库维护。新仓库 GenAI 总览仍标为 **Development**，涵盖 inference、agent、tool、evaluation 和 MCP 信号；不能把 OTel 基础信号成熟度直接套给全部 GenAI 字段。接入时记录约定版本与字段映射，避免升级后同名指标改变口径。
+
+当前 DeepSeek Session telemetry 的 redaction waterfall **不自带脱敏规则**，没有监听器时原捕获记录原样交给 backend。部署必须安装自己的授权和脱敏政策；“有 redaction 接口”不等于默认没有正文。导出只修改副本，不修改 canonical session log，原始日志还需单独保护。
+
+handoff cursor 表示已交给 backend，不表示送达；崩溃可能丢失，重建对象或 SDK 重试可能重复。接收端对 ledger 记录按 `(session.id, session.format_version, event.seq)` 去重；没有该身份的 operational 记录不能当作精确可求和账本。反馈 backend 还限制单请求 `4,000,000` bytes，必须在实际序列化后的载荷上检查，而不是按字符数量猜测。
 
 ## 自包含安全字段实验
 
@@ -87,8 +95,12 @@ NODE
 
 基础示例未接入 OTel exporter，`labs/` 的统计也不是计费采集。这里没有模型费用、真实吞吐或云端遥测效果数据。上线前应独立审查采集权限、保留周期、删除流程和访问控制，带上成本缺失率及队列丢弃指标，才能把诊断作为可信运维证据。
 
+练习：为相同 ledger 事件的重复导出写去重用例，为无序号 operational 记录单独定义告警语义。移除脱敏监听器时应检测到策略缺失，而不是继续宣称隐私通过；再比较 UTF-8 字节上限与字符串长度的区别。
+
 ## 官方来源
 
+- [RC.2 OTel](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/otel.md)、[Session telemetry](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/session-telemetry.md)与[Token meter](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/token-meter.md)：当前通道、无默认脱敏、丢失/重复与估算边界，核验于 `2026-10-23`。
+- [GenAI 旧页迁移公告](https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-agent-spans/)与[新仓库 GenAI 总览](https://github.com/open-telemetry/semantic-conventions-genai/blob/main/docs/gen-ai/README.md)：迁移和 Development 状态，核验于 `2026-10-23`；移动分支不视为永久固定契约。
 - [DeepSeek otel](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/otel.md)：通道所有权、采集与关闭契约。
 - [DeepSeek token-meter](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/token-meter.md)：估算与 usage 锚点。
 - [OpenTelemetry signals](https://opentelemetry.io/docs/concepts/signals/)：官方信号定义，核验于 `2026-10-17`。

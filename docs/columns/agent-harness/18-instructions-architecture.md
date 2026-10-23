@@ -1,7 +1,7 @@
 ---
 title: '第18章：指令层级、项目规则与环境事实'
 description: 按来源、作用域与生命周期组织指令和运行事实，解释项目规则发现与执行权限为什么必须分离。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [指令层级, AGENTS.md, 上下文]
 series:
@@ -107,7 +107,13 @@ OpenCode 官方规则页描述自己的 `AGENTS.md`、`CLAUDE.md` 回退与 `ins
 
 DeepSeek `0.2.1-alpha.5` 的[系统提示子系统](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/system-prompt.md)、[装配源码](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/packages/core/system-prompt/src/index.ts)和[会话来源模型](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/llm-streaming.md)是固定实现依据。
 
-[Codex AGENTS.md 官方指南](https://developers.openai.com/codex/guides/agents-md)与[OpenCode 规则](https://opencode.ai/docs/rules/)是 2026-10-17 核验的厂商文档。本章未实现项目规则扫描、实时刷新或压缩重装配，独立来源实验也不能证明模型完全抵抗提示注入。
+[Codex AGENTS.md 官方指南](https://learn.chatgpt.com/docs/agent-configuration/agents-md)与[OpenCode 规则](https://opencode.ai/docs/rules/)于 2026-10-23 复核。本章未实现项目规则扫描、实时刷新或压缩重装配，独立来源实验也不能证明模型完全抵抗提示注入。
+
+## 18.7 当前发现规则的可观察检查
+
+当前 Codex 指南仍规定每目录最多选一个文件：`AGENTS.override.md`、`AGENTS.md`、配置的 fallback 依次检查，再从根到 cwd 合并。全局层选择首个非空文件；项目根未找到时只检查 cwd。更新 fallback 或指导文件后，应依官方流程启动新的命令确认，而不是假设已有运行中的上下文立即刷新。
+
+练习：在隔离目录同时放普通文件与 override，再加入一个不在 fallback 配置中的文件。正常发现应选择 override；空全局文件应被跳过，未配置名字不得进入规则链。记录实际加载路径、顺序与截断情况，若规则遗漏先查选择和字节上限，再查模型执行，不能只用回答措辞推断文件是否加载。
 
 ---
 

@@ -1,7 +1,7 @@
 ---
 title: 第四十五章：PTY、后台任务与进程清理
 description: 区分终端会话、单次 send 与后台任务，以所有权、输出游标和进程树清理构建可解释的取消语义。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [PTY, 进程清理]
 series:
@@ -101,6 +101,12 @@ subprocess 契约还给出 graceMs 与输出 drain 范围，避免顶层进程�
 命令应证明 timeout 返回时会话仍 running，重复 send 与外来 owner 被拒绝，close 清理模拟子孙节点但保留无关节点，重复 close 幂等。继续实验可让初始化在发布前失败，要求没有可用 id；模拟输出 cursor 被消费，重复读取不能重放已消费数据。真实验收还需 PTY 设备、窗口大小、信号升级、孤儿与管道残留，状态模型不覆盖这些事实。
 
 原 1–12 章独立 Node.js 22 ESM 项目没有任意命令、PTY 或后台进程，本章不修改只读边界。现有 labs 可验证所有权模型，但不能宣称实现跨平台终端或进程树杀止。实际 PTY 需要明确 provider 与平台依赖，取消也不能撤销进程已经提交给外部系统的操作，这仍属于第四十章的副作用对账问题。
+
+## 当前不同输出游标与清理证据
+
+2026-10-23 对照 [DeepSeek rc.2 Terminal](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/terminal.md)及 [Subprocess](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/subprocess.md)：终端 send 的 `readOutput()` 是消费式游标，而 subprocess collect-mode 的读取使用整流字节 offset 且不消费，独立读者不会偷走彼此 delta。不能给两个表面共用一个“读后清空”的实现，或者用字符串字符偏移解释字节游标。
+
+`terminate()` 与 `waitForExit()` 针对同一 provider-managed range；后者因等待 signal 中止返回 false，不表示范围已空。操作练习在原模型加“等待超时但 owned child 仍 alive”，要求最终报告清理未完成且身份仍可追踪。正常验收是 timeout 的 send 可以留下 running 会话，close 完成后范围静止；异常验收是 backend 无法继续观察管理范围或输出管道被幸存者持有，不能清空 pending 假装结束。排错分别看 send waitReason、顶层退出、managed range 与输出 drain，而不只看一个 pid。
 
 ## 官方固定来源
 

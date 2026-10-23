@@ -1,7 +1,7 @@
 ---
 title: 第三十一章：完整上下文装配与来源追踪
 description: 从分层贡献到不可变请求，建立来源、作用域、修订号和信任等级共同约束的上下文装配契约。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [上下文工程, 来源追踪]
 series:
@@ -86,6 +86,12 @@ NODE
 运行上面的完整命令，应看到 passed，重复来源和低信任 system 输入必须触发断言。进一步实验可删去 cwd 候选，要求准入器拒绝缺少运行事实；交换输入顺序，摘要应保持不变；修改 revision，摘要必须变化。验收的是材料身份与不可变性，不是模型是否一定遵守文字规则，也不是事实自动更新能力。
 
 原 1–12 章 `local-harness-tutorial` 仍是 Node.js 22 ESM、单进程、只读工作区项目。本章没有给它安装上游动态上下文服务。扩展实验已经落盘在 `labs/{skills,policies,context,workflow,eval}.mjs`，由 `labs/run.mjs` 汇总，可使用实际配置的 `npm run labs`。这些是独立教学模块，不是上游服务实现；本章的 stdin 示例不依赖其他章节文件。
+
+## 当前装配推荐与复核
+
+2026-10-23 对照 [DeepSeek rc.2 的 system-prompt 契约](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/system-prompt.md)：稳定 `PromptSection` 与动态 `PromptContext` 的分层仍成立，前文 alpha.5 是历史可复现基线，不是当前发布号。更新适配器时特别核对 `systemPromptUpdate: "in-history"`；它决定系统更新能否追加在已有缓存历史之后，不能根据“API 兼容 OpenAI”自行开启。
+
+操作上先记录材料摘要和日志修订，再改变 cwd 或工具集合。正常验收是动态事实形成新快照，而稳定规则在未变时不重复提交；异常验收是在异步路由准备期间取消，尚未准入的候选用户和系统材料不得落成成功请求。上述内存实验可再交换 candidates 顺序验证摘要稳定，再改变工具定义版本验证完整信封身份改变。排错应比较实际发送的派生历史与 header，而不只检查一份拼接提示词；练习是为缺失的 required 运行事实添加显式拒绝分支。
 
 ## 官方固定来源
 

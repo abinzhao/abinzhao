@@ -1,7 +1,7 @@
 ---
 title: '第29章：MCP 缓存、订阅与故障恢复'
 description: 区分协议缓存提示、资源更新订阅和宿主连接代际，用确定性实验验证过期、授权隔离与迟到结果处理。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [MCP, 缓存, 订阅, 故障恢复]
 series:
@@ -16,7 +16,7 @@ series:
 
 ## 29.1 缓存提示不是完整性证明
 
-现代规范为部分完成结果定义 `ttlMs` 与 `cacheScope`。TTL 是收到结果后多久可合理视为新鲜，不是服务器承诺字节绝不变；private 缓存只能复用到相同授权上下文，不能跨用户或不同凭据共享。
+现代规范为部分完成结果定义 `ttlMs` 与 `cacheScope`。`ttlMs` 缺失应按 0（立即过期）处理；负值应忽略并视为 0，Server 则必须提供非负值。TTL 是收到结果后多久可合理视为新鲜，不是服务器承诺字节绝不变；private 缓存只能复用到相同授权上下文，不能跨用户或不同凭据共享。
 
 | 状态 | 可以做什么 | 不可推导 |
 | --- | --- | --- |
@@ -57,9 +57,12 @@ let now = 100;
 const cache = new Map();
 const key = (server, authContext, uri) =>
   JSON.stringify([server, authContext, 'resources/read', { uri }]);
-function put(server, authContext, uri, value, ttlMs) {
-  if (!Number.isSafeInteger(ttlMs) || ttlMs < 0) throw new Error('Invalid TTL');
-  cache.set(key(server, authContext, uri), { value, expiresAt: now + ttlMs });
+function put(server, authContext, uri, value, ttlMs = 0) {
+  if (!Number.isSafeInteger(ttlMs)) throw new Error('Invalid TTL');
+  const effectiveTtl = Math.max(0, ttlMs);
+  cache.set(key(server, authContext, uri), {
+    value, expiresAt: now + effectiveTtl,
+  });
 }
 function get(server, authContext, uri) {
   const item = cache.get(key(server, authContext, uri));
@@ -71,6 +74,10 @@ assert.equal(get('docs', 'account-a-v1', 'guide://limits'), 'read-only');
 assert.equal(get('docs', 'account-b-v1', 'guide://limits'), undefined);
 now = 150;
 assert.equal(get('docs', 'account-a-v1', 'guide://limits'), undefined);
+put('docs', 'account-a-v1', 'guide://negative', 'ignored', -1);
+assert.equal(get('docs', 'account-a-v1', 'guide://negative'), undefined);
+put('docs', 'account-a-v1', 'guide://missing', 'stale');
+assert.equal(get('docs', 'account-a-v1', 'guide://missing'), undefined);
 
 let generation = 1;
 const observedGeneration = generation;
@@ -110,7 +117,15 @@ DeepSeek supervisor 串行化初次同步、通知同步和重连同步，避免
 
 真实恢复验收需故障注入：发现中断、重复目录、注册冲突、连续崩溃、稳定后再次断线、卸载时迟到结果。观察目录、调用错误与进程数，不能只看“已重连”日志。本文未启动 Server，资源订阅和真实网络恢复仍未验证。
 
-## 29.7 固定官方来源
+## 29.7 当前缓存与重连门禁
+
+2026-10-23 复核缓存规范：同一列表请求所有分页必须保持相同 `cacheScope`，不能第一页面 private、第二页面 public 就按各页分别共享。`inputResponses` / `requestState` 参与的交互重试结果不得缓存；其输入不完整地包含在普通缓存键中。
+
+[Claude Code 2.1.307 发布记录](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md)将 MCP 重连后的自动重试限制到只读或幂等工具。这是产品保护，不是“有 `readOnlyHint` 就绝对安全”的证明；Host 应确认服务可信度、实际副作用与未知效果的查询策略。
+
+练习：让分页 scope 改变、TTL 缺失或为负，以及写请求执行后响应丢失。正常只读读取可按政策恢复；异常缓存不得跨授权共享，未知写效果先对账而非重发。排错分别检查缓存键、通知失效、连接代际和工具效果次数，不能把“连接恢复”当成“业务恢复”。
+
+## 29.8 固定官方来源
 
 协议依据 [2026-07-28 caching](https://modelcontextprotocol.io/specification/2026-07-28/server/utilities/caching)、[subscriptions](https://modelcontextprotocol.io/specification/2026-07-28/basic/patterns/subscriptions)和[resources](https://modelcontextprotocol.io/specification/2026-07-28/server/resources)。
 

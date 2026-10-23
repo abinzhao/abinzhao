@@ -1,7 +1,7 @@
 ---
 title: '第27章：MCP 传输与协议版本迁移'
 description: 对照现代逐请求协议与旧初始化协议，解释 stdio、Streamable HTTP、版本探测和取消的不同契约。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [MCP, stdio, Streamable HTTP, 协议迁移]
 series:
@@ -79,7 +79,7 @@ HTTP endpoint 还必须检查 Origin，尤其是本机服务的 DNS rebinding �
 
 双时代 stdio Client 应先 `server/discover`：取得发现结果或可识别现代错误，表明对方属于现代；版本不支持时选择双方支持版本，不能退回 initialize。其他错误或合理探测超时则按旧版分支处理，不应只匹配一个固定未知方法错误码。
 
-HTTP 探测也要看官方规定的状态与响应体。现代错误带支持版本信息，与旧 endpoint 不识别现代请求是不同情况。401 表示授权问题，不能把它理解成切换到无认证旧接口的理由。协议回退必须保持端点身份、出域政策和授权边界。
+HTTP 探测必须同时判断状态与响应体：400、404、405 且不含可识别的现代协议错误，才考虑旧协议回退。现代 UnsupportedProtocolVersionError、HeaderMismatch 或现代 method-not-found 不是切回 initialize 的依据。401 / 403 属于授权或来源问题，不允许回退到无认证旧接口。协议回退必须保持端点身份、出域政策和授权边界。
 
 DeepSeek 固定版本依赖 `@modelcontextprotocol/client` `2.2.0`，源码使用自动版本选择，由官方 SDK 负责时代探测和协议验证；没有一个产品配置字段强制任意协议 revision。不要在 YAML 中发明 `protocolVersion` 并声称已生效。
 
@@ -97,7 +97,64 @@ Server 重启后，协议可以重新请求，但工具可能已经产生副作�
 
 真实互通验收需要现代、旧版和双时代 Server，覆盖发现错误、版本不支持、无认证、部分响应、取消和重启。对写工具还需要观察服务端副作用次数；仅 Client 返回失败不能证明外部动作未发生。本章不启动这些 Server，也不宣称网络兼容测试已完成。
 
-## 27.7 固定官方来源
+## 27.7 当前 HTTP 元数据与头部编码
+
+2026-10-23 复核现代 transport：版本、方法和适用的名字分别放入 `MCP-Protocol-Version`、`Mcp-Method`、`Mcp-Name`，并与 body 一致。`Mcp-Name` 对应 tools / prompts 的 `params.name` 或 resources 的 `params.uri`，不是 Host 加前缀后的公共名。缺失、格式错误或不一致，Server 应返回 HTTP 400 和 JSON-RPC `-32020` HeaderMismatch。
+
+非 ASCII 或不能安全表示的值用 `=?base64?{UTF-8字节的Base64}?=`；即使纯 ASCII，只要本身匹配此 sentinel 形状，也必须编码，避免歧义。不是 URL 百分号编码，Server 应先解码再比较。以下只演示编码函数，不是完整 HTTP 校验器：
+
+```js
+import assert from 'node:assert/strict';
+const encodeName = value => {
+  if (/^[\x20-\x7e]+$/.test(value) &&
+      !(value.startsWith('=?base64?') && value.endsWith('?='))) return value;
+  return `=?base64?${Buffer.from(value, 'utf8').toString('base64')}?=`;
+};
+assert.equal(encodeName('read_guide'), 'read_guide');
+assert.equal(encodeName('读取'), '=?base64?6K+75Y+W?=');
+assert.notEqual(encodeName('=?base64?YWJj?='), '=?base64?YWJj?=');
+```
+
+如果工具 schema 还声明了自定义 `Mcp-Param-*` 头，Client 要按对应参数契约生成，代理不能随意删改。头部不一致时先刷新 schema 并重建合法请求，不能在代理里修改 body 让检查通过；写操作重试仍需确认此前没有执行。
+
+## 27.8 对接第 26 章的 v2 客户端
+
+在与 `server.mjs` 相同的独立实验目录运行下面 `client.mjs`。它从本机已安装的固定依赖导入，用当前 Node 启动服务，不临时下载执行器，不调用模型：
+
+```js
+import assert from 'node:assert/strict';
+import { Client } from '@modelcontextprotocol/client';
+import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
+
+const client = new Client({ name: 'evidence-client', version: '1.0.0' });
+const transport = new StdioClientTransport({
+  command: process.execPath, args: ['server.mjs'],
+});
+try {
+  await client.connect(transport);
+  const { tools } = await client.listTools();
+  assert.equal(tools.length, 1);
+  assert.equal(tools[0].name, 'read_guide');
+  const result = await client.callTool({
+    name: 'read_guide', arguments: { topic: 'boundaries' },
+  });
+  assert.notEqual(result.isError, true);
+  assert.ok(result.content.some(block =>
+    block.type === 'text' && block.text.includes('Only read')));
+  const invalid = await client.callTool({
+    name: 'read_guide', arguments: { topic: 'other' },
+  });
+  assert.equal(invalid.isError, true);
+} finally {
+  await client.close();
+}
+```
+
+正常验收是发现、只读调用与进程清理都完成；异常参数返回 `isError`，连接或未知方法抛错则保持原错误。练习：终止服务、写入非 JSON stdout、取消等待，以及模拟旧版对端，记录实际协议分支和存活进程数。编码断言不能证明真实代理正确转发，stdio 测试不能证明 HTTP / OAuth 成立。
+
+SDK 契约依据[官方 first-client](https://github.com/modelcontextprotocol/typescript-sdk/blob/main/docs/get-started/first-client.md)；该页旧 initialize 措辞的冲突见第 25 章。协议选择由 SDK 和固定 wire 规范验收，不用注释代替观察。完整迁移门禁见[第 73 章](./73-version-governance.md)。
+
+## 27.9 固定官方来源
 
 现代依据 [versioning](https://modelcontextprotocol.io/specification/2026-07-28/basic/versioning)、[stdio](https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/stdio)和[Streamable HTTP](https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/streamable-http)；旧版依据 [2025-11-25 lifecycle](https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle)。
 

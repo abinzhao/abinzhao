@@ -1,7 +1,7 @@
 ---
 title: 第九章：用结构化事件观察运行
 description: 从 runId、step 和工具结果重建运行路径，区分临时输出、持久化事实与隐私边界。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Node.js, 可观测性]
 series:
@@ -132,6 +132,12 @@ MODEL=qwen3:4b npm start -- "阅读 guide.md，解释工具边界并引用路径
 当前项目没有遥测导出器、metrics API、trace span 或事件订阅总线。它提供的最小能力是回调式结构观测，既可用于界面，也可用于确定性测试。可靠的可观测性首先来自字段语义和状态顺序，而不是平台数量。
 
 本章完成时，你应该能从事件解释运行进入了哪个阶段、最终是否完成，并知道哪些信息必须通过 session 或本地调试才能获得。尤其要守住两条结论：总耗时不是模型耗时，日志不含 prompt 字段不意味着会话没有私密内容。
+
+## 2026-10-23：遥测字段要区分零、缺失与未知
+
+对照 [Node.js performance API](https://nodejs.org/docs/latest-v22.x/api/perf_hooks.html#performancenow)和本章固定事件契约，`durationMs` 只能衡量所描述的进程内区间。没有 usage 事件时，token 与成本是“未知”，不能填零；没有 run.end 时，先检查接纳、观察者和持久化，不直接统计为模型失败。
+
+练习：向观察者输入一条正常运行、一条预算前失败和一条缺少终态的事件序列，分别统计 completed、failed、unknown；让观察回调抛错，记录当前同步 emit 的影响。真实输出中还可能包含终端控制字符，CLI 渲染与日志查看需要自己的安全策略；文本不作为 HTML 执行不等于终端展示无风险。
 
 ## 固定来源
 

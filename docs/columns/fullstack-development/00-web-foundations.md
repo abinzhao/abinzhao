@@ -1,7 +1,7 @@
 ---
 title: "第 0 章：网页运行原理与开发起步"
 description: "从浏览器渲染链路、最小目录和页面骨架开始建立 Web 开发心智模型。"
-date: "2026-10-15"
+date: '2026-10-23'
 category: 网页基础
 tags: [HTML5, 浏览器, 开发环境]
 series:
@@ -47,9 +47,9 @@ HTML 中引入：
 
 三个必须知道的东西：
 
-- `<!DOCTYPE html>`：告诉浏览器用标准模式渲染，缺了它会进入怪异模式（quirks mode），盒模型计算方式完全不同。
+- `<!DOCTYPE html>`：使现代 HTML 文档进入标准模式；缺少或使用某些旧声明可能进入怪异模式。怪异模式会影响部分布局规则，不表示所有盒模型计算都完全不同。
 - `<meta name="viewport" content="width=device-width, initial-scale=1">`：移动端不加这行，页面会被当成 980px 宽的桌面页缩小显示。
-- `<script defer>`：脚本延迟到 DOM 解析完成后按顺序执行，等价于在 `</body>` 前引入但更清晰。`async` 是下载完立刻执行、不保证顺序，只适合完全独立的脚本。
+- `<script defer>`：外部经典脚本与解析并行下载，DOM 解析完成后按文档顺序执行，在 `DOMContentLoaded` 前完成；与放在 `</body>` 前的同步脚本并不等价。`async` 就绪后尽快执行，不保证文档顺序，适合独立脚本。模块脚本默认延后执行，不能通过添加 `defer` 获得额外效果。
 
 ### 0.3 `head` 中的基础元数据
 
@@ -95,5 +95,17 @@ HTML 中引入：
 | `https://cdn.example.com/cover.jpg` | 完整的外部地址 |
 
 以 `/` 开头的是**根路径**，部署到 `https://example.com/my-blog/` 这类子路径时可能失效。纯静态教程项目优先使用相对路径；使用构建工具时，再由站点的 `base` 配置统一处理公共路径。
+
+### 0.5 从网页到全栈的边界
+
+浏览器负责交互，但不能保管数据库密码、替用户决定权限或作为持久化真相源。开发者工具中可以改请求和 localStorage，因此“前端隐藏按钮”并不构成授权。后端接收不可信输入、校验身份与资源权限、执行事务，再返回有限的公开字段。后续从 [Node.js 服务运行时](./37-node-typescript-runtime) 开始建立这一边界。
+
+练习：分别打开带 `defer`、`async` 和 `type="module"` 的页面，记录 Network 下载顺序与 Console 执行顺序。禁用一个脚本或让 CSS 返回 404，判断失败发生在请求、解析还是渲染层。完成标准是能解释顺序差异，而不只是看到页面出现。
+
+### 官方参考
+
+- [WHATWG HTML Standard](https://html.spec.whatwg.org/multipage/)
+- [WHATWG script 处理模型](https://html.spec.whatwg.org/multipage/scripting.html#the-script-element)
+- [URL Standard](https://url.spec.whatwg.org/)
 
 ---

@@ -1,7 +1,7 @@
 ---
 title: 第三十八章：耐久存储、写锁与崩溃恢复
 description: 将内存可见、append 确认与 flush 耐久屏障分开，用单写者所有权和完整前缀恢复避免伪成功。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Durability, 崩溃恢复]
 series:
@@ -60,9 +60,11 @@ assert.equal(backend.visible.length, 1);
 assert.equal(backend.durable.length, 0);
 handle.flush();
 handle.append([{ seq: 1, type: 'tool/call' }]);
+const oldHandle = handle;
 backend.visible = structuredClone(backend.durable);
 backend.owner = null;
 handle = openWrite('restart');
+assert.throws(() => oldHandle.append([{ seq: 1, type: 'stale-writer' }]));
 assert.equal(backend.visible.length, 1);
 assert.throws(() => handle.append([{ seq: 2, type: 'gap' }]));
 handle.append([{ seq: 1, type: 'turn/interrupted' }]);
@@ -97,6 +99,12 @@ DeepSeek Harness `0.2.1-alpha.5` 固定提交的 `SessionPersistence` 通过 `Se
 命令应证明 append 后 visible 增长、durable 未增长，flush 后出现耐久模型快照，模拟重启只保留屏障前内容。第二写者、seq 缺口必须拒绝，close 两次应安全。真实耐久验收需要子进程崩溃、实际文件系统、跨进程争抢、尾部损坏与 flush 故障注入；本实验没有替代这些测试，也不对操作系统或设备断电行为作保证。
 
 原 1–12 章 `local-harness-tutorial` 明确为单进程只读助手，不能因为已有会话文件就声称实现跨进程锁或全部上游 handle 语义。已落盘的扩展 labs 可承接确定性状态实验，本章只新增文稿。生产耐久性仍取决于选用后端、文件系统与部署条件，而外部副作用的幂等与对账将在第四十章单独处理。
+
+## 当前恢复与写者失效验收
+
+2026-10-23 对照 [DeepSeek rc.2 Persistence](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/persistence.md)，append/flush 后的读取新鲜度承诺覆盖同一 backend instance 上所有随后开始的 read，不只原写 handle；它不自动扩展到跨实例的实时可见。write-behind 是有界批处理，不是批处理窗口结束就保证磁盘耐久，真正的屏障仍是已成功结算的 flush。
+
+上述代码现在同时验证旧 writer 在重启后不能继续追加。真实 lease 需要独立 fencing 身份，不能在 owner 名称重复时复活旧 handle。正常验收应区分接受、可见和耐久前缀；异常验收包括 flush 拒绝、关闭期间取消、写者失效和后台批次保留顺序。练习使批次第二项 seq 错误，断言第一项也没有部分进入 visible；排错将所有权错误、格式损坏与存储 I/O 分列，不把重试工具作为日志修复步骤。
 
 ## 官方固定来源
 

@@ -1,7 +1,7 @@
 ---
 title: "第 31 章：React 钩子与状态建模"
 description: "掌握 useState、useEffect、useContext、useRef、useMemo、useCallback 与 useReducer。"
-date: "2026-10-15"
+date: "2026-10-23"
 category: React
 tags: [React 钩子, 状态, 副作用]
 series:
@@ -108,7 +108,7 @@ function selectTag(tag: string | null) {
 }
 ```
 
-昂贵初始值使用惰性初始化，只在首次挂载计算：
+昂贵初始值使用惰性初始化，避免每次渲染重新计算；开发环境 StrictMode 可能额外调用初始化函数来检查纯度：
 
 ```tsx
 const [draft, setDraft] = useState(() => readDraftFromStorage());
@@ -139,7 +139,7 @@ function PostPage({ slug }: { slug: string }) {
 
     async function loadPost() {
       try {
-        const response = await fetch(`/api/posts/${slug}`, {
+        const response = await fetch(`/api/posts/${encodeURIComponent(slug)}`, {
           signal: controller.signal,
         });
 
@@ -147,7 +147,10 @@ function PostPage({ slug }: { slug: string }) {
           throw new Error(`HTTP ${response.status}`);
         }
 
-        setPost(await response.json());
+        const payload = await response.json();
+        if (!controller.signal.aborted) {
+          setPost(payload);
+        }
       } catch (caught) {
         if (
           caught instanceof DOMException &&
@@ -182,6 +185,8 @@ function PostPage({ slug }: { slug: string }) {
 - 组件卸载。
 - Effect 因依赖变化重新执行之前。
 - 开发环境 `StrictMode` 的额外检查周期。
+
+这段代码聚焦 Effect 生命周期，不是完整数据层。`Post` 类型和运行时 schema 见第 33 章；正式代码须校验 `payload`，并分别渲染加载、错误和成功状态。中止客户端请求不保证服务器没有完成写操作。
 
 不需要 Effect 的例子：
 
@@ -445,6 +450,8 @@ async function handleSave() {
 
 Reducer 必须是纯函数：不请求网络、不写存储、不修改传入 state。
 
+保存期间若继续允许输入，旧请求成功不能把新编辑标成“已保存”。最小策略是 pending 时禁用编辑；需要不停笔自动保存时，为每次编辑增加 revision，只确认对应版本，第 41、54 章还会处理服务端并发冲突。
+
 ### 31.10 如何选择
 
 | 需求 | Hook |
@@ -465,5 +472,11 @@ Reducer 必须是纯函数：不请求网络、不写存储、不修改传入 st
 4. 用 Profiler 比较加入 `useMemo` 前后的实际耗时。
 5. 给 Reducer 新增 `publishSucceeded` 事件，用穷尽联合保证分支完整。
 6. 修改 ref，确认界面不会自动变化；改用 State 后确认会重新渲染。
+
+### 31.12 官方参考
+
+- [React：useEffect](https://react.dev/reference/react/useEffect)。
+- [React：通常不需要 Effect](https://react.dev/learn/you-might-not-need-an-effect)。
+- [React：useMemo](https://react.dev/reference/react/useMemo)与[useReducer](https://react.dev/reference/react/useReducer)。
 
 ---

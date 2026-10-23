@@ -1,7 +1,7 @@
 ---
 title: 第 02 章：让插件注册拥有完整生命周期
 description: 用所有权作用域管理服务注册，解释初始化失败回滚、反向清理和异步卸载边界。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Node.js, 插件生命周期]
 series:
@@ -150,6 +150,12 @@ scope 也没有单插件卸载接口。当前用途是固定组合的整体关�
 上游的 `dispose()` 缓存共享 Promise，并通过 `quiesceFiber()` 等待异步 teardown；并发调用会等待相同完成边界。这个差异值得明确指出，不能把本项目的 `closed` 布尔标记描述成同等强度的卸载保证。
 
 上游还使用 scope key 约束注册视图与事件路由，支持父子 scope 关系。教学项目没有这些机制，因此这里的“作用域”指资源所有权，不是模块安全沙箱，也不是每个 agent 的权限隔离区域。
+
+### 升级时验收关闭屏障
+
+2026-10-23 复核本章的[固定 scope 源码](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/packages/core/scope/src/index.ts)：共享 disposal Promise 是该历史实现的证据，不是所有插件框架自动具备的保证。升级到[RC.2](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.2.1-rc.2)仍需逐项对账。
+
+练习：用一个手动释放的 Promise 阻塞 cleanup，同时调用两次 `dispose()`，观察第二个等待者何时结束；再注入一个失败 cleanup，确认后续资源仍尝试释放。教学 scope 的并发等待缺口应如实记录，不能通过只保留顺序用例掩盖。外部插件具有进程权限，生命周期回滚不是安全沙箱；接入前先审查来源和实际副作用。
 
 ## 2.9 排错与验证标准
 

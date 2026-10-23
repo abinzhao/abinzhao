@@ -1,7 +1,7 @@
 ---
 title: 第十二章：把 Harness 接到可取消的 Web 界面
 description: 用同源 POST 与 SSE 展示运行事件，建立 Host 校验、并发锁、文本渲染和慢消费者中止边界。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Node.js, Web 运输层]
 series:
@@ -156,6 +156,12 @@ MODEL=qwen3:4b npm run web
 - [DeepSeek Harness：模型流式契约](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/llm-streaming.md)：区分模型 SSE 与 Web 运行事件。
 - [DeepSeek Harness：Session 事件与远程边界](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/session.md)：上游会话能力不与本例两条 HTTP 路由混同。
 - [Node.js 22：HTTP response.write](https://nodejs.org/docs/latest-v22.x/api/http.html#responsewritechunk-encoding-callback)：确认返回 false 与发送缓冲背压的关系。
+
+## 2026-10-23：流式 Web 与 MCP Apps 是两种宿主
+
+对照[现代 MCP HTTP 规范](https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/streamable-http)和 [MCP Apps 官方实现](https://github.com/modelcontextprotocol/ext-apps)，本章 POST / SSE 页面不具备 MCP 请求元数据、Apps UI 资源、隔离消息桥或扩展协商。不能只因使用 iframe、SSE 或浏览器就把它命名为完整 MCP Host。
+
+练习：在目标浏览器用纯教学输出检查标签、长行、emoji、键盘取消、连接截断与第二标签页并发；在服务器确认取消信号和锁释放，再对照最终运行状态。Node HTTP 夹具验证协议，浏览器验证 DOM 与操作体验，真实模型验证回答，三层分别记录。浏览器与真实模型的验收需要独立运行证据，不能由本文代码片段推导通过。
 
 ## 从基础项目进入完整工程体系
 

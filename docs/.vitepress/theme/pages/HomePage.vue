@@ -12,6 +12,14 @@ import { data as content } from '../../data/content.data';
 import { data as repositories } from '../../data/projects.data';
 
 const articles = computed(() => content.blogArticles.slice(0, 3));
+const courseLabels: Record<string, string> = {
+  'fullstack-development': '全栈开发',
+  'agent-harness': 'Agent Harness',
+  'wechat-mini-program': '小程序开发',
+  'agent-product-manager': 'Agent 产品经理',
+  'uni-app': 'uni-app 跨端开发',
+  godot: 'Godot 游戏开发',
+};
 const terminalExpanded = ref(false);
 const activeFile = ref<'developer.ts' | 'harness.config.ts'>('developer.ts');
 const metrics = computed(() => [
@@ -77,6 +85,12 @@ const codeLines = computed(() => activeFile.value === 'developer.ts' ? home.term
               <dd>{{ metric.value }}</dd>
             </div>
           </dl>
+          <nav class="home-course-links" aria-label="专题快捷入口">
+            <a v-for="column in content.columns" :key="column.slug" :href="withBase(column.href)">
+              {{ courseLabels[column.slug] ?? column.title }}
+              <ArrowRight :size="14" aria-hidden="true" />
+            </a>
+          </nav>
         </div>
 
         <aside class="terminal-window" :class="{ 'terminal-window--collapsed': !terminalExpanded }" aria-label="开发终端">

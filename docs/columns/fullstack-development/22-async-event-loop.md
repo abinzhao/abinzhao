@@ -1,7 +1,7 @@
 ---
 title: "第 22 章：Promise、async/await 与事件循环"
 description: "掌握 Promise 链、异步并发、事件循环以及微任务和宏任务的执行顺序。"
-date: "2026-10-15"
+date: "2026-10-23"
 category: JavaScript
 tags: [Promise, 异步等待, 事件循环]
 series:
@@ -188,6 +188,8 @@ const [posts, tags] = await Promise.all([
 | `Promise.allSettled()` | 等待全部结束，并保留每项成功或失败状态 |
 | `Promise.race()` | 第一个结束的结果决定最终状态 |
 | `Promise.any()` | 第一个成功即成功；全部失败才失败 |
+
+这些组合方法不会取消已开始的工作。`all()` 提前拒绝或 `race()` 得到超时结果后，其他请求仍可能继续；取消网络请求需要把 `AbortSignal` 传给 Fetch。也不要对十万条数据直接 `Promise.all(items.map(...))`，应限制同时在途任务数。
 
 首页多个区域允许独立失败时，可以使用 `allSettled()`：
 
@@ -394,6 +396,8 @@ commentForm.addEventListener(
 
 闭包中的 `submitting` 保证同一时刻只有一个请求，按钮禁用则给用户明确反馈。
 
+这个保证只覆盖当前页面中的当前处理器。刷新、多个标签页、网络重试都可能重复提交；可信后端需要在第 47 章使用幂等键和数据库约束防止重复业务效果。
+
 ### 22.9 效果验证
 
 1. 在 Console 运行事件循环示例，先写下预测顺序，再核对输出。
@@ -415,5 +419,11 @@ commentForm.addEventListener(
 **是否应该在每个函数里都写 `try/catch`？**
 
 不应该。只在能恢复、转换错误或补充上下文的边界捕获。否则让错误继续向调用方传播。
+
+### 22.11 官方参考
+
+- [HTML 标准：事件循环](https://html.spec.whatwg.org/multipage/webappapis.html#event-loops)。
+- [MDN：Promise](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise)。
+- [MDN：微任务指南](https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide)。
 
 ---

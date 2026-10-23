@@ -1,7 +1,7 @@
 ---
 title: "第 25 章：图形、文件、定位与实时通信"
 description: "掌握 Canvas、SVG、URL、File、拖放、Geolocation 与 WebSocket 的使用边界。"
-date: "2026-10-15"
+date: "2026-10-23"
 category: 浏览器 API
 tags: [Canvas, SVG, 文件接口, WebSocket]
 series:
@@ -38,6 +38,10 @@ const canvas = document.querySelector('#reading-chart');
 const context = canvas.getContext('2d');
 
 function drawReadingChart(values) {
+  if (values.length === 0) {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    return;
+  }
   const width = canvas.width;
   const height = canvas.height;
   const padding = 32;
@@ -80,6 +84,8 @@ function resizeCanvas(canvas, context) {
 ```
 
 Canvas 内部内容不会自动进入无障碍树。关键数据必须提供文本摘要或可访问表格。
+
+高清缩放后，绘图应使用 `resizeCanvas()` 返回的 CSS 逻辑宽高，而不是再次使用已经乘过像素比的 `canvas.width/height`，否则会双重放大。宽高赋值会清空画布和绘图状态，必须重新设定变换并重绘；真实布局应通过 `ResizeObserver` 触发这一流程。
 
 ### 25.3 SVG：可查询的矢量节点
 
@@ -193,13 +199,15 @@ const ACCEPTED_TYPES = new Set([
   'image/jpeg',
   'image/webp',
 ]);
+const coverInput = document.querySelector('#cover-input');
+const coverPreview = document.querySelector('#cover-preview');
 
 function validateImage(file) {
   if (!ACCEPTED_TYPES.has(file.type)) {
     throw new TypeError('只支持 PNG、JPEG 或 WebP 图片');
   }
 
-  if (file.size > MAX_FILE_SIZE) {
+  if (file.size === 0 || file.size > MAX_FILE_SIZE) {
     throw new RangeError('图片不能超过 5MB');
   }
 }
@@ -241,6 +249,8 @@ window.addEventListener('pagehide', () => {
 ```
 
 对象 URL 持有底层资源引用，用完必须 `revokeObjectURL()`。`accept` 只是文件选择器提示，仍需在代码和服务端验证类型与大小。
+
+`file.type` 是浏览器提供的声明，不是文件内容证明；可信上传流程还要检查文件头、解码结果和像素上限，见第 48 章。初始化时应确认两个 DOM 节点存在；页面从往返缓存恢复后，要重新生成已撤销的预览 URL。
 
 读取文本文件：
 
@@ -286,10 +296,14 @@ for (const eventName of ['dragleave', 'drop']) {
 }
 
 dropZone.addEventListener('drop', (event) => {
-  const [file] = event.dataTransfer.files;
+  const file = event.dataTransfer?.files[0];
 
   if (file) {
-    showPreview(file);
+    try {
+      showPreview(file);
+    } catch (error) {
+      showMessage(error.message);
+    }
   }
 });
 
@@ -297,7 +311,12 @@ fileInput.addEventListener('change', () => {
   const [file] = fileInput.files;
 
   if (file) {
-    showPreview(file);
+    try {
+      showPreview(file);
+    } catch (error) {
+      fileInput.value = '';
+      showMessage(error.message);
+    }
   }
 });
 ```
@@ -397,7 +416,7 @@ function createCommentSocket(url, handlers) {
 
       const delay = Math.min(1000 * 2 ** retryCount, 30_000);
       retryCount += 1;
-      reconnectTimer = setTimeout(connect, delay);
+      reconnectTimer = setTimeout(connect, delay * (0.5 + Math.random() * 0.5));
     });
   }
 
@@ -461,5 +480,12 @@ window.addEventListener('pagehide', () => {
 4. 拒绝定位权限，确认页面给出替代操作而不是卡死。
 5. 在 DevTools Network 的 WS 面板观察连接与消息帧。
 6. 临时断网后恢复，确认重连间隔逐步增加且最多为 30 秒。
+
+### 25.10 官方参考
+
+- [MDN：Canvas 高像素密度缩放](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas)。
+- [MDN：File API](https://developer.mozilla.org/en-US/docs/Web/API/File_API)。
+- [WHATWG：WebSocket 标准](https://websockets.spec.whatwg.org/)。
+- [MDN：Geolocation API](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API)。
 
 ---

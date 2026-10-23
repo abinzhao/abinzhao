@@ -1,7 +1,7 @@
 ---
 title: 第六十九章：Skill、插件评测与消融对比
 description: 通过触发、加载、执行和安全分层评测技能与插件，用独立变量和同任务配对避免错误因果结论。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Skill 评测, 消融实验]
 series:
@@ -41,6 +41,14 @@ series:
 | 工具懒加载开关 | 工具能力与任务 | 上下文策略是否影响选择 |
 
 移除 Skill 往往也减少输入 Token，这可能是变量的中介效果，但必须报告，不能悄悄给另一组扩大预算补齐。工具撤销则是能力变化，与仅移除说明不同。先写出实验要估计的效应，再选择控制条件，避免把“技能有用”变成不可证伪的描述。
+
+## 当前插件格式也属于实验条件
+
+`2026-10-23` 的插件格式复核见[第二十二章](./22-plugin-packaging.md)。当前跨 Agent plugin 格式使用根目录 `plugin.json` 与根 `skills/` 自动发现；OpenAI 扩展配置位于 `extensions.com.openai`。旧 `.codex-plugin` 等布局只能作为旧读取器兼容组，不能在新格式正例中混搭。目录可加载、Schema 通过与产品实际激活是三项不同结果。
+
+技能评测需保留**生效清单**：manifest 和正文摘要、引用文件、可执行脚本、MCP/tool schema、配置来源、权限、模型和宿主版本。只记录 `SKILL.md` 摘要无法发现依赖脚本改变；来源同名也不证明制品相同。动态源码或移动 URL 无法固定时，记录解析结果和取回时间，限制可复现结论。
+
+宿主升级会改变插件触发、工具限制继承和审批行为，不能同时升级宿主与改技能后归因给技能正文。先在同一宿主下比较 baseline/candidate，再在相同技能制品下验证宿主升级；若必须一起改变，明确称组合变更。验收应加入项目配置缺失、manifest 错误、来源冲突、摘要变化和卸载后残留订阅，避免只测理想触发。
 
 ## 配对统计的实际实验
 
@@ -84,8 +92,11 @@ NODE
 
 真实报告应附独立变量、全部固定条件、任务修订、候选指纹、实际轨迹、产物与安全验收。没有运行模型时只交付机制结论，不给提升百分比。发布应同时满足预先规定的质量、安全和成本约束，不能看到一个均值提高就补写门槛；发现安全回归时，应保留旧版本并复现，而不是扩大权限消除失败。
 
+练习：保持正文不变，只修改一个引用脚本摘要，断言候选制品身份变化。分别设计根 manifest 新格式正例和旧格式兼容例；再给“宿主升级 + description 修改”标记混杂，不能据此给单因素收益数字。
+
 ## 固定来源
 
+- [Agent Plugins 1.0.0 Schema](https://agent-plugins.org/schemas/1.0.0/plugin.schema.json)：当前根 manifest 与 namespaced extensions 的格式证据，核验于 `2026-10-23`；产品差异和兼容样例见[第二十二章](./22-plugin-packaging.md)。
 - [DeepSeek skills](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/skills.md)：技能发现与加载阅读入口。
 - [DeepSeek extensions](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/extensions.md)与[scope](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/scope.md)：插件与所有权契约。
 - [Agent Skills specification](https://agentskills.io/specification)：完整文件规范，不等同于教学解析器子集。

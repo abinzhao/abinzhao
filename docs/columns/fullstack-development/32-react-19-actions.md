@@ -1,7 +1,7 @@
 ---
 title: "第 32 章：React 19 的 use、动作与乐观更新"
 description: "掌握 use()、表单动作、useActionState、useOptimistic 与 useFormStatus。"
-date: "2026-10-15"
+date: "2026-10-23"
 category: React
 tags: [React 19, 动作, Suspense]
 series:
@@ -49,7 +49,24 @@ function PostPreview({ showTheme }: { showTheme: boolean }) {
 `use(promise)` 在 Promise 未完成时暂停当前组件，由最近的 Suspense 展示 fallback；失败时由错误边界处理。
 
 ```tsx
-import { Suspense, use } from 'react';
+import { Component, Suspense, use, type ReactNode } from 'react';
+
+class PostErrorBoundary extends Component<
+  { children: ReactNode },
+  { failed: boolean }
+> {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  render() {
+    return this.state.failed
+      ? <p role="alert">文章加载失败，请刷新重试。</p>
+      : this.props.children;
+  }
+}
 
 interface Post {
   id: string;
@@ -86,9 +103,11 @@ function PostContent({
 
 export function PostPage() {
   return (
-    <Suspense fallback={<p role="status">文章加载中…</p>}>
-      <PostContent promise={postPromise} />
-    </Suspense>
+    <PostErrorBoundary>
+      <Suspense fallback={<p role="status">文章加载中…</p>}>
+        <PostContent promise={postPromise} />
+      </Suspense>
+    </PostErrorBoundary>
   );
 }
 ```
@@ -160,6 +179,8 @@ export function NewsletterForm() {
 ```
 
 Action 运行期间，React 可以提供 pending 状态、错误结果和乐观更新。表单函数收到 `FormData`，因此输入必须有 `name`。
+
+客户端 `action` 仍是浏览器函数，不会自动成为服务器函数。`'use server'` 依赖支持该能力的框架，普通 Vite SPA 不提供这条通道；这里由 Fetch 调用明确的 HTTP API。未捕获错误应由实际挂载的错误边界处理，失败保留输入的需求应使用受控字段。
 
 客户端校验用于即时反馈，服务端或 API 仍必须再次验证。
 
@@ -296,7 +317,7 @@ function CommentForm({
 评论提交前先显示临时评论，成功后由真实数据替换；失败时 React 会恢复基准状态：
 
 ```tsx
-import { useOptimistic } from 'react';
+import { startTransition, useOptimistic, useState } from 'react';
 
 interface Comment {
   id: string;
@@ -318,6 +339,7 @@ export function CommentList({
   createComment,
   onCreated,
 }: CommentListProps) {
+  const [message, setMessage] = useState('');
   const [optimisticComments, addOptimisticComment] = useOptimistic(
     comments,
     (currentComments, optimisticComment: Comment) => [
@@ -333,15 +355,20 @@ export function CommentList({
       return;
     }
 
+    setMessage('');
     addOptimisticComment({
-      id: `temp-${Date.now()}`,
+      id: `temp-${crypto.randomUUID()}`,
       author: '我',
       content,
       pending: true,
     });
 
-    const savedComment = await createComment(content);
-    onCreated(savedComment);
+    try {
+      const savedComment = await createComment(content);
+      startTransition(() => onCreated(savedComment));
+    } catch {
+      setMessage('评论发送失败，请重试');
+    }
   }
 
   return (
@@ -366,6 +393,7 @@ export function CommentList({
         </label>
         <SubmitButton />
       </form>
+      <p role="alert">{message}</p>
     </section>
   );
 }
@@ -373,17 +401,7 @@ export function CommentList({
 
 乐观更新适合高成功率、失败可回滚的操作，例如点赞、收藏、评论。支付、权限变更等高风险操作不应伪装成已成功。
 
-失败时还应向用户解释并允许重试：
-
-```tsx
-async function createCommentAction(formData: FormData) {
-  try {
-    // 添加乐观项并提交
-  } catch (error) {
-    setMessage('评论发送失败，请重试');
-  }
-}
-```
+失败时 Action 结束，临时项回到基准 `comments`，错误消息提供明确反馈。`onCreated` 必须更新真实数据源，不能只是打印日志；否则成功后临时项仍会消失。`await` 后更新基准状态时显式包在 `startTransition` 中，不能假定所有异步后续都自动保留 Transition 上下文。此简例的非受控 textarea 在 Action 正常返回后可能被重置；需要失败保留内容时改为受控输入。
 
 ### 32.8 组合关系
 
@@ -415,5 +433,13 @@ async function createCommentAction(formData: FormData) {
 - 需要深层提交按钮状态时使用 `useFormStatus`。
 - 高成功率、可回滚操作使用 `useOptimistic`。
 - 只有数据层提供稳定 Promise 与缓存策略时，才在客户端用 `use()` 读取异步资源。
+
+### 32.11 官方参考
+
+- [React：use](https://react.dev/reference/react/use)。
+- [React：useActionState](https://react.dev/reference/react/useActionState)。
+- [React：useOptimistic](https://react.dev/reference/react/useOptimistic)。
+- [React：useFormStatus](https://react.dev/reference/react-dom/hooks/useFormStatus)。
+- [React：startTransition 的异步边界](https://react.dev/reference/react/startTransition)。
 
 ---

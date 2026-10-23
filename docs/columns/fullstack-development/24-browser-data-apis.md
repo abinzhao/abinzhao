@@ -1,7 +1,7 @@
 ---
 title: "第 24 章：网络、存储与常用浏览器 API"
 description: "使用 Fetch、AbortController、Web Storage、Clipboard、Web Share、structuredClone、Performance 与 Page Visibility。"
-date: "2026-10-15"
+date: "2026-10-23"
 category: 浏览器 API
 tags: [Fetch, 存储, 性能]
 series:
@@ -75,21 +75,23 @@ let activeController;
 
 async function searchPosts(keyword) {
   activeController?.abort();
-  activeController = new AbortController();
+  const controller = new AbortController();
+  activeController = controller;
 
   try {
     const url = new URL('/api/search', location.origin);
     url.searchParams.set('q', keyword);
 
     const response = await fetch(url, {
-      signal: activeController.signal,
+      signal: controller.signal,
     });
 
     if (!response.ok) {
       throw new Error(`搜索失败：HTTP ${response.status}`);
     }
 
-    return await response.json();
+    const payload = await response.json();
+    return controller.signal.aborted ? null : payload;
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
       return null;
@@ -103,14 +105,20 @@ async function searchPosts(keyword) {
 超时可以使用 `AbortSignal.timeout()`，兼容目标不确定时也可手动实现：
 
 ```js
-async function fetchWithTimeout(url, milliseconds = 5000) {
+async function fetchJsonWithTimeout(url, milliseconds = 5000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), milliseconds);
 
   try {
-    return await fetch(url, {
+    const response = await fetch(url, {
       signal: controller.signal,
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    return await response.json();
   } finally {
     clearTimeout(timer);
   }
@@ -118,6 +126,8 @@ async function fetchWithTimeout(url, milliseconds = 5000) {
 ```
 
 取消表示“结果已不再需要”，不应展示成普通错误提示。
+
+超时应覆盖读取响应体，而不是收到响应头后就清除计时器。`AbortSignal.timeout()` 的超时原因是 `TimeoutError`，手动 `abort()` 默认是 `AbortError`；不要把真正的超时提示当成用户主动取消而隐藏。业务渲染层也要忽略过期搜索结果。
 
 ### 24.4 Web Storage
 
@@ -156,22 +166,16 @@ function saveDraft(draft) {
 }
 
 function readDraft() {
-  const raw = localStorage.getItem(DRAFT_KEY);
-
-  if (!raw) {
-    return null;
-  }
-
   try {
-    return JSON.parse(raw);
+    const raw = localStorage.getItem(DRAFT_KEY);
+    return raw ? JSON.parse(raw) : null;
   } catch {
-    localStorage.removeItem(DRAFT_KEY);
     return null;
   }
 }
 ```
 
-key 中加入版本号，数据结构升级时更容易迁移。不要存密码、访问令牌或大体积业务数据。
+key 中加入版本号，数据结构升级时更容易迁移。`saveDraft()` 同样需要在调用边界捕获存储异常；读取后还必须校验结构，JSON 语法正确不等于字段可信。不要存密码、访问令牌或大体积业务数据。
 
 同源其他标签页修改 `localStorage` 时，当前页面可以收到 `storage` 事件：
 
@@ -215,7 +219,7 @@ async function sharePost(post) {
     url: location.href,
   };
 
-  if (navigator.share && navigator.canShare?.(shareData)) {
+  if (navigator.share && (!navigator.canShare || navigator.canShare(shareData))) {
     try {
       await navigator.share(shareData);
       return;
@@ -315,7 +319,7 @@ observer.observe({
 });
 ```
 
-具体支持的 entry type 需要做特性检测。
+先检查 `PerformanceObserver.supportedEntryTypes.includes('longtask')` 再注册。标记测量的是请求和 DOM 更新过程，不保证浏览器已经完成绘制；并发测量要使用独立标记名，并在 `finally` 中清理。
 
 ### 24.9 Page Visibility
 
@@ -389,5 +393,12 @@ function setupPostActions(post) {
 4. 克隆包含 `Date`、`Set` 和循环引用的对象，确认类型保持。
 5. 切换到其他标签页，确认定时刷新停止；返回后立即刷新一次。
 6. 在 Performance 面板核对自定义 measure。
+
+### 24.12 官方参考
+
+- [Fetch 标准](https://fetch.spec.whatwg.org/)。
+- [MDN：AbortSignal.timeout](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/timeout_static)。
+- [MDN：Web Storage](https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API)。
+- [MDN：Web Share](https://developer.mozilla.org/en-US/docs/Web/API/Web_Share_API)。
 
 ---

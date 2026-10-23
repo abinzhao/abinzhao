@@ -52,10 +52,10 @@ test('opens a column by clicking the card description and keeps chapter links in
   await expect(page).toHaveURL(new RegExp(chapterHref!.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$'));
 });
 
-test('offers seventy-two Harness chapters, grouped navigation and downloadable source', async ({ page }) => {
+test('offers seventy-three Harness chapters, grouped navigation and downloadable source', async ({ page }) => {
   await page.goto('columns/agent-harness/');
   const chapters = page.locator('.column-reading-chapters ol > li');
-  await expect(chapters).toHaveCount(72);
+  await expect(chapters).toHaveCount(73);
   await expect(page.getByRole('navigation', { name: '学习单元' }).locator('a')).toHaveCount(12);
   await page.setViewportSize({ width: 390, height: 844 });
   await expect.poll(async () => (await chapters.first().boundingBox())!.y).toBeLessThan(720);
@@ -82,7 +82,7 @@ test('reads expanded topics and preserves navigation between chapter twelve and 
   for (const slug of [
     '19-skills-format', '25-mcp-architecture', '31-context-assembly',
     '50-filesystem-sandbox', '55-subagent-delegation', '63-codex-app-server',
-    '68-agent-evaluation', '72-production-capstone',
+    '68-agent-evaluation', '72-production-capstone', '73-version-governance',
   ]) {
     await page.goto(`columns/agent-harness/${slug}.html`);
     await expect(page.locator('.reading-prose h2').first()).toBeVisible();

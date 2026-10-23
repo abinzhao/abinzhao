@@ -1,7 +1,7 @@
 ---
 title: "第 18 章：静态站点部署"
 description: "将静态博客部署到 GitHub Pages 或 Vercel，并正确处理路径和缓存。"
-date: "2026-10-15"
+date: '2026-10-23'
 category: 部署发布
 tags: [GitHub Pages, Vercel, 部署]
 series:
@@ -112,10 +112,9 @@ blog.example.com
 #### 方式二：命令行
 
 ```bash
-npm i -g vercel
-vercel login
-vercel          # 预览部署
-vercel --prod   # 生产部署
+npx vercel@65.2.0 login
+npx vercel@65.2.0          # 预览部署，明确授权后执行
+npx vercel@65.2.0 --prod   # 生产部署，需要单独确认目标项目
 ```
 
 #### vercel.json（可选配置）
@@ -126,7 +125,7 @@ vercel --prod   # 生产部署
   "trailingSlash": false,
   "headers": [
     {
-      "source": "/assets/(.*)",
+      "source": "/assets/immutable/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -147,7 +146,7 @@ vercel --prod   # 生产部署
 ```
 
 - `cleanUrls: true`：访问 `/about` 而不是 `/about.html`
-- `immutable` 缓存：静态资源（图片、字体）内容不变，可以让浏览器缓存一年
+- `immutable` 缓存：上例仅用于内容指纹资源目录。每次内容变化必须改变文件名，不能把会被覆盖的 `avatar.jpg` 或同名字体缓存一年。
 
 **注意**：Vercel 部署在根路径 `/`，绝对路径能正常工作。但为了本地和 GitHub Pages 都能用，还是建议统一用相对路径。
 
@@ -155,19 +154,27 @@ vercel --prod   # 生产部署
 
 | | GitHub Pages | Vercel |
 |---|---|---|
-| 费用 | 免费 | 免费额度足够个人博客 |
-| 部署速度 | 1~3 分钟 | 10~30 秒 |
+| 费用 | 按当前官方配额与使用限制核对 | 按当前套餐、用途和使用量核对 |
+| 部署速度 | 依排队、构建与 CDN 生效情况 | 依构建、区域与项目配置 |
 | 预览部署（PR） | 无 | 有 |
 | 自定义域名 | 支持 | 支持 |
 | HTTPS | 支持 | 支持 |
-| 国内访问 | 不稳定 | 不稳定 |
-| 服务端能力 | 纯静态 | Serverless Functions、边缘函数 |
+| 国内访问 | 目标地区实测，不保证连通性 | 目标地区实测，不保证连通性 |
+| 服务端能力 | 静态托管，不运行 Node 服务 | 按产品支持运行 Functions，不等同任意常驻服务器 |
 | 适合 | 纯静态站点 | 需要 API、重定向、Headers 配置 |
 
-**国内访问**：两个平台在国内都不稳定。如果主要面向国内读者，考虑：
+**访问与合规**：部署前从目标地区测量连通性与延迟。其他可比较方案包括：
 
-- **Cloudflare Pages**：比 GitHub Pages 稍好，仍需自测
-- **国内对象存储 + CDN**：阿里云 OSS、腾讯云 COS，需要备案
-- **Netlify**：和 Vercel 类似，国内访问情况也类似
+- **Cloudflare Pages**：核对当前服务地域、功能与实测结果
+- **对象存储 + CDN**：按区域、域名、备案和数据处理要求核对
+- **Netlify**：核对配额、重写规则与后端运行限制
+
+### 静态与后端部署边界
+
+上述 Git 操作和发布命令是学习步骤，不是在当前工作区执行的指令。Pages 分支发布适用于 v1，Vite 产物通常通过构建后的 artifact 发布。不要将 API 密钥放进 `VITE_*` 环境变量，它们会进入客户端代码。博客 v3 的 API、worker、数据库、Redis 需单独运行并备份，详见 [Docker 运维](./51-docker-linux-operations)。
+
+GitHub Pages 的站点类型、自定义域名和 `base` 会改变路径，不能说“所有绝对路径都会 404”。验证应直接访问文章 URL、检查真实状态码、缓存头和发布日志；首页能打开不代表资源或子路由正确。
+
+官方参考：[GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)、[Vercel 部署](https://vercel.com/docs/deployments)、[Vercel 缓存头](https://vercel.com/docs/headers/cache-control-headers)、[Vercel CLI registry](https://registry.npmjs.org/vercel)。
 
 ---

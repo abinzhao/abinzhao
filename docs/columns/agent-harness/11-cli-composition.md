@@ -1,7 +1,7 @@
 ---
 title: 第十一章：把 Harness 组合成 CLI
 description: 用 scope 装配 provider、tools 和 session，明确环境变量、Ollama 前置条件、超时与退出语义。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Node.js, CLI 组合]
 series:
@@ -73,7 +73,7 @@ node --version
 node src/cli.mjs --help
 ```
 
-Node.js 应为 22 或更新版本。项目使用 `.mjs`、原生 fetch、ReadableStream 和内置测试运行器，没有第三方运行依赖，不需要 `npm install`。包脚本只是调用 Node 入口，不能把 npm 成功执行脚本与模型可用混为一谈。
+优先使用仍受维护的 Node.js 22 补丁作为教学基线；其他分支需单独验证，不把“版本更大”视为维护状态或兼容保证。项目使用 `.mjs`、原生 fetch、ReadableStream 和内置测试运行器，没有第三方运行依赖，不需要 `npm install`。包脚本只是调用 Node 入口，不能把 npm 成功执行脚本与模型可用混为一谈。
 
 `--help` 分支在创建 scope、打开 session 和请求模型之前退出。当前检查方式是 `argv.includes('--help')`，所以只要参数中含有它就显示帮助。它不是一个完整参数解析器：没有 `--model`、`--workspace`、`--session` 这些开关，相关配置都用环境变量传入。
 
@@ -152,6 +152,12 @@ CLI 测试以 `import.meta.url` 定位子进程入口，因此下载包根目录
 模型请求失败时，先核对 MODEL_URL 和服务是否运行，再核对安装名称与 tools 支持；工具读取失败检查 WORKSPACE 与允许路径；历史缺失检查 DATA_DIR 与 SESSION_ID。按依赖边界排查，比把所有错误都解释成“模型连接失败”更准确。
 
 本章的完成标准是入口配置真实、帮助离线可用、依赖装配有所有者、两个运行模式共享行为、退出等待与资源责任清楚。一个薄而明确的组合根，才能让下一章的 Web 运输层复用同一个 Harness。
+
+## 2026-10-23：入口升级先核对实际运行时
+
+[Node 官方维护计划](https://github.com/nodejs/Release/blob/main/schedule.json)显示 Node 22、24 为 Maintenance LTS，26 在本次核验日仍是 Current，25 已 EOL。依赖允许 `>=24` 不等于 Node 25 仍适合生产，也不自动改变本项目的 Node 22 示例。当前版本清单见[课程入口](./index.md)。
+
+练习：在独立、无敏感材料的目录运行 `node --version` 与 `node src/cli.mjs --help`，分别记录运行时身份和离线入口结果；再使用空 MODEL 与非法远端 MODEL_URL 检查拒绝，确认没有网络请求。需要比较新 Node 分支时重复同一契约测试，不把 npm 脚本启动成功当作模型和工具验收。
 
 ## 固定来源
 

@@ -1,7 +1,7 @@
 ---
 title: "第 1 章：HTML5 语义、表单与浏览器 API"
 description: "掌握语义化结构、表格表单、多媒体、图形、无障碍和常用浏览器 API。"
-date: "2026-10-15"
+date: '2026-10-23'
 category: HTML
 tags: [HTML5, 语义化, 无障碍]
 series:
@@ -61,8 +61,8 @@ series:
 |---|---|---|
 | `<header>` | 页头 / 区块头部 | 可以出现在 `<body>`、`<article>`、`<section>` 内，不是只能有一个 |
 | `<nav>` | 导航链接组 | 只放主要导航，页脚的一堆链接不需要包 |
-| `<main>` | 页面主内容 | **每页只能有一个**，且不能嵌套在其他语义容器里 |
-| `<section>` | 主题性分组 | 必须带标题（`h2`~`h6`），否则用 `<div>` |
+| `<main>` | 页面主内容 | 最多一个未带 `hidden` 的 main；不得置于 article、aside、footer、header 或 nav 内 |
+| `<section>` | 主题性分组 | 通常应有标题；仅为布局分组时用 div，标题不是所有 section 的语法必需条件 |
 | `<article>` | 可独立分发的内容 | 博客文章、论坛帖、新闻条目、评论 |
 | `<aside>` | 与主内容间接相关 | 侧边栏、广告位、作者简介、相关阅读 |
 | `<footer>` | 页脚 / 区块尾部 | 同 `<header>`，可多次出现 |
@@ -80,8 +80,8 @@ series:
 <p>段落文本</p>
 <strong>重要内容</strong>          <!-- 语义=重要，默认加粗 -->
 <em>强调内容</em>                  <!-- 语义=强调，默认斜体 -->
-<b>关键词</b>                      <!-- 无语义，仅视觉加粗，用于产品名等 -->
-<i>术语</i>                        <!-- 无语义，仅视觉斜体，用于外语词、图标字体 -->
+<b>关键词</b>                      <!-- 引起注意，但不增加重要性 -->
+<i>术语</i>                        <!-- 区别于普通文本的语气、术语等，不等于强调 -->
 <mark>高亮</mark>
 <small>法律声明等附属信息</small>
 <del>删除内容</del>
@@ -420,7 +420,7 @@ input.setCustomValidity('');
 
 <script>
 const form = document.getElementById('signup');
-const email = form.email;
+const email = form.elements.namedItem('email');
 const errBox = document.getElementById('email-error');
 
 function showError(msg) {
@@ -429,14 +429,21 @@ function showError(msg) {
   email.setAttribute('aria-invalid', msg ? 'true' : 'false');
 }
 
-email.addEventListener('blur', () => {
+function validateEmail() {
+  email.setCustomValidity('');
   if (email.validity.valueMissing) return showError('邮箱不能为空');
   if (email.validity.typeMismatch) return showError('邮箱格式不正确');
   showError('');
+}
+
+email.addEventListener('blur', validateEmail);
+email.addEventListener('input', () => {
+  if (email.getAttribute('aria-invalid') === 'true') validateEmail();
 });
 
 form.addEventListener('submit', (e) => {
   e.preventDefault();
+  validateEmail();
   if (!form.checkValidity()) {
     form.reportValidity();   // 或用上面的自定义逻辑
     return;
@@ -448,7 +455,7 @@ form.addEventListener('submit', (e) => {
 </script>
 ```
 
-`Object.fromEntries(new FormData(form))` 是把整个表单转成对象的通用写法，比手动逐个取值可靠。
+`Object.fromEntries(new FormData(form))` 适合字段名唯一的简单表单。同名复选框会只保留最后一个值，需要使用 `getAll()`；未选复选框、禁用控件不会被收集，文件值是 `File` 而非字符串。表单校验是交互辅助，服务端仍需重新校验。
 
 ### 1.8 多媒体
 
@@ -855,9 +862,9 @@ window.addEventListener('storage', (e) => {
 | | localStorage | sessionStorage | Cookie |
 |---|---|---|---|
 | 容量 | 约 5MB | 约 5MB | 约 4KB |
-| 生命周期 | 永久，除非主动删 | 关闭标签页即清 | 可设 Expires |
-| 随请求发送 | 否 | 否 | 是（每个请求都带） |
-| 作用域 | 同源共享 | 单个标签页 | 同源 + 路径 |
+| 生命周期 | 无显式到期，但可能被清理或驱逐 | 标签页会话，刷新保留，恢复行为依浏览器 | 会话或 Expires / Max-Age |
+| 随请求发送 | 否 | 否 | 满足域、路径、Secure、SameSite 等条件时发送 |
+| 作用域 | 同源，可能受分区策略影响 | 同源且按顶层标签页隔离 | Domain / Path 等属性控制，不按端口隔离 |
 | 服务端可读 | 否 | 否 | 是 |
 
 **必须注意**：
@@ -881,7 +888,7 @@ function safeStorage() {
 
 #### 1.12.2 WebSocket
 
-HTTP 是「请求—响应」，服务端不能主动推。WebSocket 建立一次连接后**双向、全双工、长连接**。
+HTTP 通常是请求—响应，但响应体可以持续流式发送，例如 SSE。WebSocket 建立一次连接后允许**双向、全双工、长连接**。
 
 ```js
 const ws = new WebSocket('wss://example.com/chat');   // 生产环境用 wss
@@ -1033,7 +1040,7 @@ data: 带 ID 的消息
 | 协议 | ws:// / wss:// | HTTP/HTTPS |
 | 自动重连 | 需自己写 | 内置 |
 | 二进制 | 支持 | 只支持文本 |
-| 连接数限制 | 无 | HTTP/1.1 下同域最多 6 个 |
+| 连接数限制 | 浏览器、代理与服务端均有资源上限 | HTTP/1.x 常见同源连接限制；HTTP/2 由流数量协商 |
 | 适用 | 聊天、协同编辑、游戏 | 通知、进度、日志流、AI 流式输出 |
 
 #### 1.12.4 CORS（跨源资源共享）
@@ -1095,6 +1102,18 @@ Access-Control-Allow-Credentials: true
 | `Request header field authorization is not allowed` | 预检里没允许该自定义头 |
 | `Method PUT is not allowed` | `Access-Control-Allow-Methods` 缺该方法 |
 
-**开发环境绕过**：用 Vite / webpack 的 devServer proxy，或本地起 Nginx 反代。**生产环境必须服务端配置 CORS**，前端没有任何合法绕过手段。
+**同源开发代理**：Vite devServer proxy 或反向代理让浏览器访问同一源，这不是绕过安全策略。生产也可以通过同源 `/api` 反代避免跨源；只有确需跨源读取时才配置 CORS。CORS 不阻止所有跨源请求，更不是 CSRF 或资源授权防线，详见 [HTTP 契约](./38-http-openapi-contracts) 与 [Session 安全](./43-password-session-auth)。
+
+### 规范与实践边界
+
+`accept` 只是文件选择提示；`HttpOnly` 限制脚本读取 Cookie，却不能阻止 XSS 利用现有会话发请求。`aria-live` 的播报和自动播放策略也依浏览器、辅助技术与用户设置变化，必须实测。示例重连类只解释退避思路，生产实现还要处理主动关闭、计时器清理、消息解析失败、重连抖动和背压，见 [实时服务](./49-sse-websocket-realtime)。
+
+官方参考：
+
+- [WHATWG HTML 语义元素](https://html.spec.whatwg.org/multipage/sections.html)
+- [WHATWG 表单验证](https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#constraint-validation)
+- [WAI ARIA Authoring Practices](https://www.w3.org/WAI/ARIA/apg/)
+- [WHATWG Fetch 与 CORS](https://fetch.spec.whatwg.org/)
+- [WHATWG SSE](https://html.spec.whatwg.org/multipage/server-sent-events.html)
 
 ---

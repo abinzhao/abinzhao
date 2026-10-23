@@ -11,6 +11,7 @@ html {
 }
 
 body {
+  margin: 0;
   background: var(--site-bg);
   color: var(--site-text);
 }
@@ -55,9 +56,14 @@ body {
   outline-offset: 2px;
 }
 
-:where(a, button, input):focus-visible {
+:where(a, button, input, textarea, summary):focus-visible {
   outline: 2px solid var(--site-accent);
   outline-offset: 3px;
+}
+
+img,
+svg {
+  flex-shrink: 0;
 }
 
 @media (prefers-reduced-motion: no-preference) {

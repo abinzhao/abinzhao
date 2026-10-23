@@ -1,7 +1,7 @@
 ---
 title: "第 30 章：React 19 组件、属性与 JSX"
 description: "创建 React 19 与 TypeScript 项目，掌握函数组件、属性、JSX、条件与列表渲染。"
-date: "2026-10-15"
+date: "2026-10-23"
 category: React
 tags: [React 19, JSX, 属性]
 series:
@@ -22,9 +22,11 @@ React 用组件描述“状态对应什么界面”。数据变化后，React �
 ### 30.2 创建项目
 
 ```bash
-npm create vite@latest blog-v2 -- --template react-ts
+npm create vite@9.3.1 blog-v2 -- --template react-ts
 cd blog-v2
-npm install
+npm install --save-exact react@19.3.1 react-dom@19.3.1
+npm install -D --save-exact typescript@7.0.2 vite@8.3.5 @vitejs/plugin-react@6.1.2
+npm install -D --save-exact @types/react@19.3.0 @types/react-dom@19.3.0
 npm run dev
 ```
 
@@ -33,6 +35,8 @@ npm run dev
 ```bash
 npm list react react-dom
 ```
+
+运行时使用专题首页核验的 Node 24.22.1。脚手架模板、React 与类型包需要共同检查，不能仅因命令中有 `latest` 就认定版本可复现。
 
 关键入口：
 
@@ -387,5 +391,12 @@ export function App() {
 3. 依次传入加载、错误、空数据和正常数据，确认状态互斥。
 4. 用键盘聚焦文章链接和收藏按钮，确认交互元素语义正确。
 5. 在组件渲染中加入外部变量修改，观察 `StrictMode` 如何更容易暴露问题，再删除该副作用。
+
+### 30.12 官方参考
+
+- [React：第一个组件](https://react.dev/learn/your-first-component)。
+- [React：列表渲染与 key](https://react.dev/learn/rendering-lists)。
+- [React：StrictMode](https://react.dev/reference/react/StrictMode)。
+- [Vite：入门](https://vite.dev/guide/)。
 
 ---

@@ -1,7 +1,7 @@
 ---
 title: "第 15 章：静态博客 HTML 页面"
 description: "完成首页、文章页与关于页的语义结构、元数据和表单。"
-date: "2026-10-15"
+date: '2026-10-23'
 category: 项目实战
 tags: [HTML5, 搜索引擎优化, 无障碍]
 series:
@@ -194,8 +194,8 @@ series:
   </footer>
 
   <script src="js/theme.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@18.1.1/lib/marked.umd.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.4.17/dist/purify.min.js" defer></script>
   <script src="js/post.js" defer></script>
   <script src="js/main.js" defer></script>
 </body>
@@ -341,5 +341,40 @@ series:
 **关键的 `aria-describedby`**：把输入框和它的错误提示、帮助文本关联起来。屏幕阅读器聚焦输入框时会一起读出这些内容，用户不用自己去猜哪里出了问题。
 
 页面中的站内链接和资源统一使用相对路径，是为了让同一份代码既能部署在域名根目录，也能部署在 GitHub Pages 的仓库子路径。第三方脚本应固定版本；对稳定性要求更高时，下载到项目中自行托管，并纳入依赖更新与安全检查。
+
+### 依赖与页面边界
+
+2026-10-23 registry 核验：marked 18.1.1、DOMPurify 3.4.17。marked 的浏览器 UMD 文件位于 `lib/marked.umd.js`，不能延用旧版根目录 `marked.min.js` 路径。上面的固定 CDN 路径只是教学加载方式；生产优先自托管或加入经过核验的 SRI，不能编造 integrity 值。
+
+三页的主题脚本应只接受 `dark` / `light`，读取存储失败时仍跟随系统，而不是整个初始化跳过：
+
+```js
+var saved = null;
+try { saved = localStorage.getItem('theme'); } catch {}
+var theme = saved === 'dark' || saved === 'light'
+  ? saved
+  : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+document.documentElement.setAttribute('data-theme', theme);
+```
+
+该片段替换 head 内对应初始化逻辑，并按 CSP 选择 hash、nonce 或外部阻塞脚本。联系表单说明应注明“演示，不会发送真实留言”；浏览器客户端更新 meta 的方案不保证社交抓取器会执行脚本，正式分享页需要静态生成或服务端输出元数据。
+
+### 15.4 把三个页面连接成可理解的导航
+
+首页回答有哪些内容，文章页回答当前内容是什么，关于页说明作者与联系边界。主导航顺序保持一致，当前页面用 `aria-current="page"` 表达；正文只有一个主标题，文章内部按层级组织，不为了字号效果跳过标题层级。`main`、`nav` 和 `footer` 帮助辅助技术定位区域，但同类多个导航还需要不同的名称。
+
+链接和按钮分别表达导航与动作。查看文章用带真实 href 的链接，使新标签页、复制地址和无 JavaScript 导航仍可工作；切换主题和提交表单用按钮。不要把整张卡片变成只响应鼠标的 div，也不要在一个链接中嵌套另一个按钮。需要大点击区时保留标题链接的语义，再确保附加操作不被覆盖。
+
+表单 label 的 `for` 应与控件 id 一一对应，错误说明在触发验证后更新，不能只有红色边框。HTML 的 required、长度与类型验证改善输入体验，却无法承担服务端安全校验。静态演示既没有真实收件箱也没有可信后端，成功文案必须明确只完成本地演示；未来接入 API 时再处理网络失败、重复提交和请求状态。
+
+### 15.5 按缺失条件逐页验收
+
+先从任意文章 URL 直接打开，再刷新，验证相对资源路径和返回首页入口。不要只从首页点击，因为客户端路由缓存可能掩盖深链接问题。部署到仓库子路径后逐一检查 CSS、脚本、Markdown 和图标地址；根路径 `/assets/` 与项目路径 `/my-blog/assets/` 不是同一资源。
+
+关闭 JavaScript、拒绝存储、模拟脚本 CDN 失败和放大字号，记录仍可用的内容。主题存储失败应只是偏好无法保存，不应让整个页面空白；文章加载失败则需要明确错误和可恢复入口，不把骨架屏永久显示。内容型页面的基础可读性应尽量来自 HTML，而非依赖脚本重新生成每一段说明。
+
+练习用 Tab 从跳转正文链接走到主导航、文章标题与表单，确认每个焦点可见且不重复进入不可见控件；在手机宽度填写最长留言并显示错误。完成标准是三页导航、直接访问、表单反馈和存储失败都具有可解释的结果。HTML 校验可以发现结构错误，但不能证明留言真的发出，也不能替代读屏、网络和响应式验证。
+
+官方参考：[marked 文档](https://marked.js.org/)、[DOMPurify](https://github.com/cure53/DOMPurify)、[marked registry](https://registry.npmjs.org/marked)、[DOMPurify registry](https://registry.npmjs.org/dompurify)。
 
 ---

@@ -1,7 +1,7 @@
 ---
 title: '第20章：技能发现、来源与重名处理'
 description: 为技能目录建立作用域、优先级、完整性和失效规则，避免同名覆盖与短暂发现失败污染模型视图。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Skill, 发现, 缓存]
 series:
@@ -126,7 +126,13 @@ Codex 官方技能页说明同名技能不会合并，两者都可能出现在�
 
 DeepSeek `0.2.1-alpha.5` 的[技能文档](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/skills.md)、[registry 源码](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/packages/skill/skill/src/index.ts)和[provider 配置目录](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/config-catalog.md)是优先级、完整观察与缓存契约的依据。
 
-跨产品差异依据 [Codex skills](https://developers.openai.com/codex/skills)、[Claude Code skills](https://code.claude.com/docs/en/skills)和[OpenCode skills](https://opencode.ai/docs/skills/)，核验日 2026-10-17。本章内存排序不实现这些产品的全套发现算法。
+跨产品差异依据 [Codex skills](https://learn.chatgpt.com/docs/build-skills)、[Claude Code skills](https://code.claude.com/docs/en/skills)和[OpenCode skills](https://opencode.ai/docs/skills/)，核验日 2026-10-23。本章内存排序不实现这些产品的全套发现算法。
+
+## 20.8 发现到加载的当前一致性检查
+
+当前 OpenCode 文档明确 `deny` 同时隐藏技能并拒绝访问，`ask` 在加载前请求批准。迁移时不能仅过滤模型目录；所有按名称加载入口都应实施同一政策。Codex、Claude 的名称与来源选择则按各自文档，不将上表 DeepSeek rank 当通用标准。
+
+练习：发现后修改正文、撤销技能权限，再使用完整来源标识加载。未变化且允许的技能应成功；过期摘要和撤销权限应拒绝，即使旧目录仍可见。发现失败时保留最后完整目录只服务于诊断，不授予使用旧正文的权利；排错记录选中来源、内容身份与当前权限，避免把三者都归咎于“缓存没刷新”。
 
 ---
 

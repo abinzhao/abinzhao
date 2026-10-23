@@ -1,0 +1,15 @@
+{
+  "name": "本地预约练习",
+  "appid": "",
+  "description": "标准 uni-app Vue 3 端侧教学项目，无服务器、登录或支付",
+  "versionName": "1.0.0",
+  "versionCode": "100",
+  "transformPx": false,
+  "vueVersion": "3",
+  "mp-weixin": {
+    "appid": "",
+    "setting": {
+      "urlCheck": true
+    }
+  }
+}

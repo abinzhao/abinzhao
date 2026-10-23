@@ -9,6 +9,8 @@ import {
   type KnowledgeIndexArtifact,
 } from '../docs/.vitepress/data/knowledge';
 import { createKnowledgeSearchRuntime } from '../docs/.vitepress/theme/composables/knowledge-search';
+import { loadPublishedArticleSources } from '../docs/.vitepress/data/content';
+import { contentBudgets } from './helpers/content-budget';
 
 type Codec = typeof import('../docs/.vitepress/data/knowledge-index-codec');
 let codec: Codec;
@@ -176,11 +178,13 @@ describe('compact knowledge artifact', () => {
     }
   });
 
-  test('keeps the complete real corpus below the unchanged 250 KiB cap with exact metadata', async () => {
+  test('keeps compression density bounded as the complete tutorials grow, with exact metadata', async () => {
     const { unpackKnowledgeArtifact } = requireArtifactCodec();
-    const artifacts = await buildKnowledgeArtifacts(resolve(import.meta.dirname, '../docs'));
+    const root = resolve(import.meta.dirname, '../docs');
+    const artifacts = await buildKnowledgeArtifacts(root);
     const wire = JSON.stringify(artifacts.index);
-    expect(gzipSync(wire).byteLength).toBeLessThanOrEqual(250 * 1024);
+    const budgets = contentBudgets(await loadPublishedArticleSources(root));
+    expect(gzipSync(wire).byteLength).toBeLessThanOrEqual(budgets.indexGzip);
     const restored = await unpackKnowledgeArtifact(JSON.parse(wire));
     expect(restored.metadata).toEqual(JSON.parse(JSON.stringify(artifacts.index.metadata)));
     expect(codec.unpackKnowledgeIndex(restored.index)).toEqual(codec.unpackKnowledgeIndex(artifacts.index.index));

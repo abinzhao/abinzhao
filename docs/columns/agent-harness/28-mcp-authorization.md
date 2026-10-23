@@ -1,7 +1,7 @@
 ---
 title: '第28章：MCP OAuth 与远程授权'
 description: 按 2026-07-28 授权规范解释资源服务器、发现、PKCE、受众与增量 scope，并标出静态 headers 与 OAuth 实现的区别。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [MCP, OAuth, 授权, 凭据隔离]
 series:
@@ -47,7 +47,7 @@ OAuth 回答的是“这个凭据代表谁，可以访问哪些服务范围”�
 
 发现地址也是网络输入。需要 HTTPS、目的地政策、重定向限制和元数据验证，防止服务把客户端引向内部地址或攻击站点。获取到一份 JSON 不等于它对应当前资源；issuer 与 endpoint 的关系应按规范验证。
 
-现代规范推荐 client ID metadata documents，动态注册是可选且保留兼容性的机制，不能描述成所有服务必须支持动态注册。客户端需要按官方优先级与具体服务能力取得 client ID，不在教程里臆造一个万能自动注册请求。
+现代规范推荐 Client ID Metadata Documents；动态注册已标为 deprecated，只作为旧授权服务器的兼容机制，不是新实现默认推荐，更不是所有服务必须支持。客户端需要按官方优先级与具体服务能力取得 client ID，不在教程里臆造一个万能自动注册请求。OAuth 2.1 在本修订中仍引用 IETF draft，不能写成已经发布的正式 RFC。
 
 ## 28.3 一份不含 Token 的授权事务夹具
 
@@ -58,6 +58,11 @@ import assert from 'node:assert/strict';
 
 function validateCallback(pending, incoming) {
   const url = new URL(incoming);
+  for (const field of ['state', 'iss', 'code', 'error']) {
+    if (url.searchParams.getAll(field).length > 1) {
+      throw new Error('Duplicate callback parameter');
+    }
+  }
   const target = `${url.origin}${url.pathname}`;
   if (target !== pending.redirectURI) throw new Error('Redirect mismatch');
   if (url.searchParams.get('state') !== pending.state) {
@@ -67,6 +72,9 @@ function validateCallback(pending, incoming) {
   if (pending.issuerAdvertised && !issuer) throw new Error('Missing issuer');
   if (issuer !== null && issuer !== pending.issuer) {
     throw new Error('Issuer mismatch');
+  }
+  if (url.searchParams.has('error')) {
+    throw new Error('Authorization rejected');
   }
   const code = url.searchParams.get('code');
   if (!code) throw new Error('Missing authorization code');
@@ -90,12 +98,23 @@ assert.throws(() => validateCallback(pending, callback), /Issuer mismatch/);
 callback.searchParams.set('iss', pending.issuer);
 callback.searchParams.set('state', 'other-state');
 assert.throws(() => validateCallback(pending, callback), /State mismatch/);
+callback.searchParams.set('state', pending.state);
+callback.searchParams.delete('code');
+callback.searchParams.set('error', 'access_denied');
+callback.searchParams.set('iss', 'https://other.example.invalid');
+assert.throws(() => validateCallback(pending, callback), /Issuer mismatch/);
+callback.searchParams.set('iss', pending.issuer);
+assert.throws(() => validateCallback(pending, callback), /Authorization rejected/);
+callback.searchParams.append('state', pending.state);
+assert.throws(() => validateCallback(pending, callback), /Duplicate/);
 console.log('authorization transaction binding verified');
 ```
 
-真实事务需要不可预测、一次性且有期限的关联状态，以及 PKCE verifier 的保密存储。这个函数不会验证 HTTPS 元数据、重放、多个查询参数或授权错误；不能拿它替代官方 SDK 和完整安全实现。
+真实事务需要不可预测、一次性且有期限的关联状态，以及 PKCE verifier 的保密存储。这个函数只验证本地绑定、重复关键参数和授权错误的处理顺序，不验证 HTTPS 元数据、过期或重放；不能拿它替代官方 SDK 和完整安全实现。
 
 规范要求对回调中出现的 issuer 做与记录值的精确比较；当授权服务器声明会返回 issuer 而实际缺失时拒绝。不能在比较前随意删除尾斜杠或折叠地址大小写，避免把不同发行者身份合并。目标 resource URI 的规范化与 issuer 比较是不同规则。
+
+这一检查同样适用于错误回调。issuer 不一致时不能先显示或处理 `error_description`、`error_uri`；错误文本也是未验证来源的数据，不能让“授权已失败”成为绕过发行者校验的理由。
 
 ## 28.4 resource、scope 与凭据使用
 
@@ -119,7 +138,13 @@ stdio transport 从 scrubbed parent env 叠加显式 env；显式配置仍会传
 
 完整测试还需覆盖用户取消、授权错误、过期事务、错误 audience、scope 提升、刷新失败和退出清理。日志中应只有资源身份与结果类别，没有 code、verifier 或 Token。授权测试不能依赖模型是否“愿意保密”，必须检查实际请求与记录。
 
-## 28.7 固定官方来源
+## 28.7 当前授权迁移验收
+
+2026-10-23 复核现代授权原文：新实现优先 Client ID Metadata Documents 或既有预注册，旧动态注册单列兼容路径。使用 SDK 时仍需检查资源与 issuer 身份、PKCE、一次性事务和持久存储；库提供 OAuth helper 不等于 Host 已完成用户同意与隔离。
+
+练习：在本地回调实验中加入 issuer 尾斜杠差异、重复 state、错误回调以及声明返回 issuer 却缺失的情况。正常绑定应通过；所有身份不匹配应拒绝，错误回调也不能先泄漏或显示其未经验证的描述。再设计错误 audience、权限提升与用户取消测试，分别记录授权终态和原工具是否执行。排错先检查发现身份与回调事务，再检查 scope；不要把 403 一律解释为 Token 过期。
+
+## 28.8 固定官方来源
 
 标准依据 [MCP 2026-07-28 authorization](https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization)。DeepSeek `0.2.1-alpha.5` 的[transport 源码](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/packages/mcp/mcp-client/src/transport.ts)、[client 配置](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/config-catalog.md)和[凭据契约](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/credentials.md)用于核对实际支持范围。
 

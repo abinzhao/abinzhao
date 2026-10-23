@@ -1,7 +1,7 @@
 ---
 title: "第 5 章：CSS 变量与工程化"
 description: "用自定义属性、原生嵌套和预处理工具组织可维护的样式代码。"
-date: "2026-10-15"
+date: '2026-10-23'
 category: CSS
 tags: [CSS3, 自定义属性, PostCSS]
 series:
@@ -35,7 +35,7 @@ series:
 |---|---|---|
 | 运行时 | 是，可被 JS 读写、可动态改变 | 否，编译时已被替换成字面值 |
 | 继承 | 是，沿 DOM 树继承 | 否，只有作用域概念 |
-| 媒体查询内重定义 | 可以，全局生效 | 不行 |
+| 媒体查询内重定义 | 可以，仍受选择器作用域与层叠约束 | 编译时变量，不随浏览器媒体条件动态改变 |
 | 参与计算 | 可以（`calc` 等） | 编译时计算 |
 
 ```css
@@ -84,7 +84,7 @@ getComputedStyle(document.documentElement).getPropertyValue('--color-primary');
 .box { gap: calc(var(--gap-num) * 1px); }
 ```
 
-**变量在 `@property` 里注册类型后才有类型检查与动画能力**：
+**注册 `@property` 可约束自定义属性并按类型插值**；未注册属性仍能做离散动画，但不能按 angle 等语义连续插值：
 
 ```css
 @property --angle {
@@ -100,7 +100,7 @@ getComputedStyle(document.documentElement).getPropertyValue('--color-primary');
 @keyframes spin { to { --angle: 360deg; } }
 ```
 
-不注册 `@property`，`--angle` 是字符串，无法过渡动画。
+不注册时 `--angle` 是未解释的 token 序列，不会自动获得角度插值。注册失败或不支持时应保留静态背景。
 
 ### 5.2 原生嵌套
 
@@ -177,6 +177,8 @@ getComputedStyle(document.documentElement).getPropertyValue('--color-primary');
 
 ```js
 // postcss.config.js
+const production = process.env.NODE_ENV === 'production';
+
 export default {
   plugins: {
     'postcss-preset-env': {
@@ -184,7 +186,7 @@ export default {
       features: { 'nesting-rules': true }
     },
     autoprefixer: {},
-    cssnano: { preset: 'default' }   // 仅生产环境
+    ...(production ? { cssnano: { preset: 'default' } } : {})
   }
 };
 ```
@@ -206,10 +208,12 @@ export default {
 
 ```scss
 // 变量与嵌套
+@use 'sass:map';
+
 $breakpoints: (sm: 640px, md: 768px, lg: 1024px);
 
 @mixin respond($name) {
-  @media (min-width: map-get($breakpoints, $name)) {
+  @media (min-width: map.get($breakpoints, $name)) {
     @content;
   }
 }
@@ -270,5 +274,14 @@ $spacers: (0, 4, 8, 12, 16, 24, 32);
 ```
 
 这里的 `h2` 只匹配 `.profile-card` 内部，并在到达 `.profile-card__external-widget` 时停止。实际项目应先根据目标浏览器范围确认支持情况；核心布局仍需准备不依赖新特性的基础版本。
+
+### 工具选择与官方参考
+
+上面的 PostCSS 配置需要项目已有相应插件，不能只复制配置就获得转换器。Vite 的 CSS 管线可能已提供压缩，不应叠加重复工作。Sass 的旧 `@import` 和全局内建函数已弃用，新增代码使用 `@use`、`@forward` 和 `sass:map` 等模块 API；这不影响原生 CSS 的 `@import`。
+
+- [CSS 自定义属性规范](https://drafts.csswg.org/css-variables/)
+- [CSS Properties and Values API](https://drafts.css-houdini.org/css-properties-values-api/)
+- [Sass 弃用说明](https://sass-lang.com/documentation/breaking-changes/import/)
+- [Vite CSS 功能](https://vite.dev/guide/features.html#css)
 
 ---

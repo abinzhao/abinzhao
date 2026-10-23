@@ -1,7 +1,7 @@
 ---
 title: 第 52 章：权限策略、审批与 Auto-review
 description: 将执行能力、资源沙箱与一次性审批正交建模，比较不同产品的策略含义和自动审查边界。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [权限策略, 审批]
 series:
@@ -100,14 +100,20 @@ OpenCode 用 `permission` 的 `allow`、`ask`、`deny` 管理工具，细粒度�
 
 完成标准是只有新鲜且匹配的单次资格能放行动作，其余分支失败关闭。示例仅验证内存决策，不实现真实审批 UI、组织政策或持久授权服务；实验通过不能替代具体产品的权限集成测试。
 
-## 52.6 官方来源与边界
+## 52.6 当前自动审批不是用户确认
 
-DeepSeek Harness 基线固定为 `0.2.1-alpha.5`、提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`；产品文档核验于 2026-10-17，实验特性与安装版本需另行确认。
+2026-10-23 复核 [Codex 运行审批指南](https://developers.openai.com/codex/agent-approvals-security)：当前非交互推荐显式 `codex exec --sandbox workspace-write`，旧 `codex exec --full-auto` 是会警告的兼容路径。自动 reviewer 使用 `approvals_reviewer = "auto_review"`，只审查已经需要审批的动作，并不改变 sandbox；构造、会话与解析失败 fail closed，超时仍不执行。自动审查还有额外模型 usage，不能当成本为零或用户已明确同意。
+
+[OpenCode 当前 permissions](https://opencode.ai/docs/permissions/) 将旧 `tools` 布尔配置标为 deprecated，推荐 `permission`；`--auto` 将 ask 自动批准但仍执行显式 deny，不能把它当逐项风险 classifier。迁移应在固定产品版本验证，不能凭移动文档给未核验 major 添加参数。操作练习向原 grant 添加决定来源并保持单次消耗；正常验收是用户决定与自动决定分别可审计，异常验收是 reviewer 不可用、参数变化、迟到答复均不增加 executions。排错记录生效 sandbox、approval policy、reviewer 与决定来源，不用一个 Auto 标签代替四项事实。
+
+## 52.7 官方来源与边界
+
+DeepSeek Harness 基线固定为 `0.2.1-alpha.5`、提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`；2026-10-23 对照 [rc.2 approval](https://github.com/deepseek-ai/deepseek-harness/blob/687f282e8625c6b8d11ff58211a90524be2e4317/docs/subsystems/approval.md)，`never` 仍明确返回 rejected，不能用其他产品同名配置的含义覆盖它。
 
 - [固定 approval 契约](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/approval.md)
 - [固定 permission presets 与 Auto](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/permission-presets.md)
 - [Claude Code permissions](https://code.claude.com/docs/en/permissions)
-- [Codex sandbox 与 approvals](https://developers.openai.com/codex/security/)
+- [Codex sandbox 与 approvals](https://developers.openai.com/codex/agent-approvals-security)
 - [OpenCode permissions](https://opencode.ai/docs/permissions/)
 
 上一章：[第 51 章：网络、进程、容器与虚拟机隔离](./51-network-process-isolation)

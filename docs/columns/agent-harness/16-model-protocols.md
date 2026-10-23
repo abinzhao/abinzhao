@@ -1,7 +1,7 @@
 ---
 title: '第16章：Messages、Responses 与内容块协议'
 description: 通过同一个工具调用比较三种模型消息格式，建立关联标识、流式结算和不透明回放数据的适配边界。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Messages, Responses, 协议适配]
 series:
@@ -135,7 +135,13 @@ Responses 的 `previous_response_id` 可以关联服务端状态，但本地历�
 
 DeepSeek `0.2.1-alpha.5` 的[LLM 子系统](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/llm-streaming.md)与[类型源码](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/packages/llm/llm/src/types.ts)用于核对内部内容块和回放所有权。
 
-[Anthropic 官方 TypeScript SDK 类型](https://github.com/anthropics/anthropic-sdk-typescript/blob/main/src/resources/messages/messages.ts)用于核对 `tool_use` 和 `tool_result`；[OpenAI Responses API](https://platform.openai.com/docs/api-reference/responses)用于核对 item、输出预算及状态关联。厂商页面和 main 分支是 2026-10-17 核验的滚动来源，不承诺后续版本字段不变。
+[Anthropic 官方 TypeScript SDK 类型](https://github.com/anthropics/anthropic-sdk-typescript/blob/main/src/resources/messages/messages.ts)用于核对 `tool_use` 和 `tool_result`；[OpenAI Responses API](https://developers.openai.com/api/reference/resources/responses)用于核对 item、输出预算及状态关联。main 分支和 API 文档属于滚动来源，适配器应锁定依赖并核对类型，不承诺后续版本字段不变。
+
+## 16.7 当前适配与迁移门禁
+
+2026-10-23 协议审校：新接入不能仅以 Chat Completions 的 `[DONE]` 建立公共完成判断。Messages 需按内容块结束与消息终态处理；Responses 需区分完成、不完整和失败，并保留调用关联及原提供方回放数据。三者的共同层是已结算语义，不是相同的 SSE 结束字符串。
+
+练习：为一次双工具回复分别构造完整结果、缺一个结果、重复 `call_id` 和参数截断四种输入。完整组应可继续下一请求；其余应在工具执行或历史保存前拒绝，不得用已有正文补齐缺失调用。若只有第二轮失败，先检查关联 ID、工具结果角色与不透明状态是否被转换器丢弃，再检查路由兼容性，而不是重发第一轮副作用。
 
 ---
 

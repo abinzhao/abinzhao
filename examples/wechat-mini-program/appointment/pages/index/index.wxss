@@ -1,0 +1,18 @@
+.page { padding: 28rpx; }
+.panel {
+  margin-bottom: 28rpx; padding: 28rpx; background: #fff;
+  border-radius: 20rpx; box-shadow: 0 8rpx 28rpx rgba(23, 32, 51, 0.06);
+}
+.heading { display: block; font-size: 38rpx; font-weight: 600; }
+.notice, .detail { display: block; margin: 16rpx 0; line-height: 1.6; overflow-wrap: anywhere; }
+.notice { color: #4d596b; }
+.label { display: block; margin: 24rpx 0 12rpx; }
+.field {
+  box-sizing: border-box; width: 100%; min-height: 88rpx;
+  padding: 20rpx; border: 2rpx solid #657083; border-radius: 12rpx;
+}
+.note { min-height: 160rpx; }
+.message { display: block; margin: 20rpx 0; line-height: 1.6; color: #843710; }
+.record { margin-top: 24rpx; padding-top: 24rpx; border-top: 2rpx solid #dae0e8; }
+.service { display: block; font-weight: 600; }
+button { margin-top: 20rpx; }

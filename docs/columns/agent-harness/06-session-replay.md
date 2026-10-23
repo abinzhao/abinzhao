@@ -1,7 +1,7 @@
 ---
 title: 第 06 章：从追加日志回放已完成的会话
 description: 用 NDJSON 保存运行事实，验证完整工具组与状态转换，并仅从已完成运行派生后续模型历史。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [Node.js, 会话回放]
 series:
@@ -152,13 +152,19 @@ JS
 
 ## 6.9 与固定版本上游对照
 
-参考固定提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`，根包 `0.2.1-alpha.5`，最新核验日期 2026-10-17。[上游 Session 文档](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/session.md) 明确模型历史从 append-only 事件日志派生，可核对 [会话实现源码](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/packages/core/session/src/index.ts) 和 [事件类型源码](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/packages/core/session/src/types.ts)。
+参考固定提交 `1517a4dbca0a2789ff1d41ba439600f8547d23fa`，根包 `0.2.1-alpha.5`，历史快照核验日期 2026-10-17。[上游 Session 文档](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/session.md) 明确模型历史从 append-only 事件日志派生，可核对 [会话实现源码](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/packages/core/session/src/index.ts) 和 [事件类型源码](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/packages/core/session/src/types.ts)。
 
 上游有 seq、时间、surface projection、请求 header、provider/model 身份以及精确 compact assistant stream。教学项目只有三种事件和完成运行过滤，不提供上游完整的请求重建、fork 或版本迁移。
 
 尤其不能说上游与本项目一样排除所有取消内容。该固定版本允许取消时将安全可见前缀保存为带 interrupted 标记的 assistant/message，未派发工具不进入该前缀；无模型可见结果的失败尝试用 assistant/attempt 留作日志事实。教学项目采取更保守的整次未完成运行排除规则。
 
 上游还把内存事件模型与 persistence seam 分离。教学实现为减少启动复杂度，把文件持久化与折叠放在同一模块。可借鉴的是“事实与投影视图分离”，不是认为任何 JSONL 都可以互相导入。
+
+### 恢复需要校验版本，而不只校验 JSON
+
+2026-10-23 核对[当前 DeepSeek 发布渠道](https://github.com/deepseek-ai/deepseek-harness/releases)，RC 不保证会话格式跨版本兼容。合法 JSON 只证明可解析，不证明工具、SYSTEM、工作区身份和权限仍对应原运行；本教学日志未保存这些完整身份，恢复时需要调用方另行核对。
+
+练习：完成一个临时会话后改变工作区，再用同名 session 追问，观察旧工具内容不会自动刷新；另造缺少 end 的合法尾部与损坏 JSON 尾部，比较“排除在历史外”与“拒绝打开”。两类异常不要用同一种删行修复。版本向量、迁移和未知副作用处理见[第 73 章](./73-version-governance)。
 
 ## 6.10 排错与完成标准
 

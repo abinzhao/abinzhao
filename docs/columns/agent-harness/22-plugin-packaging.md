@@ -1,7 +1,7 @@
 ---
 title: '第22章：插件格式、市场与版本分发'
 description: 区分技能说明、插件组件、市场目录与运行组合，建立版本、路径、授权和升级验收的分发契约。
-date: '2026-10-17'
+date: '2026-10-23'
 category: 智能体工程
 tags: [插件, Marketplace, 供应链]
 series:
@@ -27,9 +27,9 @@ Skill 是工作流程说明，插件是可一起安装的组件集合，marketpl
 
 运行期应能够追溯最终组件来自哪个包、哪个版本、哪个配置层。只有用户看到的展示名称不足以定位问题：市场名称可能相同，组件名称也可能重复。升级后正文变了、hook 没变，或 MCP 配置仍来自旧缓存，都会产生混合版本行为。
 
-## 22.2 两个厂商 manifest，不是一份跨产品配置
+## 22.2 当前 manifest 与兼容入口
 
-下面分别是 Claude Code 和 Codex 的最小 manifest 内容，放置位置写在表后。它们是两个独立文件的示例，不要把两个对象写到同一 JSON 文件。
+下面分别是 Claude Code 与 OpenAI 当前推荐的最小 manifest 内容。它们是两个独立文件，不要把两个对象写到同一 JSON 文件。2026-10-23 官方 OpenAI 指南已推荐可移植 Agent Plugins 格式，旧 Codex 布局仍支持，但不再作为新包的首选。
 
 ```json
 {
@@ -43,14 +43,16 @@ Claude Code 使用 `.claude-plugin/plugin.json`；技能内容放在插件根的
 
 ```json
 {
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "evidence-kit",
   "version": "1.0.0",
-  "description": "Read-only evidence summary skills",
-  "skills": "./skills/"
+  "description": "Read-only evidence summary skills"
 }
 ```
 
-Codex 使用 `.codex-plugin/plugin.json`，组件路径相对插件根。它也能分发 skills、MCP、hooks 和 app 映射，但具体字段、市场解析和安装缓存由 Codex 规定。相近的 manifest 不代表所有厂商支持同样组件和生命周期。
+当前 OpenAI 可移植包使用根目录 `plugin.json`，技能从根目录 `skills/<name>/SKILL.md` 发现，不需要上述 manifest 声明 `skills`。可选 MCP 配置是根目录 `mcp.json`；旧 `.mcp.json` 不能只重命名，因为可移植格式还要求服务器 transport `type`。
+
+OpenAI 专属展示、已注册 MCP 映射与 hook 设置放在 `extensions.com.openai`。该值为对象时整体替代 `.codex-plugin/plugin.json` 的 overlay，不逐字段合并；缺失时才使用旧 overlay。旧兼容 manifest 的 `"skills": "./skills/"` 仍有意义，但不能当根 manifest 的必填字段。`@plugin-creator` 当前仍生成兼容布局，工具生成结果与新包推荐格式需要分别理解。
 
 OpenCode 的插件是 JS/TS 模块，既可从本地插件目录加载，也可在配置中指定 npm 包。不能给 OpenCode 填入上述 manifest 并期待得到同一种插件。产品间迁移需要对照入口函数、配置格式、卸载语义和包安装行为。
 
@@ -100,7 +102,13 @@ DeepSeek 固定版本用 profile 和 bundle 组成 Cordis 配置层。bundle 的
 
 DeepSeek `0.2.1-alpha.5` 的[架构组合说明](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/architecture.md)、[boot 子系统](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/subsystems/boot.md)和[插件工具目录](https://github.com/deepseek-ai/deepseek-harness/blob/1517a4dbca0a2789ff1d41ba439600f8547d23fa/docs/tool-catalog.md)提供其组合与授权边界。
 
-厂商格式依据 [Claude Code plugins](https://code.claude.com/docs/en/plugins)、[Codex build plugins](https://developers.openai.com/codex/plugins/build)和[OpenCode plugins](https://opencode.ai/docs/plugins/)，核验日 2026-10-17。此处不声称三个生态共享一个插件标准；开放 Skill 格式与插件分发格式是不同层次。
+厂商格式依据 [Claude Code plugins](https://code.claude.com/docs/en/plugins)、[OpenAI Package your plugin](https://developers.openai.com/plugins/build/plugins)和[OpenCode plugins](https://opencode.ai/docs/plugins/)，核验日 2026-10-23。Agent Plugins 是当前 OpenAI 推荐的可移植入口，不等于三个生态已经实现相同组件与生命周期；开放 Skill 格式与插件分发格式也是不同层次。
+
+## 22.8 Manifest 迁移的正常与异常验收
+
+先按 schema 校验根 manifest，再检查技能目录与所有资源路径。用一个只含 Skill 的包验证发现与禁用，然后在隔离宿主中测试组件加载；不要在格式实验里增加会启动进程的 MCP 或 hook。
+
+练习：同时设置 inline `extensions.com.openai` 与旧 overlay，让二者包含不同展示值。正常加载应采用 inline 整体，不能把 overlay 的遗漏字段悄悄补入。再测试缺少 schema、越界组件路径与旧 `.mcp.json` 直接改名，记录校验错误和拒绝阶段。排错先确认入口格式与宿主版本，再查路径基准、安装缓存及激活状态；JSON 可解析并不证明包符合 schema。
 
 ---
 

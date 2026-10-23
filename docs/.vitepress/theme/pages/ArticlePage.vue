@@ -31,7 +31,7 @@ import {
   selectActiveHeading,
 } from '../composables/visual-effects';
 import ArticleAskMenu from '../components/ArticleAskMenu.vue';
-import { groupHarnessChapters } from '../composables/harness-navigation';
+import { groupCourseChapters } from '../composables/harness-navigation';
 
 const route = useRoute();
 const { frontmatter } = useData();
@@ -61,8 +61,8 @@ let readingFrame = 0;
 const series = computed(() =>
   getSeriesNavigation(content.columns, contentHref.value),
 );
-const seriesGroups = computed(() => series.value.column?.slug === 'agent-harness'
-  ? groupHarnessChapters(series.value.column.articles)
+const seriesGroups = computed(() => series.value.column
+  ? groupCourseChapters(series.value.column.slug, series.value.column.articles)
   : []);
 const globalIndex = computed(() =>
   content.blogArticles.findIndex(
@@ -232,6 +232,7 @@ onBeforeUnmount(() => {
           @click="outlineDialog?.showModal()"
         ><List :size="18" aria-hidden="true" /> 本页目录 <span>{{ headings.length }} 节</span></button>
         <span>{{ Math.round(readingProgress * 100) }}%</span>
+        <a v-if="series.column" :href="withBase(series.column.href)" class="reading-course-return">课程目录</a>
       </div>
 
       <div class="reading-layout">
