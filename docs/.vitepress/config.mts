@@ -38,7 +38,11 @@ export default defineConfig({
   appearance: false,
   base,
   description: site.description,
-  head: [['script', { id: 'theme-bootstrap' }, themeBootstrapScript]],
+  head: [
+    // 在主题 CSS 和页面模块加载前消除默认边距，避免首绘产生布局偏移。
+    ['style', { id: 'page-reset' }, 'body{margin:0}'],
+    ['script', { id: 'theme-bootstrap' }, themeBootstrapScript],
+  ],
   lang: 'zh-CN',
   title: site.title,
   srcExclude: publicationExclusions(contentRoot),

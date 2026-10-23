@@ -1,5 +1,10 @@
 import { expect, test, type Page } from '@playwright/test';
 
+async function waitForAssistant(page: Page) {
+  // 输入就绪意味着会话恢复和本地索引初始化均完成，避免将冷加载误判为数据丢失。
+  await expect(page.getByLabel('输入问题')).toBeEnabled({ timeout: 20_000 });
+}
+
 async function mockModel(page: Page) {
   await page.addInitScript(() => {
     const NativeWorker = window.Worker;
@@ -34,6 +39,7 @@ async function mockModel(page: Page) {
 }
 
 test('migrates v1 in a real IDB transaction, then preserves new replies and drafts across reload', async ({ page }) => {
+  test.setTimeout(60_000);
   await page.addInitScript(() => {
     if (!localStorage.getItem('abin-conversations-v1')) localStorage.setItem('abin-conversations-v1', JSON.stringify([{
       id: 'legacy', mode: 'model', title: '历史 React', updatedAt: 1,
@@ -41,9 +47,12 @@ test('migrates v1 in a real IDB transaction, then preserves new replies and draf
     }]));
   });
   await page.goto('chat/');
+  await waitForAssistant(page);
   await expect(page.getByText('旧回答', { exact: true })).toBeVisible();
   await page.getByLabel('输入问题').fill('解释 Flexbox');
   await page.getByRole('button', { name: '发送问题' }).click();
+  // 首次请求才加载正文语料；完成后仍严格检查答案与实际 IDB 持久化。
+  await expect(page.getByRole('button', { name: '发送问题' })).toBeVisible({ timeout: 20_000 });
   await expect(page.locator('.chat-answer')).toBeVisible();
   await page.getByLabel('输入问题').fill('未发送草稿');
   await expect.poll(() => page.evaluate(async () => {
@@ -55,6 +64,7 @@ test('migrates v1 in a real IDB transaction, then preserves new replies and draf
     return value.draft;
   })).toBe('未发送草稿');
   await page.reload();
+  await waitForAssistant(page);
   await expect(page.locator('.chat-message')).toHaveCount(4);
   await expect(page.locator('.chat-answer')).toBeVisible();
   await expect(page.getByLabel('输入问题')).toHaveValue('未发送草稿');
@@ -81,8 +91,10 @@ test('an aborted IDB transaction retains the legacy backup and provides export',
 });
 
 test('streams plain text, stops with partial content, opens trusted sources and restores focus', async ({ page }) => {
+  test.setTimeout(60_000);
   await mockModel(page);
   await page.goto('chat/');
+  await waitForAssistant(page);
   await page.getByRole('button', { name: '配置本地模型' }).click();
   await page.getByRole('button', { name: '下载并加载模型' }).click();
   await expect(page.getByText('本地模型已就绪', { exact: true })).toBeVisible();
@@ -90,7 +102,7 @@ test('streams plain text, stops with partial content, opens trusted sources and 
   await page.getByRole('checkbox', { name: /实验生成/ }).check();
   await page.getByLabel('输入问题').fill('解释 React');
   await page.getByRole('button', { name: '发送问题' }).click();
-  await expect(page.locator('.chat-message--assistant .chat-message__text')).toContainText('React');
+  await expect(page.locator('.chat-message--assistant .chat-message__text')).toContainText('React', { timeout: 20_000 });
   await expect(page.locator('.chat-message__markdown')).toHaveCount(0);
   await page.getByRole('button', { name: '停止回答' }).click();
   await expect(page.getByText('已停止', { exact: true })).toBeVisible();
@@ -101,6 +113,7 @@ test('streams plain text, stops with partial content, opens trusted sources and 
   await page.keyboard.press('Escape');
   await expect(source).toBeFocused();
   await page.reload();
+  await waitForAssistant(page);
   await expect(page.getByText('已停止', { exact: true })).toBeVisible();
 });
 

@@ -59,7 +59,10 @@ test('contains long chapter bodies and preserves pagination in every curriculum'
         await page.goto(chapter!);
         await expect(page.locator('.reading-prose h2').first()).toBeVisible();
         await expect(page.locator('.reading-pagination')).toBeVisible();
-        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${chapter} at ${width}`).toBe(true);
+        // 页面模块与字体可在可见后继续排版，保持严格宽度条件并等待最终布局。
+        await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - innerWidth), {
+          message: `${chapter} at ${width}`,
+        }).toBeLessThanOrEqual(0);
       }
     }
   }
