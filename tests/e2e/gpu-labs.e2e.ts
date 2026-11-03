@@ -1,11 +1,29 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 // macOS 的 headless SwiftShader 即使只清屏也会 device-lost；使用已验证的原生 Metal。
 test.use({ launchOptions: { args: ['--enable-unsafe-webgpu', ...(process.platform === 'darwin' ? ['--use-angle=metal'] : [])] } });
+
+/**
+ * 真实图形管线用例依赖宿主 GPU。CI 的 Linux runner 没有可用 WebGPU 设备，
+ * 此时按能力跳过，避免把环境缺失误判为实现回归；WebGPU 缺失时的降级行为
+ * 仍由不依赖 GPU 的 Canvas2D / 静态预览用例覆盖。
+ */
+async function gpuSupport(page: Page): Promise<{ webgpu: boolean; webgl2: boolean }> {
+  return page.evaluate(async () => {
+    let webgpu = false;
+    try {
+      const gpu = (navigator as Navigator & { gpu?: { requestAdapter?: () => Promise<unknown> } }).gpu;
+      webgpu = Boolean(await gpu?.requestAdapter?.());
+    } catch { webgpu = false; }
+    return { webgpu, webgl2: Boolean(document.createElement('canvas').getContext('webgl2')) };
+  });
+}
 
 test('homepage defers both renderers and switching disposes the previous canvas', async ({ page }) => {
   const requests: string[] = [];
   page.on('request', (request) => requests.push(request.url()));
   await page.goto('');
+  const support = await gpuSupport(page);
+  test.skip(!support.webgpu || !support.webgl2, '当前环境没有可用的 WebGPU/WebGL2 设备，跳过真实渲染断言');
   await expect(page.locator('html')).toHaveAttribute('data-motion', 'full');
   await expect(page.getByRole('button', { name: '光谱材质', exact: true })).toBeVisible();
   expect(requests.filter((url) => /particle-(gpu|model)|spectral-(renderer|fragment)|GpuExperiment/.test(url))).toEqual([]);
@@ -65,6 +83,8 @@ test('spectral controls change rendered pixels and context loss offers explicit 
 
 test('offscreen and hidden experiments pause until explicitly resumed', async ({ page }) => {
   await page.goto('labs/particles.html');
+  const support = await gpuSupport(page);
+  test.skip(!support.webgpu, '当前环境没有可用的 WebGPU 设备，跳过真实渲染断言');
   await page.getByRole('button', { name: '运行实验', exact: true }).click();
   await expect(page.locator('.gpu-experiment')).toHaveAttribute('data-state', 'running');
   await page.evaluate(() => { Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true }); document.dispatchEvent(new Event('visibilitychange')); });
@@ -113,6 +133,8 @@ test('twenty startups per renderer release GPU resources and stop submissions af
     };
   });
   await page.goto('');
+  const support = await gpuSupport(page);
+  test.skip(!support.webgpu || !support.webgl2, '当前环境没有可用的 WebGPU/WebGL2 设备，跳过资源回收断言');
   for (let index = 0; index < 40; index++) {
     await page.getByRole('button', { name: index % 2 ? '光谱材质' : '代码粒子', exact: true }).click();
     await page.getByRole('button', { name: '运行实验', exact: true }).click();
@@ -183,6 +205,8 @@ test.describe('WebGPU device path', () => {
       };
     });
     await page.goto('labs/particles.html');
+    const support = await gpuSupport(page);
+    test.skip(!support.webgpu, '当前环境没有可用的 WebGPU 设备，跳过真实计算管线断言');
     await page.getByRole('button', { name: '运行实验', exact: true }).click();
     await expect(page.locator('.gpu-experiment')).toHaveAttribute('data-state', 'running');
     expect(await page.locator('.gpu-experiment').getAttribute('data-backend'), JSON.stringify(await page.evaluate(() => (window as any).gpuProbe))).toBe('WebGPU');
