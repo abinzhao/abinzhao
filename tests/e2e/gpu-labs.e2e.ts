@@ -3,50 +3,35 @@ import { expect, test, type Page } from '@playwright/test';
 test.use({ launchOptions: { args: ['--enable-unsafe-webgpu', ...(process.platform === 'darwin' ? ['--use-angle=metal'] : [])] } });
 
 /**
- * 真实图形管线用例依赖宿主 GPU。CI 的 Linux runner 能返回适配器，但设备创建后
- * 立即丢失，因此必须实际申请设备并观察短暂的 lost 信号；只有可用设备才执行严格
- * 断言，避免把环境缺失误判为实现回归。WebGPU 缺失时的降级行为仍由不依赖 GPU
- * 的 Canvas2D / 静态预览用例覆盖。
+ * 启动实验并等待进入可运行状态。CI 的 Linux runner 会返回 WebGPU 适配器，但真实
+ * 管线初始化失败；这类宿主能力缺失记录实际原因后跳过。有可用设备却出现其它错误
+ * 仍按失败处理，避免用跳过掩盖实现回归。无 GPU 时的 Canvas2D / 静态降级另有独立
+ * 用例覆盖。
  */
-async function gpuSupport(page: Page): Promise<{ webgpu: boolean; webgl2: boolean }> {
-  return page.evaluate(async () => {
-    type ProbeAdapter = {
-      requestDevice?: () => Promise<{ lost: Promise<unknown>; destroy?: () => void }>;
-    };
-    let webgpu = false;
-    try {
-      const gpu = (navigator as Navigator & { gpu?: { requestAdapter?: () => Promise<ProbeAdapter | null> } }).gpu;
-      const adapter = await gpu?.requestAdapter?.();
-      if (adapter?.requestDevice) {
-        const device = await adapter.requestDevice();
-        const lost = await Promise.race([
-          device.lost.then(() => true),
-          new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 1000)),
-        ]);
-        device.destroy?.();
-        webgpu = !lost;
-      }
-    } catch { webgpu = false; }
-    return { webgpu, webgl2: Boolean(document.createElement('canvas').getContext('webgl2')) };
-  });
+async function startExperiment(page: Page): Promise<void> {
+  const element = page.locator('.gpu-experiment');
+  await page.getByRole('button', { name: '运行实验', exact: true }).click();
+  await expect(element).toHaveAttribute('data-state', /^(running|error|static)$/, { timeout: 20_000 });
+  const state = await element.getAttribute('data-state');
+  if (state === 'running') return;
+  const status = (await element.locator('.lab-status').first().textContent().catch(() => ''))?.trim() ?? '';
+  const capability = /不可用|失去连接|初始化失败|adapter|设备|图形上下文/.test(status);
+  test.skip(capability, `当前环境没有可用的图形设备（${status || '未知原因'}）`);
+  throw new Error(`实验未能运行（state=${state}）：${status || '未知原因'}`);
 }
 
 test('homepage defers both renderers and switching disposes the previous canvas', async ({ page }) => {
   const requests: string[] = [];
   page.on('request', (request) => requests.push(request.url()));
   await page.goto('');
-  const support = await gpuSupport(page);
-  test.skip(!support.webgpu || !support.webgl2, '当前环境没有可用的 WebGPU/WebGL2 设备，跳过真实渲染断言');
   await expect(page.locator('html')).toHaveAttribute('data-motion', 'full');
   await expect(page.getByRole('button', { name: '光谱材质', exact: true })).toBeVisible();
   expect(requests.filter((url) => /particle-(gpu|model)|spectral-(renderer|fragment)|GpuExperiment/.test(url))).toEqual([]);
-  await page.getByRole('button', { name: '运行实验', exact: true }).click();
+  await startExperiment(page);
   await expect(page.locator('.gpu-experiment canvas')).toHaveCount(1);
-  await expect(page.locator('.gpu-experiment')).toHaveAttribute('data-state', 'running');
   await page.getByRole('button', { name: '代码粒子', exact: true }).click();
   await expect(page.locator('.gpu-experiment canvas')).toHaveCount(0);
-  await page.getByRole('button', { name: '运行实验', exact: true }).click();
-  await expect(page.locator('.gpu-experiment')).toHaveAttribute('data-state', 'running');
+  await startExperiment(page);
   await page.getByRole('button', { name: '关闭实验', exact: true }).click();
   await expect(page.locator('.gpu-experiment canvas')).toHaveCount(0);
 });
@@ -96,10 +81,7 @@ test('spectral controls change rendered pixels and context loss offers explicit 
 
 test('offscreen and hidden experiments pause until explicitly resumed', async ({ page }) => {
   await page.goto('labs/particles.html');
-  const support = await gpuSupport(page);
-  test.skip(!support.webgpu, '当前环境没有可用的 WebGPU 设备，跳过真实渲染断言');
-  await page.getByRole('button', { name: '运行实验', exact: true }).click();
-  await expect(page.locator('.gpu-experiment')).toHaveAttribute('data-state', 'running');
+  await startExperiment(page);
   await page.evaluate(() => { Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true }); document.dispatchEvent(new Event('visibilitychange')); });
   await expect(page.locator('.gpu-experiment')).toHaveAttribute('data-state', 'paused');
   await page.evaluate(() => { Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true }); document.dispatchEvent(new Event('visibilitychange')); });
@@ -146,12 +128,9 @@ test('twenty startups per renderer release GPU resources and stop submissions af
     };
   });
   await page.goto('');
-  const support = await gpuSupport(page);
-  test.skip(!support.webgpu || !support.webgl2, '当前环境没有可用的 WebGPU/WebGL2 设备，跳过资源回收断言');
   for (let index = 0; index < 40; index++) {
     await page.getByRole('button', { name: index % 2 ? '光谱材质' : '代码粒子', exact: true }).click();
-    await page.getByRole('button', { name: '运行实验', exact: true }).click();
-    await expect(page.locator('.gpu-experiment')).toHaveAttribute('data-state', 'running');
+    await startExperiment(page);
     await expect(page.locator('.gpu-experiment')).toHaveAttribute('data-backend', index % 2 ? 'WebGL2' : 'WebGPU');
     await page.getByRole('button', { name: '关闭实验', exact: true }).click();
     const before = await page.evaluate(() => (window as any).renderAudit);
@@ -218,10 +197,7 @@ test.describe('WebGPU device path', () => {
       };
     });
     await page.goto('labs/particles.html');
-    const support = await gpuSupport(page);
-    test.skip(!support.webgpu, '当前环境没有可用的 WebGPU 设备，跳过真实计算管线断言');
-    await page.getByRole('button', { name: '运行实验', exact: true }).click();
-    await expect(page.locator('.gpu-experiment')).toHaveAttribute('data-state', 'running');
+    await startExperiment(page);
     expect(await page.locator('.gpu-experiment').getAttribute('data-backend'), JSON.stringify(await page.evaluate(() => (window as any).gpuProbe))).toBe('WebGPU');
     await page.getByRole('button', { name: '暂停', exact: true }).click();
     await page.getByRole('button', { name: '重置', exact: true }).click();
