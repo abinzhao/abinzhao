@@ -1,0 +1,28 @@
+.reading-actions { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; margin-top: 12px; font-size: 13px; }
+.reading-actions :is(button,a) { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 0; color: var(--site-accent); background: transparent; border: 0; text-decoration: none; }
+.reading-actions button[aria-pressed='true']::before { content: '✓'; padding-right: 8px; }
+.reading-actions--completed button[aria-pressed='true']::before { animation: path-confirm 320ms var(--site-ease); }
+@keyframes path-confirm { from { transform: scale(.65); opacity: .4; } to { transform: none; opacity: 1; } }
+.reading-actions > span { color: var(--site-text-muted); }
+/* html 已有 scroll-padding，标题不重复累加同一偏移。 */
+.reading-page .reading-prose :is(h2,h3,h4) { scroll-margin-top: 0; }
+.reading-progress i { position: absolute; top: 0; height: 4px; width: 1px; background: var(--site-bg); }
+.reading-outline-nav { position: relative; }
+.reading-outline-marker { position: absolute; left: 0; top: 0; width: 2px; background: var(--site-accent); transition: transform 160ms var(--site-ease), height 160ms; pointer-events: none; }
+.course-progress { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 12px; color: var(--site-text-muted); font-size: 13px; }
+.course-progress progress { width: 100px; height: 6px; accent-color: var(--site-accent); }
+.column-reading-chapters > header .course-progress { flex-direction: column; align-items: flex-end; gap: 6px; margin: 0; }
+.course-progress summary { min-height: 44px; padding: 12px 0; cursor: pointer; }
+.course-progress details[open] { flex-basis: 100%; }
+.course-search { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; font-size: 13px; }
+.course-search input { flex: 1; min-width: 0; min-height: 44px; padding: 10px 12px; border: 1px solid var(--site-border); border-radius: 8px; color: var(--site-text); background: var(--site-surface); font: inherit; }
+.harness-unit ol { position: relative; }
+.harness-unit li::before { position: absolute; left: 34px; top: -13px; height: 12px; width: 1px; background: var(--site-border); content: ''; }
+.harness-unit li:first-child::before { display: none; }
+.harness-unit .chapter-completed { border-color: color-mix(in srgb, var(--site-accent) 60%, var(--site-border)); }
+.chapter-completed + li::before { background: var(--site-accent); }
+.chapter-current .column-reading-chapters__order { border-radius: 50%; background: var(--vp-c-brand-soft); padding: 6px 2px; text-align: center; }
+.reading-prose div[class*='language-'] > button.copy.copied { opacity: 1; border-color: var(--site-accent); }
+@media (min-width: 1025px) { .reading-layout > .reading-prose { max-width: 46rem; font-size: 17px; } }
+@media (max-width: 600px) { .harness-unit li::before { left: 28px; } }
+@media print { .reading-actions, .article-terms, .reading-mobile-toolbar, .reading-aside, .reading-progress { display: none !important; } }

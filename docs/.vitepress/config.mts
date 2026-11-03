@@ -3,8 +3,10 @@ import { fileURLToPath } from 'node:url';
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { loadSiteConfig } from './data/site';
-import { publicationExclusions } from './data/content';
+import { publicationExclusions, loadPublishedArticleSources } from './data/content';
+import { articleStructuredData, createFeed } from './data/publication';
 import { writeOfflineAssets } from './data/offline-build';
+import { collectOptionalAssets } from './data/asset-groups';
 
 const site = loadSiteConfig();
 const configuredBase = process.env.VITEPRESS_BASE ?? '/abinzhao/';
@@ -13,6 +15,8 @@ if (!base.startsWith('/') || base.startsWith('//') || /[?#\\]/.test(base)) throw
 const siteOrigin = 'https://abinzhao.github.io';
 const contentRoot = fileURLToPath(new URL('../', import.meta.url));
 const modelRuntimeAssets = new Set<string>();
+const experimentAssets = new Set<string>();
+const knowledgeAssets = new Set<string>();
 const themeBootstrapScript = `
   let storedTheme = null;
 
@@ -37,11 +41,15 @@ const themeBootstrapScript = `
 export default defineConfig({
   appearance: false,
   base,
+  // 长课程目录的可见链接很多；用户导航时再加载，避免冷首访预取全文。
+  router: { prefetchLinks: false },
+  scrollOffset: 88,
   description: site.description,
   head: [
     // 在主题 CSS 和页面模块加载前消除默认边距，避免首绘产生布局偏移。
     ['style', { id: 'page-reset' }, 'body{margin:0}'],
     ['script', { id: 'theme-bootstrap' }, themeBootstrapScript],
+    ['link', { rel: 'alternate', type: 'application/rss+xml', title: `${site.title}订阅`, href: `${base}feed.xml` }],
   ],
   lang: 'zh-CN',
   title: site.title,
@@ -52,14 +60,12 @@ export default defineConfig({
       chunkSizeWarningLimit: 6400,
     },
     plugins: [{
-      name: 'capture-webllm-runtime-assets',
+      name: 'capture-optional-assets',
       generateBundle(_options, bundle) {
-        for (const output of Object.values(bundle)) {
-          if (output.type === 'chunk' &&
-            output.moduleIds.some((id) => id.includes('/@mlc-ai/web-llm/'))) {
-            modelRuntimeAssets.add(output.fileName);
-          }
-        }
+        const groups = collectOptionalAssets(bundle);
+        for (const file of groups.modelRuntime) modelRuntimeAssets.add(file);
+        for (const file of groups.experiments) experimentAssets.add(file);
+        for (const file of groups.knowledge) knowledgeAssets.add(file);
       },
     }],
   },
@@ -68,6 +74,11 @@ export default defineConfig({
     transformItems: (items) => items.filter((item) => item.url !== '404.html'),
   },
   transformPageData(page) {
+    // 动态路由参数不会插值 frontmatter；显式赋值让 SSG 标题、分享与正文同源。
+    if (page.frontmatter.layout === 'lab' && typeof page.params?.title === 'string') {
+      page.title = page.frontmatter.title = page.params.title;
+      page.frontmatter.description = page.params.description;
+    }
     const path = page.relativePath.replace(/(^|\/)index\.md$/, '$1').replace(/\.md$/, '.html');
     const url = `${siteOrigin}${base}${path}`;
     const description = page.frontmatter.description || site.description;
@@ -81,6 +92,11 @@ export default defineConfig({
       ['meta', { property: 'og:type', content: /^(blog|columns)\/.+\.html$/.test(path) ? 'article' : 'website' }],
     );
     if (path === '404.html') page.frontmatter.head.push(['meta', { name: 'robots', content: 'noindex' }]);
+    if (/^(blog|columns)\/.+\.html$/.test(path)) {
+      for (const data of articleStructuredData(page.frontmatter, page.title, description, url, `${siteOrigin}${base}`)) {
+        page.frontmatter.head.push(['script', { type: 'application/ld+json' }, JSON.stringify(data).replace(/</g, '\\u003c')]);
+      }
+    }
   },
   async buildEnd(config) {
     await writeFile(join(config.outDir, 'release.json'), JSON.stringify({
@@ -89,11 +105,14 @@ export default defineConfig({
       builtAt: new Date().toISOString(),
     }) + '\n');
     await writeFile(join(config.outDir, 'robots.txt'), `User-agent: *\nAllow: ${base}\nSitemap: ${siteOrigin}${base}sitemap.xml\n`);
-    await writeOfflineAssets(config.outDir, base, modelRuntimeAssets);
+    const articles = (await loadPublishedArticleSources(contentRoot)).map(({ article }) => article);
+    await writeFile(join(config.outDir, 'feed.xml'), createFeed(articles, site.title, site.description, `${siteOrigin}${base}`));
+    await writeOfflineAssets(config.outDir, base, modelRuntimeAssets, { experiments: experimentAssets, knowledge: knowledgeAssets });
   },
   themeConfig: {
     nav: [
       { text: '首页', link: '/' },
+      { text: '实验室', link: '/labs/' },
       { text: '博客', link: '/blog/' },
       { text: '专题', link: '/columns/' },
       { text: '项目', link: '/projects/' },

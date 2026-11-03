@@ -4,3 +4,9 @@ docs/.vitepress/dist/
 coverage/
 playwright-report/
 test-results/
+docs/public/downloads/site-labs.zip
+docs/public/downloads/site-labs-manifest.json
+.DS_Store
+/.vitepress/
+/.trae-html-share-packages/
+/deliverables/

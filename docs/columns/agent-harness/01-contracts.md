@@ -4,6 +4,11 @@ description: 从零建立 Node.js ESM 项目，用明确的输入、输出和副
 date: '2026-10-23'
 category: 智能体工程
 tags: [Node.js, 服务契约]
+glossary:
+  - term: 服务契约
+    definition: 一个模块对输入、输出、副作用和失败处理的承诺。本文用它区分 provider、tools、session 和 agent 的责任。
+  - term: ESM
+    definition: JavaScript 的标准模块系统。本章示例用 import/export 和 .mjs 文件，导入入口不会自动启动服务。
 series:
   order: 1
 ---

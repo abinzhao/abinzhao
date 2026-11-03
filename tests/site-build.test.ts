@@ -144,6 +144,18 @@ describe('VitePress static site', () => {
     expect(readFileSync(join(distDirectory, 'sitemap.xml'), 'utf8')).not.toContain('private-');
   });
 
+  test('publishes a feed and structured article metadata without exposing drafts', () => {
+    expect(existsSync(join(distDirectory, 'feed.xml'))).toBe(true);
+    const feed = readFileSync(join(distDirectory, 'feed.xml'), 'utf8');
+    expect(feed).toContain('<rss version="2.0"');
+    expect(feed).not.toContain('private-');
+    const html = readFileSync(join(distDirectory, 'blog/vitepress-static-site.html'), 'utf8');
+    const structured = [...html.matchAll(/<script type="application\/ld\+json">([^<]+)<\/script>/g)]
+      .map((match) => JSON.parse(match[1]));
+    expect(structured.some((item) => item['@type'] === 'BlogPosting' && item.datePublished)).toBe(true);
+    expect(structured.some((item) => item['@type'] === 'BreadcrumbList')).toBe(true);
+  });
+
   test('writes base-aware SEO and a versioned offline manifest that covers lazy workers and knowledge', () => {
     const home = readFileSync(join(distDirectory, 'index.html'), 'utf8');
     expect(home).toContain('rel="canonical" href="https://abinzhao.github.io/abinzhao/"');
@@ -155,8 +167,11 @@ describe('VitePress static site', () => {
     expect(manifest.base).toBe('/abinzhao/');
     expect(manifest.groups.site).toContain('/abinzhao/chat/index.html');
     expect(manifest.groups.site).toContain('/abinzhao/hashmap.json');
-    expect(manifest.groups.site.some((url: string) => /knowledge\.worker.*\.js$/.test(url))).toBe(true);
-    expect(manifest.groups.site.some((url: string) => /knowledge-corpus\.data.*\.js$/.test(url))).toBe(true);
+    expect(manifest.groups.knowledge.some((url: string) => /knowledge\.worker.*\.js$/.test(url))).toBe(true);
+    expect(manifest.groups.knowledge.some((url: string) => /knowledge-corpus\.data.*\.js$/.test(url))).toBe(true);
+    expect(manifest.groups.site.some((url: string) => /knowledge-(corpus|index)\.data/.test(url))).toBe(false);
+    expect(manifest.groups.site.some((url: string) => /columns\/.+\/.+\.html|assets\/columns_[^_]+_/.test(url))).toBe(false);
+    expect(manifest.groups['course:agent-harness']).toContain('/abinzhao/columns/agent-harness/01-contracts.html');
     expect(manifest.groups.site.some((url: string) => /webllm\.worker.*\.js$/.test(url))).toBe(false);
     expect(manifest.groups.modelRuntime.some((url: string) => /webllm\.worker.*\.js$/.test(url))).toBe(true);
     expect(manifest.groups.modelRuntime).toHaveLength(2);

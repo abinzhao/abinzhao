@@ -90,6 +90,40 @@ describe('local offline boundaries', () => {
     }
   });
 
+  test('keeps courses, knowledge and transitive experiment code out of the default package', async () => {
+    const output = await mkdtemp(join(tmpdir(), 'abin-offline-groups-'));
+    const assets = {
+      'index.html': '<main>site</main>',
+      'columns/course/index.html': 'course',
+      'columns/course/first.html': 'chapter',
+      'assets/columns_course_first.md.hash.js': 'page',
+      'labs/particles.html': 'experiment page',
+      'assets/lab-graph.worker-hash.js': 'layout worker',
+      'assets/chunks/knowledge-corpus.data.hash.js': 'knowledge',
+      'assets/chunks/lab-runtime.js': 'renderer',
+      'assets/chunks/geometry.js': 'optional dependency',
+      'assets/chunks/shared.js': 'shared',
+    };
+    try {
+      for (const [file, source] of Object.entries(assets)) {
+        await mkdir(join(output, file, '..'), { recursive: true });
+        await writeFile(join(output, file), source);
+      }
+      const manifest = await writeOfflineAssets(output, '/abinzhao/', new Set(), {
+        experiments: new Set(['assets/chunks/lab-runtime.js', 'assets/chunks/geometry.js']),
+      });
+      expect(manifest.groups.site).toEqual(['/abinzhao/assets/chunks/shared.js', '/abinzhao/index.html', '/abinzhao/assistant-assets.json']);
+      expect(manifest.groups['course:course']).toEqual([
+        '/abinzhao/assets/columns_course_first.md.hash.js', '/abinzhao/columns/course/first.html', '/abinzhao/columns/course/index.html',
+      ]);
+      expect(manifest.groups.experiments).toContain('/abinzhao/assets/chunks/geometry.js');
+      expect(manifest.groups.experiments).toContain('/abinzhao/assets/lab-graph.worker-hash.js');
+      expect(manifest.groups.knowledge).toEqual(['/abinzhao/assets/chunks/knowledge-corpus.data.hash.js']);
+      expect(manifest.sizes['course:course']).toBe(17);
+      expect(new Set(Object.values(manifest.groups).flat()).size).toBe(Object.values(manifest.groups).flat().length);
+    } finally { await rm(output, { recursive: true, force: true }); }
+  });
+
   test.each(['/', '/abinzhao/'])('serves grouped local assets under %s and preserves model caches', async (base) => {
     const handlers: Record<string, (event: any) => void> = {};
     const deleted: string[] = [];

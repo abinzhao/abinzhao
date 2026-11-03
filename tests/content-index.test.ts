@@ -28,6 +28,10 @@ describe('content index', () => {
         '---',
         '',
         '# 静态站点架构',
+        '',
+        '```ts',
+        'const site = { local: true };',
+        '```',
       ].join('\n'),
     );
 
@@ -120,10 +124,17 @@ describe('content index', () => {
     expect(publicIndex).not.toContain('"markdown"');
   });
 
-  test('publishes ten distinct blogs and the complete seventy-three-chapter Harness path', async () => {
+  test('extracts a bounded preview from the real first code fence of a published blog', async () => {
+    const index = await createContentIndex(fixtureRoot);
+    expect(index.blogArticles[0].preview).toEqual({ language: 'ts', code: 'const site = { local: true };' });
+    expect(index.columns[0].articles[0].preview).toBeUndefined();
+  });
+
+  test('publishes nineteen distinct blogs and the complete seventy-three-chapter Harness path', async () => {
     const index = await createContentIndex(resolve(import.meta.dirname, '../docs'));
-    expect(index.blogArticles).toHaveLength(10);
-    expect(new Set(index.blogArticles.map((article) => article.href))).toHaveLength(10);
+    expect(index.blogArticles).toHaveLength(19);
+    expect(new Set(index.blogArticles.map((article) => article.href))).toHaveLength(19);
+    expect(index.blogArticles.filter((article) => article.demoIds?.length)).toHaveLength(9);
     const harness = index.columns.find((column) => column.slug === 'agent-harness');
     expect(harness?.articles.map((article) => article.seriesOrder)).toEqual(
       Array.from({ length: 73 }, (_, index) => index + 1),

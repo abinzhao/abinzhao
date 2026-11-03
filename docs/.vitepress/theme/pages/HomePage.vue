@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import {
   ArrowRight,
-  CheckCircle2,
   Code2,
-  GitBranch,
 } from '@lucide/vue';
 import { withBase } from 'vitepress';
 import { computed, ref } from 'vue';
 import { data as home } from '../../data/home.data';
 import { data as content } from '../../data/content.data';
 import { data as repositories } from '../../data/projects.data';
+import ArticlePreview from '../components/ArticlePreview.vue';
+import ExperimentHost from '../components/ExperimentHost.vue';
+import { vMagnetic } from '../composables/use-pointer-spring';
+import '../styles/labs.css';
 
 const articles = computed(() => content.blogArticles.slice(0, 3));
 const courseLabels: Record<string, string> = {
@@ -20,23 +22,11 @@ const courseLabels: Record<string, string> = {
   'uni-app': 'uni-app 跨端开发',
   godot: 'Godot 游戏开发',
 };
-const terminalExpanded = ref(false);
-const activeFile = ref<'developer.ts' | 'harness.config.ts'>('developer.ts');
+const activeExperiment = ref<'spectral' | 'particles'>('spectral');
 const metrics = computed(() => [
   { label: '系统专题', value: content.columns.length, href: '/columns/' },
   { label: '公开仓库', value: repositories.projects.length, href: '/projects/' },
   { label: '技术博客', value: content.blogArticles.length, href: '/blog/' },
-]);
-const codeLines = computed(() => activeFile.value === 'developer.ts' ? home.terminal.lines : [
-  '// harness.config.ts · 默认本地，明确边界',
-  'export const harness = {',
-  "  provider: 'ollama',",
-  "  endpoint: 'http://127.0.0.1:11434/v1',",
-  "  tools: ['list_files', 'read_file'],",
-  '  maxSteps: 8,',
-  "  persistence: 'append-only',",
-  "  permissions: 'read-only',",
-  '} as const;',
 ]);
 </script>
 
@@ -70,7 +60,7 @@ const codeLines = computed(() => activeFile.value === 'developer.ts' ? home.term
           <p class="home-hero__description">{{ home.profile.description }}</p>
 
           <div class="home-hero__actions">
-            <a class="button button--primary" :href="withBase(home.actions.primary.link)">
+            <a v-magnetic class="button button--primary" :href="withBase(home.actions.primary.link)">
               {{ home.actions.primary.label }}
               <ArrowRight :size="18" aria-hidden="true" />
             </a>
@@ -93,40 +83,13 @@ const codeLines = computed(() => activeFile.value === 'developer.ts' ? home.term
           </nav>
         </div>
 
-        <aside class="terminal-window" :class="{ 'terminal-window--collapsed': !terminalExpanded }" aria-label="开发终端">
-          <div class="terminal-window__bar">
-            <span class="terminal-window__dots" aria-hidden="true">
-              <i /><i /><i />
-            </span>
-            <span>{{ home.terminal.label }}</span>
-            <small>持续构建</small>
-            <button
-              class="terminal-window__toggle"
-              type="button"
-              aria-controls="home-terminal-body"
-              :aria-expanded="terminalExpanded"
-              :aria-label="terminalExpanded ? '折叠开发终端' : '展开开发终端'"
-              @click="terminalExpanded = !terminalExpanded"
-            >{{ terminalExpanded ? '收起' : '展开' }}</button>
+        <aside class="home-experiment" aria-label="交互实验台">
+          <div class="home-experiment__tabs" role="group" aria-label="代表实验">
+            <button :aria-pressed="activeExperiment === 'spectral'" @click="activeExperiment = 'spectral'">光谱材质</button>
+            <button :aria-pressed="activeExperiment === 'particles'" @click="activeExperiment = 'particles'">代码粒子</button>
+            <a :href="withBase(`/labs/${activeExperiment}.html`)">原理与源码 ↗</a>
           </div>
-          <div id="home-terminal-body" class="terminal-window__body">
-          <div class="terminal-tabs" role="group" aria-label="工作台代码文件">
-            <button v-for="file in (['developer.ts', 'harness.config.ts'] as const)" :key="file" type="button" :aria-pressed="activeFile === file" @click="activeFile = file">
-              <Code2 :size="14" aria-hidden="true" />{{ file }}
-            </button>
-          </div>
-          <pre class="terminal-window__code" :aria-label="activeFile"><code><span
-            v-for="(line, index) in codeLines" :key="index" class="terminal-code-line"
-          ><span class="terminal-line-number" aria-hidden="true">{{ String(index + 1).padStart(2, '0') }}</span><span>{{ line }}</span></span></code></pre>
-          <p class="terminal-window__ready">
-            <CheckCircle2 :size="17" aria-hidden="true" />
-            {{ home.terminal.footer }}
-          </p>
-          <div class="terminal-window__footer">
-            <span><GitBranch :size="13" aria-hidden="true" /> local-first</span>
-            <a :href="withBase('/columns/agent-harness/')">探索 Harness 教程 <ArrowRight :size="13" aria-hidden="true" /></a>
-          </div>
-          </div>
+          <ExperimentHost :key="activeExperiment" :id="activeExperiment" />
         </aside>
       </section>
 
@@ -147,9 +110,24 @@ const codeLines = computed(() => activeFile.value === 'developer.ts' ? home.term
             </header>
             <h3><a :href="withBase(article.href)">{{ article.title }}</a></h3>
             <p>{{ article.description }}</p>
+            <ArticlePreview v-if="article.preview" :preview="article.preview" />
           </article>
         </div>
       </section>
     </main>
   </div>
 </template>
+
+<style scoped>
+.home-experiment{min-width:0;overflow:hidden;border:1px solid var(--site-border);border-radius:var(--radius-panel);background:var(--site-surface);box-shadow:var(--site-shadow)}
+.home-experiment__tabs{display:flex;gap:4px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--site-border)}
+.home-experiment__tabs button,.home-experiment__tabs a{display:inline-flex;align-items:center;min-height:44px;font-size:13px;color:var(--site-text-muted);padding:0 12px;border:0;border-radius:8px}
+.home-experiment__tabs button[aria-pressed=true]{color:var(--site-accent);background:var(--vp-c-brand-soft)}
+.home-experiment__tabs a{margin-left:auto;color:var(--site-accent);padding:0 4px;white-space:nowrap}
+.home-experiment :deep(.experiment-preview){height:290px;background:radial-gradient(ellipse,var(--vp-c-brand-soft),transparent 70%)}
+.home-experiment :deep(.gpu-surface){height:300px}
+.home-experiment :deep(.lab-controls>span){display:none}
+.home-hero .status-line,.home-hero .profile-intro__meta,.hero-metrics dt{font-size:13px}
+@media(max-width:768px){.home-experiment :deep(.experiment-preview){height:86px}.home-experiment :deep(.experiment-preview .lab-preview){width:auto;max-width:100%;margin:auto}.home-experiment :deep(.lab-controls){padding:8px 12px}.home-experiment__tabs{padding-block:0}.home-experiment :deep(.gpu-surface){height:240px}}
+@media(max-width:768px){.home-experiment :deep(.experiment-host:has(.experiment-preview)){display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center}.home-experiment :deep(.experiment-preview+.lab-controls){border:0}.home-experiment :deep(.experiment-host>.lab-status){grid-column:1/-1}}
+</style>

@@ -5,6 +5,7 @@ import { withBase } from 'vitepress';
 import { data as content } from '../../data/content.data';
 import { filterArticles } from '../composables/article-filter';
 import CompactPageHeader from '../components/CompactPageHeader.vue';
+import ArticlePreview from '../components/ArticlePreview.vue';
 
 const category = ref('全部');
 const query = ref('');
@@ -115,7 +116,7 @@ onBeforeUnmount(() => {
               </time>
             </div>
 
-            <h2><a :href="withBase(article.href)">{{ article.title }}</a></h2>
+            <h2><a :href="withBase(article.href)" :data-shared-id="article.id">{{ article.title }}</a></h2>
             <p>{{ article.description }}</p>
 
             <footer>
@@ -128,6 +129,7 @@ onBeforeUnmount(() => {
             </footer>
           </div>
 
+          <ArticlePreview v-if="article.preview" :preview="article.preview" />
           <span
             class="article-list-item__link"
             aria-hidden="true"

@@ -1,4 +1,4 @@
-type OfflineGroup = 'site' | 'modelRuntime';
+export type OfflineGroup = 'site' | 'knowledge' | 'articles' | 'experiments' | 'modelRuntime' | `course:${string}`;
 interface OfflineReport {
   complete: boolean;
   group: OfflineGroup;
@@ -19,7 +19,7 @@ async function requestOfflineGroup(
   });
 }
 
-async function prepareOfflineGroup(
+export async function prepareOfflineGroup(
   base: string,
   group: OfflineGroup,
   download: boolean,
@@ -49,7 +49,8 @@ async function prepareOfflineGroup(
 }
 
 export function prepareOfflineSite(base: string): Promise<{ complete: boolean; waiting: boolean; version: string }> {
-  return prepareOfflineGroup(base, 'site', false);
+  // 助手的“检索资料离线”是明确下载动作；默认 SW 安装本身只缓存基础壳。
+  return prepareOfflineGroup(base, 'knowledge', true);
 }
 
 export function prepareModelRuntime(base: string): Promise<{ complete: boolean; waiting: boolean; version: string }> {

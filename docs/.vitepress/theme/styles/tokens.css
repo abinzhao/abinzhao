@@ -22,6 +22,10 @@
   --radius-card: 12px;
   --radius-panel: 16px;
   --site-ease: cubic-bezier(0.22, 0.8, 0.24, 1);
+  --motion-control: 140ms;
+  --motion-panel: 200ms;
+  --motion-page: 280ms;
+  --motion-spring: cubic-bezier(.2, 1.3, .3, 1);
   --site-nav-height: 56px;
   --site-touch-target: 44px;
   --site-page-top: 28px;

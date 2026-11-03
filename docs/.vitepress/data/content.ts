@@ -2,8 +2,12 @@ import { readdir, readFile } from 'node:fs/promises';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, basename } from 'node:path';
 import matter from 'gray-matter';
+import MarkdownIt from 'markdown-it';
+import { parseContentMetadata, validateContentRelations, type ContentMetadata } from './content-contract';
 
-export interface Article {
+const previewParser = new MarkdownIt();
+
+export interface Article extends ContentMetadata {
   category?: string;
   column?: string;
   date: string;
@@ -14,6 +18,7 @@ export interface Article {
   seriesOrder?: number;
   tags: string[];
   title: string;
+  preview?: { language: string; code: string };
 }
 
 export interface Column {
@@ -66,7 +71,7 @@ function createArticle(
   href: string,
   column?: string,
 ): Article | undefined {
-  const { data } = matter(source);
+  const { data, content: body } = matter(source);
   const frontmatter = asRecord(data);
   const title = asString(frontmatter.title);
   const date = asDate(frontmatter.date);
@@ -89,7 +94,13 @@ function createArticle(
   if (series.order !== undefined && (typeof series.order !== 'number' || !Number.isSafeInteger(series.order) || series.order < 1)) throw new Error(`${href}: series.order 必须是正整数`);
   const seriesOrder = typeof series.order === 'number' ? series.order : undefined;
 
+  // 仅独立博客卡片需要预览；控制行数与字节，课程正文不进入索引。
+  const fence = !column ? previewParser.parse(body, {}).find((token) => token.type === 'fence') : undefined;
+  const preview = fence?.content.trim()
+    ? { language: fence.info.split(/[\s{]/)[0] || 'text', code: fence.content.trimEnd().split('\n').slice(0, 6).join('\n').slice(0, 600) }
+    : undefined;
   return {
+    ...parseContentMetadata(frontmatter, href, body, date),
     category: asString(frontmatter.category),
     column,
     date,
@@ -100,6 +111,7 @@ function createArticle(
     seriesOrder,
     tags: asStringArray(frontmatter.tags),
     title,
+    ...(preview ? { preview } : {}),
   };
 }
 
@@ -237,6 +249,7 @@ async function loadContent(contentRoot: string): Promise<LoadedContent> {
     )
   ).filter((column): column is LoadedContent['columns'][number] => column !== undefined);
 
+  await validateContentRelations([...blogSources, ...columns.flatMap(({ sources }) => sources)].map(({ article }) => article), contentRoot);
   return {
     blogSources,
     columns: columns.sort((left, right) => left.column.title.localeCompare(right.column.title)),

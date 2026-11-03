@@ -1,6 +1,7 @@
 export const THEME_STORAGE_KEY = 'abin-lab-theme';
 
 export type Theme = 'dark' | 'light';
+export type ThemePreference = Theme | 'system';
 
 interface ThemeRoot {
   classList: Pick<DOMTokenList, 'toggle'>;
@@ -14,6 +15,10 @@ interface ThemeStorage {
 
 function isTheme(value: unknown): value is Theme {
   return value === 'dark' || value === 'light';
+}
+
+export function resolveThemePreference(value: unknown): ThemePreference {
+  return isTheme(value) ? value : 'system';
 }
 
 export function resolveTheme(storedTheme: unknown, prefersDark: boolean): Theme {
@@ -30,6 +35,6 @@ export function applyTheme(root: ThemeRoot, theme: Theme): void {
   root.classList.toggle('dark', theme === 'dark');
 }
 
-export function saveTheme(storage: ThemeStorage, theme: Theme): void {
+export function saveTheme(storage: ThemeStorage, theme: ThemePreference): void {
   storage.setItem(THEME_STORAGE_KEY, theme);
 }

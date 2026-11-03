@@ -136,14 +136,12 @@ test.describe('mobile layout density', () => {
     await expectNoHorizontalOverflow(page);
   });
 
-  test('folds the terminal and shows a recent article in the first viewport', async ({ page }) => {
+  test('keeps the experiment preview compact and shows a recent article in the first viewport', async ({ page }) => {
     await page.goto('');
     expect((await page.locator('.home-section--articles .article-card').first().boundingBox())?.y).toBeLessThan(844);
-    const toggle = page.getByRole('button', { name: '展开开发终端' });
-    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
-    await expect(page.locator('.terminal-window__code')).not.toBeVisible();
-    await toggle.click();
-    await expect(page.locator('.terminal-window__code')).toBeVisible();
+    await expect(page.locator('.home-experiment .lab-preview')).toBeVisible();
+    await expect(page.getByRole('button', { name: '运行实验', exact: true })).toBeVisible();
+    await expect(page.locator('.gpu-experiment canvas')).toHaveCount(0);
     await expectNoHorizontalOverflow(page);
   });
 

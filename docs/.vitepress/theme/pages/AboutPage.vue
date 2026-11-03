@@ -12,6 +12,8 @@ import { computed } from 'vue';
 import { data as about } from '../../data/about.data';
 import { data as content } from '../../data/content.data';
 import { data as repositories } from '../../data/projects.data';
+import WorkTimeline from '../components/WorkTimeline.vue';
+import { vMagnetic } from '../composables/use-pointer-spring';
 
 const stats = computed(() => about.stats.map((stat) => ({
   ...stat,
@@ -56,6 +58,7 @@ const actionIcons = {
 
         <div class="about-profile__actions">
           <a
+            v-magnetic
             v-for="action in about.actions"
             :key="action.label"
             :class="{ 'about-action--primary': action.kind === 'github' }"
@@ -80,6 +83,8 @@ const actionIcons = {
           </div>
         </dl>
       </section>
+
+      <WorkTimeline />
 
       <section class="about-section" aria-labelledby="principles-title">
         <div class="section-heading">
@@ -132,3 +137,10 @@ const actionIcons = {
     </main>
   </div>
 </template>
+
+<style scoped>
+.about-profile h1 span,.about-profile__location,.about-profile__status,.about-profile__role,.about-stats dt,.about-stats p{font-size:13px}
+.about-profile__identity>div:last-child{min-width:0}.about-profile h1,.about-profile__role{overflow-wrap:anywhere}
+.about-profile__bio{font-size:15px}
+@media(min-width:1000px){.about-profile{grid-template-columns:minmax(0,1fr) 300px;gap:16px 32px}.about-stats{grid-column:2;grid-row:1/4;grid-template-columns:1fr 1fr;align-content:center}.about-profile__actions{grid-column:1;flex-direction:row;justify-content:start}.about-profile__bio{grid-column:1}}
+</style>

@@ -29,12 +29,12 @@ test('finds every public repository by name and resets an empty search', async (
   await expect(page.locator('.project-card')).toHaveCount(repositories.length);
 });
 
-test('shows the workbench TypeScript source', async ({ page }) => {
+test('offers real experiments and keeps repository counts sourced from the snapshot', async ({ page }) => {
   await page.goto('');
-  await expect(page.locator('.terminal-window__code')).toContainText('export const developer');
-  await page.getByRole('button', { name: 'harness.config.ts' }).click();
-  await expect(page.locator('.terminal-window__code')).toContainText("tools: ['list_files', 'read_file']");
-  await expect(page.getByRole('button', { name: 'harness.config.ts' })).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('button', { name: '代码粒子', exact: true }).click();
+  await expect(page.getByRole('button', { name: '代码粒子', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('link', { name: '原理与源码' })).toHaveAttribute('href', '/abinzhao/labs/particles.html');
+  await expect(page.locator('.gpu-experiment canvas')).toHaveCount(0);
   await expect(page.locator('.hero-metrics')).toContainText(String(repositories.length));
 });
 

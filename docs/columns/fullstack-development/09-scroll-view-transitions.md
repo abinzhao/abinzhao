@@ -301,6 +301,8 @@ section[id] { scroll-margin-top: 80px; }   /* 锚点跳转时自动留出头部�
 
 练习用同一篇文章验证根滚动、容器滚动和零滚动距离，再模拟路由请求失败、连续导航和减少动画。记录最终 URL、标题、焦点、错误信息和进度范围。所有情况下内容都可见、导航可恢复，才算完成；平滑滚动不应接管用户的原生滚动，也不要隐藏唯一的滚动提示。
 
+本站实践：[渲染管线的局部滚动与手动步骤](/labs/rendering.html)；[VitePress 共享过渡的路由、焦点与竞态处理](/blog/vitepress-view-transitions.html)。实验没有把全页滚动替换成自定义滚轮控制。
+
 - [Scroll-driven Animations 规范](https://drafts.csswg.org/scroll-animations-1/)
 - [CSS View Transitions](https://drafts.csswg.org/css-view-transitions-1/)
 - [Chrome View Transitions 指南](https://developer.chrome.com/docs/web-platform/view-transitions/)

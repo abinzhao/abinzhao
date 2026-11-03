@@ -9,23 +9,8 @@ profile:
   description: 全栈工程师与独立开发者。写可维护的前端，设计可验证的服务，构建用户可控的智能体。源码公开，经验成文。
 actions:
   primary:
-    label: 阅读博客
-    link: /blog/
+    label: 开始学习
+    link: /columns/
   secondary:
-    label: 查看项目
-    link: /projects/
-terminal:
-  label: 开发工作台
-  lines:
-    - "// developer.ts · 每一次构建，都有迹可循"
-    - "export const developer = {"
-    - "  name: '阿斌',"
-    - "  stack: ['TypeScript', 'Rust', 'ArkTS'],"
-    - "  focus: 'Local-first Agent Harness',"
-    - "  principles: {"
-    - "    privacy: 'by design',"
-    - "    quality: 'verified',"
-    - "    source: 'open',"
-    - "  },"
-    - "} as const;"
-  footer: 让代码可读，让结果可验证。
+    label: 探索实验室
+    link: /labs/

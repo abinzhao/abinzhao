@@ -47,9 +47,9 @@ const totalChapters = computed(() =>
         ]"
       >
         <template #context>
-          <a class="listing-header__context-link" :href="withBase('/blog/')">
+          <a class="listing-header__context-link" :href="withBase('/labs/knowledge-graph.html')">
             <FileText :size="16" aria-hidden="true" />
-            随笔与实践复盘请前往博客
+            用知识图谱探索内容关联
             <ArrowRight :size="15" aria-hidden="true" />
           </a>
         </template>

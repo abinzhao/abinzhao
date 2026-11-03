@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Atom, Code2, Menu, X } from '@lucide/vue';
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useData, useRoute, withBase } from 'vitepress';
 import ThemeToggle from './ThemeToggle.vue';
+import SiteSearch from './SiteSearch.vue';
 
 interface NavigationItem {
   link: string;
@@ -13,6 +14,9 @@ const { site } = useData();
 const route = useRoute();
 const mobileMenuOpen = ref(false);
 const menuButton = ref<HTMLButtonElement>();
+const navigationElement = ref<HTMLElement>();
+const indicator = ref({ x: 0, width: 0 });
+let resizeObserver: ResizeObserver | undefined;
 const navigation = computed(
   () => (site.value.themeConfig.nav ?? []) as NavigationItem[],
 );
@@ -39,6 +43,17 @@ function handleHeaderEscape(): void {
 }
 
 watch(() => route.path, () => closeMobileMenu());
+function placeIndicator(): void {
+  const active = navigationElement.value?.querySelector<HTMLElement>('[aria-current="page"]');
+  indicator.value = { x: active?.offsetLeft ?? 0, width: active?.offsetWidth ?? 0 };
+}
+watch(() => route.path, () => { void nextTick(placeIndicator); });
+onMounted(() => {
+  resizeObserver = new ResizeObserver(placeIndicator);
+  if (navigationElement.value) resizeObserver.observe(navigationElement.value);
+  placeIndicator();
+});
+onBeforeUnmount(() => resizeObserver?.disconnect());
 </script>
 
 <template>
@@ -51,7 +66,8 @@ watch(() => route.path, () => closeMobileMenu());
         <span class="site-brand__name">阿斌实验室</span>
       </a>
 
-      <nav class="site-nav" aria-label="主导航">
+      <nav ref="navigationElement" class="site-nav" aria-label="主导航">
+        <span class="site-nav__indicator" aria-hidden="true" :style="{ transform: `translateX(${indicator.x}px)`, width: `${indicator.width}px` }" />
         <a
           v-for="item in navigation"
           :key="item.link"
@@ -74,6 +90,7 @@ watch(() => route.path, () => closeMobileMenu());
           <Code2 :size="16" aria-hidden="true" />
           <span>GitHub</span>
         </a>
+        <SiteSearch />
         <ThemeToggle />
         <button
           ref="menuButton"

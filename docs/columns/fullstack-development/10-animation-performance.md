@@ -2,6 +2,7 @@
 title: "第 10 章：动画性能"
 description: "从 Layout、Paint、Composite 出发诊断卡顿并控制合成层成本。"
 date: '2026-10-23'
+updatedAt: '2026-11-03'
 category: 网页性能
 tags: [性能, 渲染, 开发者工具]
 series:
@@ -148,6 +149,14 @@ Chrome DevTools → Performance 面板：
 预先设置 `will-change` 只对浏览器有准备时间的场景有意义；在开始动画的同一瞬间增加提示不保证获益。交互结束、取消和页面离开后都应清理，零时长或减少动画时也不能依赖结束事件。对于没有性能问题的控件，保持默认合成策略通常更易维护。
 
 练习给包含二十张卡片的页面录制进入、悬停、滚动和后台恢复四个阶段，然后仅对最重的一项做修改。保留修改前后 trace、关键帧位置和测试条件；确认减少动画时正文可见，后台暂停不会使业务计时失真，图片慢加载也不会让进度条跳成异常值。完成标准是解释一次真实瓶颈并证明交互改善，同时没有布局、焦点或资源清理回归，而不是让所有 Performance 轨道都变成空白。
+
+### 10.8 在真实实验中检查属性与调度
+
+[渲染管线实验](/labs/rendering.html) 提供同时间、同缓动的 width 与 transform 对照。视觉比较可以同时播放；性能比较应暂停另一项，分别录制。否则主线程里的 Layout 可能来自 width，不能把同一条 Performance 轨道归因于旁边的 transform。
+
+[第 12 章的隔离录制与原始数据](./12-browser-rendering.html#_12-11-分开录制-避免互相污染) 给出了三轮 5 秒暖窗口的实际事件结果和复现脚本。采样证明的是具体示例在特定设备上的失效路径，不是对所有布局的属性性能排行。
+
+继续改变容器尺寸、添加阴影或滤镜，并记录此前没有的 Paint 是否出现。`contain`、图层数量和纹理面积都可能改变结果。将路径解释与受控测量连接起来，比只记住“transform 更快”更有迁移价值。
 
 - [web.dev 动画性能](https://web.dev/articles/animations-guide)
 - [Chrome Rendering 工具](https://developer.chrome.com/docs/devtools/rendering/)

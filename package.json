@@ -9,13 +9,14 @@
   },
   "scripts": {
     "dev": "vitepress dev docs --host 127.0.0.1 --port 5201 --strictPort",
-    "build": "node scripts/package-harness.mjs && vitepress build docs && node scripts/verify-site.mjs",
+    "build": "node scripts/package-harness.mjs && node scripts/package-site-source.mjs && vitepress build docs && node scripts/verify-site.mjs",
     "preview": "vitepress preview docs",
     "check": "vue-tsc --noEmit -p docs/tsconfig.json && tsc --noEmit -p docs/tsconfig.worker.json",
     "test": "vitest run tests/ && node --test examples/agent-harness/test/*.test.mjs",
     "sync:projects": "node scripts/sync-github-projects.mjs",
     "test:e2e": "playwright test",
-    "verify": "pnpm check && pnpm test && pnpm test:e2e && pnpm build"
+    "test:production": "playwright test --config playwright.production.config.ts",
+    "verify": "pnpm check && pnpm test && pnpm test:e2e && pnpm build && pnpm test:production"
   },
   "devDependencies": {
     "@lucide/vue": "^1.57.0",

@@ -5,6 +5,8 @@ export type CustomPageKind =
   | 'column'
   | 'columns'
   | 'home'
+  | 'labs'
+  | 'lab'
   | 'projects'
   | 'chat';
 
@@ -20,6 +22,8 @@ export function getCustomPageKind(
 ): CustomPageKind | undefined {
   if (
     layout === 'home' ||
+    layout === 'labs' ||
+    layout === 'lab' ||
     layout === 'about' ||
     layout === 'blog' ||
     layout === 'columns' ||

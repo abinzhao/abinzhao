@@ -19,11 +19,6 @@ export interface HomeData {
     role: string;
     status: string;
   };
-  terminal: {
-    footer: string;
-    label: string;
-    lines: string[];
-  };
 }
 
 declare const data: HomeData;
@@ -38,7 +33,6 @@ export default defineLoader({
     validateConfig(parsed, {
       actions: { primary: { label: 'string', link: 'string' }, secondary: { label: 'string', link: 'string' } },
       profile: { avatar: 'string', description: 'string', handle: 'string', intro: 'string', location: 'string', name: 'string', role: 'string', status: 'string' },
-      terminal: { footer: 'string', label: 'string', lines: ['text'] },
     }, configPath);
     return parsed as HomeData;
   },

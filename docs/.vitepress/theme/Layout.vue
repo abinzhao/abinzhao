@@ -1,46 +1,51 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, onBeforeUnmount, provide, watch } from 'vue';
-import { Content, useData, useRoute, withBase } from 'vitepress';
-import AboutPage from './pages/AboutPage.vue';
-import ArticlePage from './pages/ArticlePage.vue';
-import BlogIndexPage from './pages/BlogIndexPage.vue';
-import ColumnPage from './pages/ColumnPage.vue';
-import ColumnsIndexPage from './pages/ColumnsIndexPage.vue';
-import HomePage from './pages/HomePage.vue';
-import ProjectsPage from './pages/ProjectsPage.vue';
+import { computed, defineAsyncComponent, onBeforeUnmount, provide, watch, type Component } from 'vue';
+import { useData, useRoute } from 'vitepress';
 import SiteHeader from './components/SiteHeader.vue';
 import SiteFooter from './components/SiteFooter.vue';
 import AmbientField from './components/AmbientField.vue';
+import PageLoadError from './components/PageLoadError.vue';
 import { getCustomPageKind } from './composables/page-kind';
 import { ASSISTANT_RUNTIME_KEY } from './assistant/runtime-context';
 import { createWebLLMRuntime, type WebLLMRuntime } from './assistant/webllm-runtime';
+import { provideMotionPolicy } from './composables/use-motion-policy';
+import { provideSharedTransition } from './composables/use-shared-transition';
+import { usePageTransition } from './composables/use-page-transition';
 
-const ChatPage = defineAsyncComponent(() => import('./pages/ChatPage.vue'));
+const motion = provideMotionPolicy();
+const transitions = provideSharedTransition();
+const { viewReady } = usePageTransition(motion, transitions);
+watch([motion.policy, motion.visible], ([policy, visible]) => {
+  if (!policy.motion || !visible) transitions.cancel();
+});
+const lazyPage = (loader: () => Promise<{ default: Component }>) => defineAsyncComponent(() => loader().catch(() => PageLoadError));
+const HomePage = lazyPage(() => import('./pages/HomePage.vue'));
+const LabsIndexPage = lazyPage(() => import('./pages/LabsIndexPage.vue'));
+const LabPage = lazyPage(() => import('./pages/LabPage.vue'));
+const AboutPage = lazyPage(() => import('./pages/AboutPage.vue'));
+const ArticlePage = lazyPage(() => import('./pages/ArticlePage.vue'));
+const BlogIndexPage = lazyPage(() => import('./pages/BlogIndexPage.vue'));
+const ColumnPage = lazyPage(() => import('./pages/ColumnPage.vue'));
+const ColumnsIndexPage = lazyPage(() => import('./pages/ColumnsIndexPage.vue'));
+const ProjectsPage = lazyPage(() => import('./pages/ProjectsPage.vue'));
+const NotFoundPage = lazyPage(() => import('./pages/NotFoundPage.vue'));
+const ChatPage = lazyPage(() => import('./pages/ChatPage.vue'));
 const route = useRoute();
 const { frontmatter, page } = useData();
 const pageKind = computed(() =>
   getCustomPageKind(route.path, frontmatter.value.layout, frontmatter.value),
 );
-let navigationPending = false;
-watch(() => route.path, () => { navigationPending = true; });
-function focusDestination(): void {
-  if (!navigationPending) return;
-  navigationPending = false;
-  // out-in 过渡期间新正文尚未挂载，路由器的首次锚点查找可能落空。
-  if (window.location.hash) {
-    let target: HTMLElement | null = null;
-    try { target = document.getElementById(decodeURIComponent(window.location.hash.slice(1))); }
-    catch { /* 无效编码的锚点不阻断页面导航。 */ }
-    target?.scrollIntoView({ block: 'start', behavior: 'instant' });
-  }
-  document.getElementById('page-content')?.focus({ preventScroll: true });
-}
 let runtime: WebLLMRuntime | undefined;
+let unsubscribeRuntime: (() => void) | undefined;
 provide(ASSISTANT_RUNTIME_KEY, () => {
-  if (!runtime) runtime = createWebLLMRuntime();
+  if (!runtime) {
+    runtime = createWebLLMRuntime();
+    unsubscribeRuntime = runtime.subscribe((state) => motion.gate.block(state.busy));
+  }
   return runtime;
 });
 onBeforeUnmount(() => {
+  unsubscribeRuntime?.();
   runtime?.cancelInitialization();
   runtime?.stop();
 });
@@ -58,24 +63,20 @@ onBeforeUnmount(() => {
     <AmbientField v-if="pageKind === 'home'" />
     <SiteHeader />
     <div id="page-content" class="page-stage" tabindex="-1">
-      <Transition name="page" mode="out-in" @after-enter="focusDestination">
         <div :key="route.path" class="page-view">
-          <HomePage v-if="pageKind === 'home'" />
-          <AboutPage v-else-if="pageKind === 'about'" />
-          <ArticlePage v-else-if="pageKind === 'article'" />
-          <BlogIndexPage v-else-if="pageKind === 'blog'" />
-          <ColumnPage v-else-if="pageKind === 'column'" />
-          <ColumnsIndexPage v-else-if="pageKind === 'columns'" />
-          <ProjectsPage v-else-if="pageKind === 'projects'" />
-          <ChatPage v-else-if="pageKind === 'chat'" />
-          <main v-else-if="page.isNotFound" class="site-container not-found">
-            <p class="technical-label">页面未找到</p><h1>这里还没有内容</h1>
-            <p>链接可能已失效，回到首页继续探索。</p>
-            <a class="button button--primary" :href="withBase('/')">返回首页</a>
-          </main>
-          <main v-else class="site-container reading-prose vp-doc"><Content /></main>
+          <HomePage v-if="pageKind === 'home'" @vue:mounted="viewReady" />
+          <LabsIndexPage v-else-if="pageKind === 'labs'" @vue:mounted="viewReady" />
+          <LabPage v-else-if="pageKind === 'lab'" @vue:mounted="viewReady" />
+          <AboutPage v-else-if="pageKind === 'about'" @vue:mounted="viewReady" />
+          <ArticlePage v-else-if="pageKind === 'article'" @vue:mounted="viewReady" />
+          <BlogIndexPage v-else-if="pageKind === 'blog'" @vue:mounted="viewReady" />
+          <ColumnPage v-else-if="pageKind === 'column'" @vue:mounted="viewReady" />
+          <ColumnsIndexPage v-else-if="pageKind === 'columns'" @vue:mounted="viewReady" />
+          <ProjectsPage v-else-if="pageKind === 'projects'" @vue:mounted="viewReady" />
+          <ChatPage v-else-if="pageKind === 'chat'" @vue:mounted="viewReady" />
+          <NotFoundPage v-else-if="page.isNotFound" @vue:mounted="viewReady" />
+          <main v-else class="site-container reading-prose vp-doc" @vue:mounted="viewReady"><Content /></main>
         </div>
-      </Transition>
     </div>
     <SiteFooter v-if="pageKind !== 'chat'" />
   </div>

@@ -4,6 +4,6 @@
     "lib": ["ES2022", "WebWorker"],
     "types": []
   },
-  "include": [".vitepress/theme/assistant/*.worker.ts"],
+  "include": [".vitepress/theme/assistant/*.worker.ts", ".vitepress/theme/labs/*.worker.ts"],
   "exclude": []
 }

@@ -22,7 +22,7 @@ describe('verification configuration', () => {
     ) as { scripts?: Record<string, string> };
 
     expect(packageJson.scripts?.verify).toBe(
-      'pnpm check && pnpm test && pnpm test:e2e && pnpm build',
+      'pnpm check && pnpm test && pnpm test:e2e && pnpm build && pnpm test:production',
     );
   });
 
@@ -38,6 +38,7 @@ describe('verification configuration', () => {
       'pnpm exec playwright install --with-deps chromium',
       'pnpm test:e2e',
       'pnpm build',
+      'pnpm test:production',
     ];
     let previousIndex = -1;
     for (const command of commands) {
@@ -49,10 +50,17 @@ describe('verification configuration', () => {
 
   test('checks pull requests with read-only permissions and no publishing job', async () => {
     const workflow = parse(await readFile(resolve(projectRoot, '.github/workflows/check-pr.yml'), 'utf8'));
-    expect(workflow.on).toEqual({ pull_request: { branches: ['master'] } });
+    expect(workflow.on).toEqual({ pull_request: { branches: ['dev'] } });
     expect(workflow.permissions).toEqual({ contents: 'read' });
     expect(Object.keys(workflow.jobs)).toEqual(['verify']);
     const steps = workflow.jobs.verify.steps.map((step: { run?: string }) => step.run).filter(Boolean);
-    expect(steps).toEqual(['pnpm install --frozen-lockfile', 'pnpm check', 'pnpm test', 'pnpm exec playwright install --with-deps chromium', 'pnpm test:e2e', 'pnpm build']);
+    expect(steps).toEqual(['pnpm install --frozen-lockfile', 'pnpm check', 'pnpm test', 'pnpm exec playwright install --with-deps chromium', 'pnpm test:e2e', 'pnpm build', 'pnpm test:production']);
+  });
+
+  test('only builds and deploys dev, including manual workflow dispatches', async () => {
+    const workflow = parse(await readFile(resolve(projectRoot, '.github/workflows/deploy-pages.yml'), 'utf8'));
+    expect(workflow.on.push.branches).toEqual(['dev']);
+    expect(workflow.jobs.build.if).toBe("github.ref == 'refs/heads/dev'");
+    expect(workflow.jobs.deploy.if).toBe("github.ref == 'refs/heads/dev'");
   });
 });

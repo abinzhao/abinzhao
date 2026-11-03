@@ -3,8 +3,10 @@ import { fileURLToPath } from 'node:url';
 import { defineLoader } from 'vitepress';
 import { parse } from 'yaml';
 import { validateConfig } from './config-validation';
+import { validateTimeline, type WorkEntry } from './timeline';
 
 export interface AboutData {
+  timeline: WorkEntry[];
   actions: Array<{
     kind: 'assistant' | 'github' | 'project';
     label: string;
@@ -58,6 +60,7 @@ export default defineLoader({
       principles: [{ description: 'string', index: 'string', subtitle: 'string', tags: ['string'], title: 'string' }],
       skills: [{ group: 'string', label: 'string', items: [{ detail: 'string', name: 'string', value: 'number' }] }],
     }, configPath);
+    validateTimeline(parsed.timeline);
     return parsed as AboutData;
   },
 });

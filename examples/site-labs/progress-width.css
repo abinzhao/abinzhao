@@ -1,0 +1,9 @@
+.track {
+  background: #24363a;
+  padding: 12px;
+}
+.signal {
+  height: 32px;
+  width: calc(var(--progress) * 100%);
+  background: #7bd7c5;
+}

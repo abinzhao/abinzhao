@@ -1,0 +1,203 @@
+{
+  "measuredAt": "2026-11-03T10:13:33.546Z",
+  "url": "/abinzhao/labs/rendering.html",
+  "browser": {
+    "dpr": 1,
+    "theme": "light",
+    "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+    "viewport": [
+      1440,
+      900
+    ]
+  },
+  "host": {
+    "platform": "darwin",
+    "release": "25.6.0",
+    "cpu": "Apple M3 Pro"
+  },
+  "conditions": "生产构建、暖页面；1440×900、DPR 1；无网络/CPU 降速；每种状态独立运行5秒，前置500ms预热，交替3轮；仅统计采样主线程的完整事件。",
+  "limitations": "短时单机微基准；事件耗时不可相加解释为总帧耗时。未记录现场 INP、真实手机帧率或 GPU 执行时间。",
+  "sourceSha256": "e91c41ea48f01b18f08ae3e8b0a7326223d9340763e0016d274c88404412836f",
+  "samples": [
+    {
+      "iteration": 1,
+      "elapsedMs": 5001.5,
+      "mode": "idle",
+      "metrics": {
+        "Layout": {
+          "count": 0,
+          "totalMs": 0
+        },
+        "Paint": {
+          "count": 0,
+          "totalMs": 0
+        },
+        "UpdateLayoutTree": {
+          "count": 1,
+          "totalMs": 0.014
+        }
+      },
+      "traceSha256": "f8fb278aa5e3fd1a5467422b3c20435b6a4d9542f35c63273e0c650c7abd6017"
+    },
+    {
+      "iteration": 1,
+      "elapsedMs": 5000.300000190735,
+      "mode": "width",
+      "metrics": {
+        "Layout": {
+          "count": 303,
+          "totalMs": 31.553
+        },
+        "Paint": {
+          "count": 600,
+          "totalMs": 43.557
+        },
+        "UpdateLayoutTree": {
+          "count": 303,
+          "totalMs": 15.67
+        }
+      },
+      "traceSha256": "e6cc67f594fa646a55c91d93654dd2ef2dc568f8aaba812eb4f6c5ab1a3bbff9"
+    },
+    {
+      "iteration": 1,
+      "elapsedMs": 5002,
+      "mode": "transform",
+      "metrics": {
+        "Layout": {
+          "count": 0,
+          "totalMs": 0
+        },
+        "Paint": {
+          "count": 0,
+          "totalMs": 0
+        },
+        "UpdateLayoutTree": {
+          "count": 0,
+          "totalMs": 0
+        }
+      },
+      "traceSha256": "3a5e0181eaac16d4f3db3511cfe3b64b4403ecd1b5e9179399d0adfc99b6c22e"
+    },
+    {
+      "iteration": 2,
+      "elapsedMs": 5002,
+      "mode": "idle",
+      "metrics": {
+        "Layout": {
+          "count": 0,
+          "totalMs": 0
+        },
+        "Paint": {
+          "count": 0,
+          "totalMs": 0
+        },
+        "UpdateLayoutTree": {
+          "count": 0,
+          "totalMs": 0
+        }
+      },
+      "traceSha256": "59eb7e6872b1b3e4a75162208f2cb44e76c804c35a2f5f25028f4e53a2e7cc4f"
+    },
+    {
+      "iteration": 2,
+      "elapsedMs": 5000.799999952316,
+      "mode": "width",
+      "metrics": {
+        "Layout": {
+          "count": 300,
+          "totalMs": 33.009
+        },
+        "Paint": {
+          "count": 600,
+          "totalMs": 43.361
+        },
+        "UpdateLayoutTree": {
+          "count": 300,
+          "totalMs": 16.62
+        }
+      },
+      "traceSha256": "32401e0817a4c92bfd82e5de6c7df25d83098982d436220f1a90323c41257f81"
+    },
+    {
+      "iteration": 2,
+      "elapsedMs": 5000.5,
+      "mode": "transform",
+      "metrics": {
+        "Layout": {
+          "count": 0,
+          "totalMs": 0
+        },
+        "Paint": {
+          "count": 0,
+          "totalMs": 0
+        },
+        "UpdateLayoutTree": {
+          "count": 0,
+          "totalMs": 0
+        }
+      },
+      "traceSha256": "68a8b48e6d4ec789cddb05831760b2a12e1a19b1508166d9c850d0808351b32e"
+    },
+    {
+      "iteration": 3,
+      "elapsedMs": 5001.200000047684,
+      "mode": "idle",
+      "metrics": {
+        "Layout": {
+          "count": 0,
+          "totalMs": 0
+        },
+        "Paint": {
+          "count": 0,
+          "totalMs": 0
+        },
+        "UpdateLayoutTree": {
+          "count": 0,
+          "totalMs": 0
+        }
+      },
+      "traceSha256": "4376a978a5a029630e0d7553091f2f6974fb731bd09f83b915307d79e04c11ff"
+    },
+    {
+      "iteration": 3,
+      "elapsedMs": 5001.199999809265,
+      "mode": "width",
+      "metrics": {
+        "Layout": {
+          "count": 302,
+          "totalMs": 42.302
+        },
+        "Paint": {
+          "count": 600,
+          "totalMs": 57.017
+        },
+        "UpdateLayoutTree": {
+          "count": 302,
+          "totalMs": 21.665
+        }
+      },
+      "traceSha256": "31180f7b084f46dd201fd192178d3e47716256a9ac56c46cfc503a3bf6303827"
+    },
+    {
+      "iteration": 3,
+      "elapsedMs": 5001.600000143051,
+      "mode": "transform",
+      "metrics": {
+        "Layout": {
+          "count": 0,
+          "totalMs": 0
+        },
+        "Paint": {
+          "count": 0,
+          "totalMs": 0
+        },
+        "UpdateLayoutTree": {
+          "count": 0,
+          "totalMs": 0
+        }
+      },
+      "traceSha256": "41a0fdf6bc96e9333a0215dd3a549d06ceda752c7a6a6e65e3539d897d794d84"
+    }
+  ]
+}

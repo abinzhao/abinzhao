@@ -10,5 +10,5 @@
     "types": ["node", "vitepress/client"]
   },
   "include": [".vitepress/**/*.ts", ".vitepress/**/*.vue"],
-  "exclude": [".vitepress/theme/assistant/*.worker.ts", ".vitepress/dist", ".vitepress/cache"]
+  "exclude": [".vitepress/theme/assistant/*.worker.ts", ".vitepress/theme/labs/*.worker.ts", ".vitepress/dist", ".vitepress/cache"]
 }

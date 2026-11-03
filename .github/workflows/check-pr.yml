@@ -2,7 +2,7 @@ name: Check pull request
 
 on:
   pull_request:
-    branches: [master]
+    branches: [dev]
 
 permissions:
   contents: read
@@ -31,3 +31,4 @@ jobs:
       - run: pnpm build
         env:
           VITEPRESS_BASE: /abinzhao/
+      - run: pnpm test:production

@@ -10,7 +10,6 @@ import {
 } from '@lucide/vue';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import {
-  Content,
   onContentUpdated,
   useData,
   useRoute,
@@ -32,6 +31,12 @@ import {
 } from '../composables/visual-effects';
 import ArticleAskMenu from '../components/ArticleAskMenu.vue';
 import { groupCourseChapters } from '../composables/harness-navigation';
+import { useReadingMemory } from '../composables/use-reading-memory';
+import { resolveResume } from '../composables/reading-memory';
+import ArticleTerms from '../components/ArticleTerms.vue';
+import ArticlePractice from '../components/ArticlePractice.vue';
+import { experiments, experimentHref } from '../../data/labs';
+import '../styles/reading-effects.css';
 
 const route = useRoute();
 const { frontmatter } = useData();
@@ -45,6 +50,17 @@ const currentArticle = computed(() =>
     (article) => normalizeContentHref(article.href) === contentHref.value,
   ),
 );
+const relatedDemos = computed(() => experiments.filter((demo) => currentArticle.value?.demoIds?.includes(demo.id)));
+const memory = useReadingMemory(allArticles);
+const articleId = currentArticle.value?.id ?? '';
+const completed = computed(() => memory.records.value[articleId]?.completed ?? false);
+const completionPulse = ref(false);
+function toggleCompletion() {
+  completionPulse.value = !completed.value;
+  memory.complete(articleId, !completed.value);
+}
+const resumeHeading = ref('');
+const resumeMissing = ref(false);
 const tags = computed(() =>
   Array.isArray(frontmatter.value.tags)
     ? frontmatter.value.tags.filter((item): item is string => typeof item === 'string')
@@ -58,6 +74,15 @@ const outlineDialog = ref<HTMLDialogElement>();
 const outlineTrigger = ref<HTMLButtonElement>();
 let navigatingOutline = false;
 let readingFrame = 0;
+let saveTimer: ReturnType<typeof setTimeout> | undefined;
+let resizeObserver: ResizeObserver | undefined;
+let articleTop = 0;
+let articleHeight = 0;
+let headingPositions: Array<{ id: string; top: number }> = [];
+let outlineGeometryDirty = true;
+let scrolled = false;
+const outlineNav = ref<HTMLElement>();
+const outlineMarker = ref({ top: 0, height: 0 });
 const series = computed(() =>
   getSeriesNavigation(content.columns, contentHref.value),
 );
@@ -94,36 +119,51 @@ function refreshOutline(): void {
       }),
     ),
   );
+  measureReadingGeometry();
 }
 
+/** 几何只在正文/窗口改变时读取，滚动帧只比较缓存坐标。 */
+function measureReadingGeometry(): void {
+  if (!readingProse.value) return;
+  articleTop = readingProse.value.getBoundingClientRect().top + window.scrollY;
+  articleHeight = readingProse.value.offsetHeight;
+  headingPositions = Array.from(readingProse.value.querySelectorAll<HTMLElement>('h2[id], h3[id]'))
+    .map((heading) => ({ id: heading.id, top: heading.getBoundingClientRect().top + window.scrollY }));
+  outlineGeometryDirty = true;
+  scheduleReadingStateUpdate();
+}
+function savePosition(): void {
+  clearTimeout(saveTimer);
+  if (articleId && scrolled) memory.visit(articleId, activeHeading.value);
+}
 function updateReadingState(): void {
-  if (!readingProse.value) {
-    return;
-  }
-
-  const articleBounds = readingProse.value.getBoundingClientRect();
-  const articleTop = articleBounds.top + window.scrollY;
+  readingFrame = 0;
   readingProgress.value = calculateReadingProgress(
     window.scrollY,
     articleTop,
-    readingProse.value.offsetHeight,
+    articleHeight,
     window.innerHeight,
   );
-  activeHeading.value = selectActiveHeading(
-    Array.from(
-      readingProse.value.querySelectorAll<HTMLElement>('h2[id], h3[id]'),
-    ).map((heading) => ({
-      id: heading.id,
-      top: heading.getBoundingClientRect().top,
-    })),
+  const next = selectActiveHeading(
+    headingPositions.map((heading) => ({ id: heading.id, top: heading.top - window.scrollY })),
     88,
   );
+  const changed = next !== activeHeading.value;
+  if (!changed && !outlineGeometryDirty) return;
+  activeHeading.value = next;
+  const active = Array.from(outlineNav.value?.querySelectorAll<HTMLAnchorElement>('a') ?? [])
+    .find((link) => link.getAttribute('href') === `#${next}`);
+  outlineMarker.value = { top: active?.offsetTop ?? 0, height: active?.offsetHeight ?? 0 };
+  outlineGeometryDirty = false;
+  if (!changed) return;
+  clearTimeout(saveTimer);
+  if (scrolled) saveTimer = setTimeout(savePosition, 250);
 }
 
 function scheduleReadingStateUpdate(): void {
-  window.cancelAnimationFrame(readingFrame);
-  readingFrame = window.requestAnimationFrame(updateReadingState);
+  if (!readingFrame) readingFrame = window.requestAnimationFrame(updateReadingState);
 }
+function onScroll(): void { scrolled = true; scheduleReadingStateUpdate(); }
 
 function closeOutline(event?: MouseEvent): void {
   if (!event || event.target === outlineDialog.value) outlineDialog.value?.close();
@@ -151,10 +191,19 @@ function restoreOutlineFocus(): void {
 onMounted(() => {
   void nextTick(() => {
     refreshOutline();
-    scheduleReadingStateUpdate();
+    const saved = memory.records.value[articleId];
+    resumeHeading.value = saved?.headingId ?? '';
+    resumeMissing.value = resolveResume('', saved, headingPositions.map((item) => item.id)).missing;
+    if (resumeMissing.value) resumeHeading.value = '';
+    if (!saved && articleId) memory.visit(articleId, '');
+    resizeObserver = new ResizeObserver(measureReadingGeometry);
+    if (readingProse.value) resizeObserver.observe(readingProse.value);
+    const header = document.querySelector('.reading-header');
+    if (header) resizeObserver.observe(header);
   });
-  document.addEventListener('scroll', scheduleReadingStateUpdate, { passive: true });
-  window.addEventListener('resize', scheduleReadingStateUpdate, { passive: true });
+  document.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', measureReadingGeometry, { passive: true });
+  window.addEventListener('pagehide', savePosition);
 });
 
 onContentUpdated(() => {
@@ -165,9 +214,12 @@ onContentUpdated(() => {
 });
 
 onBeforeUnmount(() => {
+  savePosition();
+  resizeObserver?.disconnect();
   window.cancelAnimationFrame(readingFrame);
-  document.removeEventListener('scroll', scheduleReadingStateUpdate);
-  window.removeEventListener('resize', scheduleReadingStateUpdate);
+  document.removeEventListener('scroll', onScroll);
+  window.removeEventListener('resize', measureReadingGeometry);
+  window.removeEventListener('pagehide', savePosition);
 });
 </script>
 
@@ -178,6 +230,7 @@ onBeforeUnmount(() => {
   >
     <div class="reading-progress" aria-hidden="true">
       <span :style="{ transform: `scaleX(${readingProgress})` }" />
+      <i v-for="tick in 19" :key="tick" :style="{ left: `${tick * 5}%` }" />
     </div>
 
     <main class="site-container reading-page__main">
@@ -202,8 +255,9 @@ onBeforeUnmount(() => {
           <span>{{ frontmatter.category ?? '未分类' }}</span>
           <time>
             <CalendarDays :size="14" aria-hidden="true" />
-            {{ frontmatter.date }}
+            {{ currentArticle?.updatedAt ? `更新于 ${currentArticle.updatedAt}` : frontmatter.date }}
           </time>
+          <span v-if="currentArticle">估算 {{ currentArticle.readingTime }} 分钟 + 实践</span>
           <span v-if="series.column"><BookOpen :size="14" aria-hidden="true" /> 系列文章</span>
           <span v-for="item in tags" :key="item" class="reading-header__tag">
             <Tag :size="13" aria-hidden="true" />
@@ -211,7 +265,7 @@ onBeforeUnmount(() => {
           </span>
         </div>
         <div class="reading-header__title-row">
-          <h1>{{ frontmatter.title }}</h1>
+          <h1 :data-shared-id="currentArticle?.id">{{ frontmatter.title }}</h1>
           <ArticleAskMenu
             v-if="currentArticle"
             :article-href="currentArticle.href"
@@ -220,6 +274,16 @@ onBeforeUnmount(() => {
         <p v-if="frontmatter.description" class="reading-header__description">
           {{ frontmatter.description }}
         </p>
+        <div v-if="articleId && (resumeHeading || resumeMissing || !memory.persistent.value)" class="reading-actions">
+          <a v-if="resumeHeading" :href="`#${encodeURIComponent(resumeHeading)}`" @click.prevent="jumpToHeading(resumeHeading)">回到上次阅读位置</a>
+          <span v-if="resumeMissing" role="status">原阅读锚点已更新，可从正文开头继续。</span>
+          <span v-if="!memory.persistent.value" role="status">浏览器未允许存储，进度仅在当前页面保留。</span>
+        </div>
+        <ArticleTerms v-if="Array.isArray(frontmatter.glossary)" :terms="frontmatter.glossary" />
+        <nav v-if="relatedDemos.length" class="reading-actions" aria-label="文章实践入口">
+          <a href="#article-practice">本文源码</a>
+          <a v-for="demo in relatedDemos" :key="demo.id" :href="withBase(experimentHref(demo.id))" :data-shared-id="demo.id">对应实验：{{ demo.title }}</a>
+        </nav>
       </header>
 
       <div v-if="headings.length" class="reading-mobile-toolbar">
@@ -238,12 +302,14 @@ onBeforeUnmount(() => {
       <div class="reading-layout">
         <article ref="readingProse" class="reading-prose vp-doc">
           <Content />
+          <ArticlePractice v-if="currentArticle?.demoIds?.length" :article="currentArticle" />
         </article>
 
         <aside class="reading-aside">
           <section v-if="headings.length" class="reading-aside__panel reading-desktop-outline">
             <h2><List :size="16" aria-hidden="true" /> 本页目录</h2>
-            <nav aria-label="本页目录">
+            <nav ref="outlineNav" class="reading-outline-nav" aria-label="本页目录">
+              <i class="reading-outline-marker" aria-hidden="true" :style="{ transform: `translateY(${outlineMarker.top}px)`, height: `${outlineMarker.height}px` }" />
               <a
                 v-for="heading in headings"
                 :key="heading.link"
@@ -252,6 +318,7 @@ onBeforeUnmount(() => {
                   'reading-aside__subitem': heading.level > 2,
                 }"
                 :href="heading.link"
+                :aria-current="activeHeading === heading.link.slice(1) ? 'location' : undefined"
               >
                 {{ heading.title }}
               </a>
@@ -269,7 +336,7 @@ onBeforeUnmount(() => {
                     <a :href="withBase(item.href)"
                       :aria-current="normalizeContentHref(item.href) === contentHref ? 'page' : undefined"
                       :class="{ 'series-list__current': normalizeContentHref(item.href) === contentHref }">
-                      <span>{{ String(item.seriesOrder ?? 0).padStart(2, '0') }}</span>{{ item.title }}
+                      <span>{{ memory.records.value[item.id]?.completed ? '✓' : String(item.seriesOrder ?? 0).padStart(2, '0') }}</span>{{ item.title }}
                     </a>
                   </li>
                 </ol>
@@ -293,6 +360,12 @@ onBeforeUnmount(() => {
         </aside>
       </div>
 
+      <div v-if="articleId" class="reading-actions" :class="{ 'reading-actions--completed': completionPulse }">
+        <button type="button" :aria-pressed="completed" @click="toggleCompletion">
+          {{ completed ? '已完成 · 撤销标记' : isSeriesArticle ? '标记本章完成' : '标记本文完成' }}
+        </button>
+        <span>完成状态只保存在此浏览器，随时可撤销。</span>
+      </div>
       <nav class="reading-pagination" aria-label="文章导航">
         <a
           v-if="pagination.previous"

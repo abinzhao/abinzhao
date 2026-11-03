@@ -1,0 +1,11 @@
+.track {
+  background: #24363a;
+  padding: 12px;
+}
+.signal {
+  height: 32px;
+  width: 100%;
+  background: #7bd7c5;
+  transform-origin: left;
+  transform: scaleX(var(--progress));
+}

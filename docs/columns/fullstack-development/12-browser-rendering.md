@@ -2,12 +2,26 @@
 title: "第 12 章：浏览器渲染流程"
 description: "理解解析、样式计算、布局、绘制、合成以及页面生命周期。"
 date: '2026-10-23'
+id: fullstack-browser-rendering
+updatedAt: '2026-11-03'
+level: intermediate
+demoIds: [rendering]
+source:
+  path: docs/.vitepress/theme/labs/RenderingPipeline.vue
+  ref: working-tree
+  command: pnpm dev
+runtime: Vue 3.5.44；Web Animations API / SVG；CSS 滚动时间线按能力启用
+verification:
+  kind: browser
+  evidence: labs-interactions.e2e.ts 与 lab-reading.e2e.ts 覆盖实际 width/transform 动画、hash、减少动态与阶段切换暂停；性能事件需按下文隔离录制。
 category: 浏览器原理
 tags: [渲染, 性能, 浏览器]
 series:
   order: 13
 ---
-## 第 12 章 渲染流程详解
+<span id="第-12-章-渲染流程详解" aria-hidden="true"></span>
+
+## 从结构到屏幕像素
 
 ### 12.1 完整链路
 
@@ -219,6 +233,45 @@ window.addEventListener('pageshow', (e) => {
 练习为一百个元素制作交错读写与批量读写版本，用相同内容录制 Performance，定位调用栈而非只比较总时长。然后设置慢字体和图片、从历史返回、切换后台，观察布局偏移和 `pageshow.persisted`。保存草稿应在编辑中增量执行，页面 hidden 时再补一次；刷新恢复的是内容状态，不是旧页面上的计时器和失效引用。验收时给出瓶颈证据、改动后 trace 和草稿恢复结果，并明确未模拟到的移动端进程终止行为。
 
 练习：录制读写交错与读写分离的两个循环，比较 Forced reflow；切到后台、从 bfcache 返回和强制关闭移动端浏览器，观察哪些保存事件实际触发。
+
+### 12.10 运行本站的渲染管线实验
+
+[打开渲染管线实验](/labs/rendering.html)，或者在本文末尾展开。五个阶段按钮是概念解释，不是浏览器内部实时探针。实际对照区域通过 Web Animations API 同时播放 `width` 与 `scaleX` 动画；手动进度滑块也可改变对应 CSS。
+
+两条信号使用相同持续时间、缓动和变化范围，区别是前者改变布局宽度，后者保持布局尺寸只改变视觉比例。实验本身不会输出 FPS 或性能提升比例，因为 JavaScript 读取不到浏览器每一阶段的真实耗时。需要通过 Performance trace 定位事件。
+
+局部滚动模式以滚动容器的可滚动距离为分母，映射到五个离散阶段；手动选阶段后退出滚动驱动。切换阶段、离屏或后台会暂停动画。CSS 滚动时间线仅增强局部进度线，不支持时仍能用原生滚动与步骤按钮完成探索。文章阅读进度仍按正文区域计算，不能借用这个实验的局部分母。
+
+### 12.11 分开录制，避免互相污染
+
+同时播放对照有助于看外观，却不适合把整页 Layout 事件归因于某一条信号。性能采样必须隔离变量：
+
+1. 使用生产构建，关闭无关实验，固定浏览器、视口、DPR、主题和 CPU 条件。
+2. 先录制两条都暂停的空闲组，再单独播放 width，最后单独播放 transform。
+3. 每组先预热 500ms，再录制 5 秒。以 User Timing 标记界定窗口，只统计该页面主线程内的事件。
+4. 交替重复三轮，记录原始 trace、事件数量和耗时。不要把 Layout、Paint、样式事件相加后当作总帧耗时。
+
+下载包中的 `scripts/measure-rendering.mjs` 自动完成这一过程，调用 agent-browser 的 Chrome trace 录制能力。先安装并准备该 CLI，然后在另一个终端执行 `pnpm build` 与 `pnpm exec vitepress preview docs --host 127.0.0.1 --port 5202 --strictPort`：
+
+```sh
+node scripts/measure-rendering.mjs rendering-sample
+```
+
+脚本使用本页真实 WAAPI 动画实例，暂停其它对照项，保存每轮 trace 的 SHA256、原始记录路径、浏览器和源码哈希。若没有 agent-browser，也可以在 Chrome Performance 面板按相同隔离方法录制；不要拿开发服务器热更新期间的结果与生产构建混比。
+
+### 12.12 一次实际录制的结果
+
+2026-11-03，macOS、Headless Chrome 156、1440×900、DPR 1、浅色主题、生产暖页面，无 CPU/网络降速。每组 500ms 预热后记录 5 秒，交替三轮。完整条件和逐轮数据见[性能采样 JSON](/measurements/rendering-2026-11-03.json)。
+
+| 独立运行项 | Layout 次数（三轮） | Paint 次数（三轮） | Layout 总耗时范围 | Paint 总耗时范围 |
+| --- | --- | --- | --- | --- |
+| 两项均暂停 | 0 / 0 / 0 | 0 / 0 / 0 | 0ms | 0ms |
+| 仅 width | 303 / 300 / 302 | 600 / 600 / 600 | 31.553–42.302ms | 43.361–57.017ms |
+| 仅 transform | 0 / 0 / 0 | 0 / 0 / 0 | 0ms | 0ms |
+
+这些是采样窗口里记录到的主线程完整事件，不是整个浏览器全部工作的耗时。Paint 次数多于屏幕帧数也不表示每帧只绘制一次：同一画面可以对应多个绘制记录。
+
+在这个有限、已经完成首次绘制的示例里，transform 路径避免了持续 Layout/Paint；它仍然有合成与 GPU 工作。零事件不等于零成本，更不能推导“所有 transform 都不会重绘”。本次没有记录真实手机帧率、现场 INP 或跨浏览器收益，第三轮耗时波动也说明不应把单次数据包装成固定加速比例。
 
 - [WHATWG 文档就绪](https://html.spec.whatwg.org/multipage/parsing.html#the-end)
 - [Page Lifecycle 指南](https://developer.chrome.com/docs/web-platform/page-lifecycle-api)

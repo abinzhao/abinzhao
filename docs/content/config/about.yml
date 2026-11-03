@@ -63,3 +63,25 @@ skills:
       - { name: 本地优先设计, value: 86, detail: 隐私与可控数据边界 }
       - { name: 产品原型设计, value: 84, detail: 从需求到可验证界面 }
       - { name: 开源实践, value: 88, detail: 公开构建与知识沉淀 }
+timeline:
+  - id: local-assistant
+    date: "2026-10-16"
+    title: 本地知识助手与紧凑阅读布局
+    description: 站点提交加入知识语料构建、本地检索、文章提问入口与会话存储，同时收紧核心页面布局。日期对应代码提交。
+    href: /chat/
+    source: https://github.com/abinzhao/abinzhao/commit/a8b8e1b7471370e1639b9f64cd911a23a397b4b8
+    tags: [本地检索, 隐私边界, 内容体验]
+  - id: harness-guide
+    date: "2026-10-17"
+    title: Agent Harness 工程指南与可运行实验
+    description: 扩展 Harness 教程，加入上下文、策略、Skills、评测和工作流实验源码及行为测试。可从课程目录下载和复现。
+    href: /columns/agent-harness/
+    source: https://github.com/abinzhao/abinzhao/commit/c282b73be4e186463d1af0738ca891a901311b25
+    tags: [Agent Harness, 行为测试, 可复现示例]
+  - id: six-courses
+    date: "2026-10-23"
+    title: 六条系统学习路径与响应式站点
+    description: 提交扩展六个技术专题并恢复 Pages 发布，整合全栈、智能体、产品、小程序、跨端和游戏内容的浏览入口。
+    href: /columns/
+    source: https://github.com/abinzhao/abinzhao/commit/461da5685cc05dee8e6d231485f17d6bb67e92fa
+    tags: [系统课程, VitePress, 响应式]
