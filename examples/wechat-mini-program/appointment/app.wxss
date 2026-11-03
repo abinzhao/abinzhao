@@ -1,3 +1,0 @@
-page { background: #f5f7fa; color: #172033; font-size: 30rpx; }
-button { min-height: 88rpx; font-size: 30rpx; }
-button[type="primary"] { background: #176b48; }
