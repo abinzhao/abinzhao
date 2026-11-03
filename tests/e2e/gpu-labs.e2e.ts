@@ -3,16 +3,29 @@ import { expect, test, type Page } from '@playwright/test';
 test.use({ launchOptions: { args: ['--enable-unsafe-webgpu', ...(process.platform === 'darwin' ? ['--use-angle=metal'] : [])] } });
 
 /**
- * 真实图形管线用例依赖宿主 GPU。CI 的 Linux runner 没有可用 WebGPU 设备，
- * 此时按能力跳过，避免把环境缺失误判为实现回归；WebGPU 缺失时的降级行为
- * 仍由不依赖 GPU 的 Canvas2D / 静态预览用例覆盖。
+ * 真实图形管线用例依赖宿主 GPU。CI 的 Linux runner 能返回适配器，但设备创建后
+ * 立即丢失，因此必须实际申请设备并观察短暂的 lost 信号；只有可用设备才执行严格
+ * 断言，避免把环境缺失误判为实现回归。WebGPU 缺失时的降级行为仍由不依赖 GPU
+ * 的 Canvas2D / 静态预览用例覆盖。
  */
 async function gpuSupport(page: Page): Promise<{ webgpu: boolean; webgl2: boolean }> {
   return page.evaluate(async () => {
+    type ProbeAdapter = {
+      requestDevice?: () => Promise<{ lost: Promise<unknown>; destroy?: () => void }>;
+    };
     let webgpu = false;
     try {
-      const gpu = (navigator as Navigator & { gpu?: { requestAdapter?: () => Promise<unknown> } }).gpu;
-      webgpu = Boolean(await gpu?.requestAdapter?.());
+      const gpu = (navigator as Navigator & { gpu?: { requestAdapter?: () => Promise<ProbeAdapter | null> } }).gpu;
+      const adapter = await gpu?.requestAdapter?.();
+      if (adapter?.requestDevice) {
+        const device = await adapter.requestDevice();
+        const lost = await Promise.race([
+          device.lost.then(() => true),
+          new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 1000)),
+        ]);
+        device.destroy?.();
+        webgpu = !lost;
+      }
     } catch { webgpu = false; }
     return { webgpu, webgl2: Boolean(document.createElement('canvas').getContext('webgl2')) };
   });
